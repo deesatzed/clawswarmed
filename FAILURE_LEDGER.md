@@ -23,5 +23,27 @@ when it cleanly kills a claim.
 
 ## Entries
 
-No run-level failures have been recorded yet.
+### JLENS-FREEZE-001 - J-lens Source/Model Gate Frozen
 
+Status: frozen/deferred
+Date: 2026-07-07
+Artifact: `artifacts/jlens_gate_seed_42/`
+
+Reason:
+
+- The exact named source from the handoff was not verified in the current
+  source lookup.
+- No configured white-box gatekeeper model with gradient/layer access is
+  available in this repository/runtime.
+- Timing or readout alone is insufficient for the Glass Gate causal claim.
+
+Decision: do not implement or claim a real J-lens probe. Continue macro DSH
+and RQGM rails. Optional bridge and mechanistic rails remain deferred.
+
+Evidence:
+
+- `artifacts/jlens_gate_seed_42/sources.json` records searched queries and
+  verified adjacent sources.
+- `artifacts/jlens_gate_seed_42/metrics.json` sets `rail_status = frozen`.
+- `artifacts/jlens_gate_seed_42/ledger.jsonl` includes a
+  `jlens_gate_decision` receipt.

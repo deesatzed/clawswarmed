@@ -1,0 +1,57 @@
+{
+  "rejected_claims": [
+    {
+      "claim": "A real Anthropic J-lens / global workspace probe is ready to implement",
+      "reason": "Exact paper, repository, or implementation was not verified in the current source lookup."
+    },
+    {
+      "claim": "Timing or readout alone can support the Glass Gate causal claim",
+      "reason": "The build contract requires white-box layer/gradient access plus causal intervention controls."
+    }
+  ],
+  "required_exact_source": {
+    "decision": "do_not_implement_real_probe_without_exact_source",
+    "found": false,
+    "name": "Verbalizable Representations Form a Global Workspace in Language Models / Anthropic jacobian-lens implementation"
+  },
+  "searched_queries": [
+    "Anthropic Verbalizable Representations Form a Global Workspace in Language Models J-lens",
+    "jacobian-lens GitHub Anthropic",
+    "Verbalizable Representations Form a Global Workspace in Language Models arXiv",
+    "\"Verbalizable Representations\" \"J-lens\"",
+    "\"J-space\" \"Verbalizable Representations\"",
+    "site:anthropic.com \"Verbalizable Representations\" \"J-lens\"",
+    "site:transformer-circuits.pub \"jacobian lens\"",
+    "site:github.com/anthropics \"jacobian-lens\""
+  ],
+  "verified_adjacent_sources": [
+    {
+      "note": "Primary-methodology adjacent source for activation patching, not the exact J-lens source.",
+      "role": "activation_patching_methodology",
+      "title": "Towards Best Practices of Activation Patching in Language Models: Metrics and Methods",
+      "url": "https://arxiv.org/abs/2309.16042",
+      "verified": true
+    },
+    {
+      "note": "Adjacent source on attribution patching limits and false-negative risks.",
+      "role": "gradient_based_localization_caution",
+      "title": "AtP*: An efficient and scalable method for localizing LLM behaviour to components",
+      "url": "https://arxiv.org/abs/2403.00745",
+      "verified": true
+    },
+    {
+      "note": "Adjacent source on evidence limits and interpretation subtleties.",
+      "role": "activation_patching_interpretation_caution",
+      "title": "How to use and interpret activation patching",
+      "url": "https://arxiv.org/abs/2404.15255",
+      "verified": true
+    },
+    {
+      "note": "Tooling candidate for internal activations; not proof that the exact J-lens rail is available.",
+      "role": "white_box_model_tooling_candidate",
+      "title": "TransformerLens",
+      "url": "https://github.com/TransformerLensOrg/TransformerLens",
+      "verified": true
+    }
+  ]
+}

@@ -24,6 +24,7 @@ python3 -m broadcast_alpha init
 python3 -m broadcast_alpha run-synthetic --seed 42
 python3 -m broadcast_alpha run-dsh --prereg prereg/PREREG_DSH-01.md --seed 42 --tasks-per-cell 30
 python3 -m broadcast_alpha run-rqgm --prereg prereg/PREREG_EPOCH-01.md --seed 42 --epochs 5
+python3 -m broadcast_alpha run-jlens-gate --seed 42
 python3 -m broadcast_alpha summarize artifacts/<run_id>
 python3 -m broadcast_alpha replay artifacts/<run_id> --agent agent_1 --step 3
 python3 -m broadcast_alpha export-ledger artifacts/<run_id> --format jsonl
@@ -51,6 +52,11 @@ metadata, `metrics.json`, and `result_card.md`.
 includes a 5-epoch controlled evaluator trajectory, held-out anchored
 challenger decisions, replacement/tombstone receipts, current-vs-historical
 authority records, replay context, `metrics.json`, and `result_card.md`.
+
+`artifacts/jlens_gate_seed_42/` is the current checked-in J-lens source/model
+gate artifact. It freezes the J-lens rail because the exact named source was
+not verified and no white-box gatekeeper model with gradient/layer access is
+configured.
 
 ## Source Contract
 

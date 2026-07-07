@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from .experiments import run_dsh, run_rqgm, run_synthetic
+from .jlens import run_jlens_gate
 from .ledger import Ledger
 from .replay import replay_context
 
@@ -32,6 +33,10 @@ def build_parser() -> argparse.ArgumentParser:
     rqgm.add_argument("--seed", type=int, default=42)
     rqgm.add_argument("--epochs", type=int, default=5)
     rqgm.add_argument("--artifact-root", default="artifacts")
+
+    jlens = sub.add_parser("run-jlens-gate", help="Run the J-lens source/model availability gate")
+    jlens.add_argument("--seed", type=int, default=42)
+    jlens.add_argument("--artifact-root", default="artifacts")
 
     summarize = sub.add_parser("summarize", help="Print metrics for an artifact")
     summarize.add_argument("artifact")
@@ -77,6 +82,11 @@ def main(argv: list[str] | None = None) -> int:
             epochs=args.epochs,
             artifact_root=Path(args.artifact_root),
         )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-jlens-gate":
+        result = run_jlens_gate(seed=args.seed, artifact_root=Path(args.artifact_root))
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0
 

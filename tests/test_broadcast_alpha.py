@@ -155,6 +155,49 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(result["status"], "unavailable")
         self.assertIn("source", result["reason"])
 
+    def test_jlens_gate_freezes_without_exact_source_or_white_box_model(self):
+        from broadcast_alpha.jlens import run_jlens_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_jlens_gate(seed=42, artifact_root=Path(tmp))
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            sources = json.loads((result.artifact_path / "sources.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertEqual(metrics["rail_status"], "frozen")
+        self.assertFalse(metrics["required_exact_source_found"])
+        self.assertFalse(metrics["white_box_model_available"])
+        self.assertFalse(metrics["real_probe_runnable"])
+        self.assertEqual(metrics["failure_ledger_entry_id"], "JLENS-FREEZE-001")
+        self.assertIn(
+            "Verbalizable Representations Form a Global Workspace",
+            " ".join(sources["searched_queries"]),
+        )
+        self.assertTrue(
+            any(source["url"] == "https://arxiv.org/abs/2309.16042" for source in sources["verified_adjacent_sources"])
+        )
+        self.assertTrue(
+            any(
+                source["url"] == "https://github.com/TransformerLensOrg/TransformerLens"
+                for source in sources["verified_adjacent_sources"]
+            )
+        )
+        self.assertIn('"kind": "jlens_gate_decision"', ledger)
+        self.assertIn("J-lens rail frozen", result_card)
+
+    def test_jlens_gate_single_token_label_manifest(self):
+        from broadcast_alpha.jlens import verify_single_token_labels
+
+        labels = ["yes", "no", "admit", "reject", "pass", "fail"]
+
+        self.assertEqual(
+            verify_single_token_labels(labels),
+            {label: True for label in labels},
+        )
+        with self.assertRaises(ValueError):
+            verify_single_token_labels(["yes", "not sure"])
+
     def test_metrics_json_schema(self):
         from broadcast_alpha.experiments import run_synthetic
 
@@ -208,6 +251,59 @@ class BroadcastAlphaTests(unittest.TestCase):
 
             self.assertTrue((artifact_path / "metrics.json").exists())
             self.assertTrue((artifact_path / "result_card.md").exists())
+
+    def test_cli_run_jlens_gate_creates_freeze_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [sys.executable, "-m", "broadcast_alpha", "run-jlens-gate", "--seed", "42", "--artifact-root", tmp],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertTrue((artifact_path / "sources.json").exists())
+            self.assertTrue((artifact_path / "result_card.md").exists())
+            self.assertEqual(metrics["rail_status"], "frozen")
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("J-lens rail frozen", replay.stdout)
 
     def test_codebug_task_bank_hidden_tests_distinguish_seeded_patches(self):
         from broadcast_alpha.task_bank import load_codebug_tasks, verify_patch
