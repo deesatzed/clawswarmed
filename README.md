@@ -41,6 +41,8 @@ dependency decisions are made.
 
 ## Source Contract
 
-Build from `docs/archive/HANDOFF_claswarmed_glassgate_v1_2.md`. Negative
-results and killed claims are valid outcomes and must be recorded in
+The active build contract is `docs/GOAL_GLASSGATE.md`. It was derived from
+`docs/archive/HANDOFF_claswarmed_glassgate_v1_2.md` and is the checklist for
+turning this repository into the real Broadcast-alpha / Glass Gate instrument.
+Negative results and killed claims are valid outcomes and must be recorded in
 `FAILURE_LEDGER.md`.
