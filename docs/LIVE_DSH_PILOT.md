@@ -27,6 +27,7 @@ and smoke has a verifier-backed pass.
 ```bash
 python3 -m broadcast_alpha prepare-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-sequence --prereg prereg/PREREG_LIVE-01.md --seed 42
+python3 -m broadcast_alpha run-live-model-sweep --prereg prereg/PREREG_LIVE-01.md --seed 42 --env-file ../.env --budget-usd 25 --authorize-api-spend --execute-live
 python3 -m broadcast_alpha run-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
 ```
@@ -39,11 +40,18 @@ Real provider-backed execution requires:
 - `--authorize-api-spend`;
 - `--execute-live`.
 
+For model comparisons, `run-live-model-sweep` also accepts
+`OPENROUTER_MODEL_1`, `OPENROUTER_MODEL_2`, and subsequent numbered variables
+from the env file. It uses one smoke call per model and records the declared
+budget cap in the sweep artifact. This is the intended first paid check before
+running the 24-cell live DSH pilot.
+
 ## Current Artifact
 
 ```text
 artifacts/live_readiness_seed_42/
 artifacts/live_sequence_seed_42/
+artifacts/live_model_sweep_seed_42/
 artifacts/live_smoke_seed_42/
 artifacts/live_dsh_seed_42/
 ```

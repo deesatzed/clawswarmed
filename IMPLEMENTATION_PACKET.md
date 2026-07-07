@@ -2,110 +2,81 @@
 
 ## Task Being Attempted
 
-Propagate the existing macro DSH diagnostics into the consolidated report,
-run-all bundle, and goal audit.
+Add a bounded live model sweep command for the existing OpenRouter live smoke rail.
 
 ## Actual User Goal
 
-Move `GOAL_GLASSGATE.md` closer to a finished showpiece instrument by ensuring
-the top-level evidence surfaces include the full preregistered macro result:
-verified solve rate, panel correlation rho, candidate ablation rate, and token
-cost per solve, not only `GLASSGATE_LIFT` and D-by-arm.
+Use the newly configured `.env` with seven OpenRouter models and a $25 key budget to test real model-backed execution without leaking secrets or overwriting one-model artifacts.
 
 ## Files Expected To Change
 
 | File | Expected Change | Risk |
 |---|---|---|
-| `broadcast_alpha/reporting.py` | Copy macro diagnostic fields from `dsh_seed_42/metrics.json` into final report metrics/result card/claim matrix. | Could imply live token cost exists when deterministic token cost is n/a. |
-| `broadcast_alpha/orchestrator.py` | Carry those report metrics into `run-all` metrics/result card. | Run-all could drift from report if fields are omitted. |
-| `broadcast_alpha/goal_audit.py` | Add or strengthen a requirement proving macro diagnostics are present. | Audit could overclaim if it only checks key presence. |
-| `tests/test_broadcast_alpha.py` | TDD coverage for report, run-all, and audit propagation. | Tests must verify exact diagnostic keys and expected values. |
-| `docs/FINAL_REPORT.md`, `docs/RUN_ALL.md`, `docs/GOAL_AUDIT.md`, `README.md` | Document the macro diagnostics now surfaced at top level. | Docs could confuse deterministic token-cost `null` with missing data. |
-| Generated report/run-all/audit artifacts | Regenerated evidence after propagation. | Ledger timestamp churn in generated artifacts. |
-| Root `DECISIONS.md`, `PROGRESS.md` | Record decision/progress. | Root is not Git-backed. |
+| `tests/test_broadcast_alpha.py` | Add tests for numbered model parsing, fake sweep execution, CLI artifact creation, and goal audit recognition. | Low |
+| `broadcast_alpha/live_model_sweep.py` | New sweep wrapper around `run_live_smoke`. | Medium |
+| `broadcast_alpha/cli.py` | Add `run-live-model-sweep` command. | Low |
+| `broadcast_alpha/goal_audit.py` | Treat a verified live model sweep as evidence for live model-backed execution. | Low |
+| `docs/LIVE_DSH_PILOT.md`, `docs/LIVE_MODEL_GATE.md`, `README.md` | Document the seven-model workflow. | Low |
+| `DECISIONS.md`, `PROGRESS.md` | Record the workflow decision and progress. | Low |
 
 ## Existing Patterns To Follow
 
-- `build-report` already reads `dsh_seed_42/metrics.json` and emits a single
-  consolidated artifact.
-- `run-all` already copies selected report metrics into the bundle metrics.
-- `audit-goal` uses conservative `proved`, `deferred_with_record`, and
-  `incomplete` statuses.
-- Deterministic macro runs record `token_cost_per_solve = null` because no
-  LLM/API tokens are used.
+- Existing live rails use `LiveDshResult`-style dataclasses, `metrics.json`, `ledger.jsonl`, `result_card.md`, and replay contexts.
+- Existing command handlers emit only `run_id` and `artifact_path`.
+- Provider artifacts must record secret presence, never secret values.
+- Live rails default to blocked/no-spend unless both `--authorize-api-spend` and `--execute-live` are present.
 
 ## Assumptions
 
-- The macro DSH artifact is the authoritative source for these diagnostics.
-- `token_cost_per_solve = null` is valid evidence for deterministic/no-token
-  runs when paired with current no-live execution fields.
-- This pass should not rerun or change live provider behavior.
+- `OPENROUTER_MODEL_1`, `OPENROUTER_MODEL_2`, etc. are the intended model list.
+- A one-call smoke per model is the correct first bounded use of the $25 key.
+- The provider/key budget is managed by the user's OpenRouter key cap; this command records the declared cap but does not enforce provider billing.
 
 ## Non-Goals For This Pass
 
-- Do not run OpenRouter or any external API.
-- Do not change macro task outcomes or recompute formulas.
-- Do not claim the active goal complete.
-- Do not reopen J-lens.
-- Do not mutate protected source repos.
+- No full 24-cell live DSH pilot across all seven models.
+- No J-lens implementation.
+- No provider-side account or billing API integration.
+- No exposure of API key values in artifacts or logs.
 
 ## Step-by-Step Plan
 
-1. Write failing tests requiring final report, run-all, and audit to expose the
-   macro diagnostics.
-2. Extend `build_result_report` to propagate the diagnostic fields and claim.
-3. Extend `run_all` to carry those fields.
-4. Extend `audit_goal` with a `macro_diagnostics` proof item.
-5. Regenerate final report, run-all, and goal audit artifacts.
-6. Update docs and root truth files.
-7. Run full verification, commit, and push.
+1. Add failing tests for model-list parsing and sweep behavior.
+2. Implement the smallest sweep module that calls `run_live_smoke` once per model.
+3. Add CLI plumbing.
+4. Extend goal audit to accept verified sweep evidence.
+5. Update docs and truth files.
+6. Run focused tests, full tests, compile checks, and one bounded live sweep if code verification passes.
 
 ## Acceptance Criteria
 
-- Final report metrics include:
-  - `verified_solve_rate`
-  - `panel_correlation_rho`
-  - `candidate_ablation_rate`
-  - `token_cost_per_solve`
-- Run-all metrics include the same fields.
-- Goal audit has a proved `macro_diagnostics` requirement.
-- Result cards/docs display the diagnostics without implying live token spend.
-- The overall goal audit remains `not_complete` until live/model-backed
-  execution exists.
+- `run-live-model-sweep` reads numbered `OPENROUTER_MODEL_N` variables from an env file.
+- Each model gets its own child artifact without overwriting another model.
+- No secret value appears in sweep metrics, ledger, result card, or child artifacts.
+- A no-spend invocation blocks with zero adapter calls.
+- A fake-transport test records one call per model.
+- Goal audit can mark live model-backed execution as proved when a real sweep records live calls.
 
 ## Verification Plan
 
+- `python3 -m unittest tests.test_broadcast_alpha.BroadcastAlphaTests.<new tests>`
 - `python3 -m unittest tests/test_broadcast_alpha.py`
 - `python3 -m unittest discover -s tests`
 - `python3 -m compileall -q broadcast_alpha tests`
-- `python3 -m py_compile claswarmed/*.py`
-- `python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42`
-- `python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5 --prereg-dir prereg --artifact-root artifacts`
-- `python3 -m broadcast_alpha audit-goal --artifact-root artifacts --output artifacts/goal_audit_seed_42 --repo-root .`
-- `python3 -m broadcast_alpha summarize artifacts/final_report_seed_42`
-- `python3 -m broadcast_alpha summarize artifacts/run_all_seed_42`
-- `python3 -m broadcast_alpha summarize artifacts/goal_audit_seed_42`
-- `python3 -m broadcast_alpha export-ledger artifacts/final_report_seed_42 --format jsonl`
-- `python3 -m broadcast_alpha export-ledger artifacts/run_all_seed_42 --format jsonl`
-- `python3 -m broadcast_alpha export-ledger artifacts/goal_audit_seed_42 --format jsonl`
-- `git diff --check`
-- secret scan for provider key patterns in code/docs/artifacts
-- `git status --short --branch`
+- One bounded real command after tests pass: `run-live-model-sweep --budget-usd 25 --authorize-api-spend --execute-live`.
 
 ## Rollback Plan
 
-Revert the macro-diagnostics propagation commit and regenerate report/run-all
-and goal-audit artifacts from the previous code.
+Revert the new module, CLI command, tests, docs, and audit extension. Existing live rails are not altered in behavior.
 
 ## Risks
 
 | Risk | Mitigation |
 |---|---|
-| Treating `token_cost_per_solve = null` as missing | Tests assert the key exists and remains null for deterministic no-token macro evidence. |
-| Report/run-all drift | Tests check both surfaces. |
-| Audit overclaims full completion | Audit adds only macro diagnostics; live/model-backed execution remains incomplete. |
+| Provider rejects one or more configured model slugs. | Record adapter errors per model and continue; do not call this a full pass. |
+| Costs exceed expectation. | Limit this command to one smoke call per model and record the declared budget cap. |
+| Artifacts leak API keys. | Reuse existing sanitization and add tests scanning artifacts for dummy secrets. |
 
 ## Proceed / Block Decision
 
-Proceed. This pass is local, deterministic, no-spend, and within the app repo
-plus root truth docs.
+Proceed. The user supplied the `.env` and budget, and the implementation is a bounded wrapper over existing live rails.

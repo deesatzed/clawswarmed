@@ -5,13 +5,11 @@
     "bridge_rail",
     "mechanistic_admission"
   ],
-  "incomplete_count": 1,
-  "incomplete_requirement_ids": [
-    "live_model_backed_execution"
-  ],
+  "incomplete_count": 0,
+  "incomplete_requirement_ids": [],
   "ledger_path": "artifacts/goal_audit_seed_42/ledger.jsonl",
-  "overall_status": "not_complete",
-  "proved_count": 10,
+  "overall_status": "complete_with_deferred_records",
+  "proved_count": 11,
   "replay_bundle_path": "artifacts/goal_audit_seed_42/replay",
   "requirement_count": 14,
   "requirements_path": "artifacts/goal_audit_seed_42/requirements.json",

@@ -167,13 +167,14 @@
       }
     },
     {
-      "evidence": "No live model-backed adapter call has been made; checked-in evidence remains no-spend/no-network.",
-      "evidence_path": "artifacts/live_sequence_seed_42/metrics.json",
+      "evidence": "Live model-backed execution recorded.",
+      "evidence_path": "artifacts/live_model_sweep_seed_42/metrics.json",
       "id": "live_model_backed_execution",
       "requirement": "At least one real provider-backed model call has been made and recorded before live evidence is claimed.",
-      "status": "incomplete",
+      "status": "proved",
       "value": {
-        "live_model_run_performed": false,
+        "live_model_run_performed": true,
+        "live_model_sweep_adapter_call_count_total": 7,
         "live_sequence_adapter_call_count_total": 0
       }
     }

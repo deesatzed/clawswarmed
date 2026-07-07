@@ -31,6 +31,7 @@ python3 -m broadcast_alpha run-live-gate --seed 42 --env-file /path/to/.env --mo
 python3 -m broadcast_alpha prepare-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-sequence --prereg prereg/PREREG_LIVE-01.md --seed 42
+python3 -m broadcast_alpha run-live-model-sweep --prereg prereg/PREREG_LIVE-01.md --seed 42 --env-file ../.env --budget-usd 25 --authorize-api-spend --execute-live
 python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
 python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42
 python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5 --prereg-dir prereg --artifact-root artifacts
@@ -96,6 +97,14 @@ execution gates, and performs zero adapter calls.
 sequence artifact. It records the future one-command provider path: readiness
 gate, one-call smoke, and optional DSH pilot promotion only after smoke passes.
 The checked-in run is blocked before smoke and performs zero adapter calls.
+
+`artifacts/live_model_sweep_seed_42/` is the first bounded multi-model
+provider artifact when an operator supplies an env file. It reads
+`OPENROUTER_MODEL_1`, `OPENROUTER_MODEL_2`, and so on, then runs one
+verifier-backed smoke task per model. The command records the declared
+`--budget-usd` cap, adapter call counts, per-model child artifacts, ledger
+verification, and whether real provider transport was used. It does not compute
+or claim `GLASSGATE_LIFT`.
 
 `artifacts/live_dsh_seed_42/` is the current checked-in live DSH pilot
 artifact. It plans the same 24 panel/arm/seed-condition cells as the macro DSH

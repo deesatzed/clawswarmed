@@ -1,0 +1,25 @@
+{
+  "runs": [
+    {
+      "adapter_error": {
+        "error_message": "HTTP Error 429: Too Many Requests",
+        "error_type": "HTTPError"
+      },
+      "candidate_patch": null,
+      "candidate_patch_parse_status": "adapter_error",
+      "hidden_verifier_failures": [
+        {
+          "adapter_error": "HTTPError"
+        }
+      ],
+      "hidden_verifier_passed": false,
+      "hidden_verifier_total": 3,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "correct_minority",
+      "task_id": "codebug_add_01",
+      "task_index": 0,
+      "transport_label": "real",
+      "workspace_arm": "abundant"
+    }
+  ]
+}

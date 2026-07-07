@@ -1,0 +1,29 @@
+{
+  "runs": [
+    {
+      "adapter_response": {
+        "choice_count": 1,
+        "content_preview": "To repair the helper function and ensure it correctly handles all edge cases (such as negative integers, large bounds, or potential overflow/underflow depending on the language context), we must ensur",
+        "response_id_present": true,
+        "usage_completion_tokens": 76,
+        "usage_prompt_tokens": 85,
+        "usage_total_tokens": 161
+      },
+      "candidate_patch": null,
+      "candidate_patch_parse_status": "missing_patch",
+      "hidden_verifier_failures": [
+        {
+          "parse_error": "missing_patch"
+        }
+      ],
+      "hidden_verifier_passed": false,
+      "hidden_verifier_total": 3,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "correct_minority",
+      "task_id": "codebug_add_01",
+      "task_index": 0,
+      "transport_label": "real",
+      "workspace_arm": "abundant"
+    }
+  ]
+}

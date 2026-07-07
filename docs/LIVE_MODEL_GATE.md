@@ -71,10 +71,38 @@ authorized. A real provider-backed pilot requires the same gates as
 `run-live-gate`: key, model, `--authorize-api-spend`, and `--execute-live`.
 Tests exercise the 24-cell pilot through fake transport only.
 
+## Multi-Model Smoke Sweep
+
+When the env file contains several models, use the sweep before a full live
+pilot:
+
+```bash
+python3 -m broadcast_alpha run-live-model-sweep \
+  --prereg prereg/PREREG_LIVE-01.md \
+  --seed 42 \
+  --env-file ../.env \
+  --budget-usd 25 \
+  --authorize-api-spend \
+  --execute-live
+```
+
+The sweep reads models in this order:
+
+- explicit `--model` or comma-separated `--models`;
+- `OPENROUTER_MODELS=model-a,model-b`;
+- numbered `OPENROUTER_MODEL_1`, `OPENROUTER_MODEL_2`, and so on;
+- fallback `OPENROUTER_MODEL`.
+
+It runs one verifier-backed smoke task per model and writes
+`artifacts/live_model_sweep_seed_42/`. The budget value is recorded for audit,
+but provider-side enforcement remains the OpenRouter key/account limit. Secret
+values are never recorded.
+
 ## Current Artifact
 
 ```text
 artifacts/live_gate_seed_42/
+artifacts/live_model_sweep_seed_42/   # after an authorized sweep
 ```
 
 Files:

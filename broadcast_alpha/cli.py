@@ -9,6 +9,7 @@ from .ledger import Ledger
 from .ledger_stress import run_ledger_stress
 from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
+from .live_model_sweep import run_live_model_sweep
 from .live_readiness import prepare_live_smoke
 from .live_sequence import run_live_sequence
 from .orchestrator import run_all
@@ -91,6 +92,18 @@ def build_parser() -> argparse.ArgumentParser:
     live_sequence.add_argument("--execute-live", action="store_true")
     live_sequence.add_argument("--model")
     live_sequence.add_argument("--include-dsh-pilot", action="store_true")
+
+    live_sweep = sub.add_parser("run-live-model-sweep", help="Run one bounded live smoke task per configured model")
+    live_sweep.add_argument("--prereg", default="prereg/PREREG_LIVE-01.md")
+    live_sweep.add_argument("--seed", type=int, default=42)
+    live_sweep.add_argument("--artifact-root", default="artifacts")
+    live_sweep.add_argument("--env-file")
+    live_sweep.add_argument("--authorize-api-spend", action="store_true")
+    live_sweep.add_argument("--network-probe", action="store_true")
+    live_sweep.add_argument("--execute-live", action="store_true")
+    live_sweep.add_argument("--model", action="append", dest="models")
+    live_sweep.add_argument("--models", dest="models_csv", help="Comma-separated model slugs; overrides env model list")
+    live_sweep.add_argument("--budget-usd", type=float, default=0.0)
 
     live_readiness = sub.add_parser("prepare-live-smoke", help="Preview the sanitized one-call live smoke request")
     live_readiness.add_argument("--prereg", default="prereg/PREREG_LIVE-01.md")
@@ -229,6 +242,26 @@ def main(argv: list[str] | None = None) -> int:
             execute_live=args.execute_live,
             model=args.model,
             include_dsh_pilot=args.include_dsh_pilot,
+            prereg_path=Path(args.prereg),
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-live-model-sweep":
+        explicit_models = []
+        if args.models:
+            explicit_models.extend(args.models)
+        if args.models_csv:
+            explicit_models.extend([model.strip() for model in args.models_csv.split(",") if model.strip()])
+        result = run_live_model_sweep(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            env_file=Path(args.env_file) if args.env_file else None,
+            api_spend_authorized=args.authorize_api_spend,
+            network_probe=args.network_probe,
+            execute_live=args.execute_live,
+            budget_usd=args.budget_usd,
+            models=explicit_models or None,
             prereg_path=Path(args.prereg),
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})

@@ -1,0 +1,28 @@
+{
+  "adapter_call_count_total": 7,
+  "all_child_ledgers_verified": true,
+  "api_spend_authorized": true,
+  "attempted_model_count": 7,
+  "budget_usd": 25.0,
+  "estimated_upper_call_count": 7,
+  "execute_live_requested": true,
+  "hidden_verifier_pass_count_total": 0,
+  "ledger_path": "artifacts/live_model_sweep_seed_42/ledger.jsonl",
+  "live_model_run_performed_count": 6,
+  "manifest_path": "artifacts/live_model_sweep_seed_42/manifest.json",
+  "model_count": 7,
+  "model_results_path": "artifacts/live_model_sweep_seed_42/model_results.json",
+  "openrouter_api_key_present": true,
+  "provider": "openrouter",
+  "reason_codes": [
+    "model_smoke_calls_recorded",
+    "live_provider_transport_executed"
+  ],
+  "replay_bundle_path": "artifacts/live_model_sweep_seed_42/replay",
+  "result_card_path": "artifacts/live_model_sweep_seed_42/result_card.md",
+  "run_id": "live_model_sweep_seed_42",
+  "secret_values_recorded": false,
+  "seed": 42,
+  "sweep_status": "sweep_executed",
+  "transport_label": "real"
+}

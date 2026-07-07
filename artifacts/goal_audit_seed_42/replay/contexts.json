@@ -1,7 +1,7 @@
 {
   "agent_1": {
     "1": "goal audit: loaded repository docs, final report, run-all bundle, live sequence, and failure ledger evidence",
-    "2": "goal audit: proved=10 deferred=3 incomplete=1",
-    "3": "goal audit: not_complete; incomplete=['live_model_backed_execution']"
+    "2": "goal audit: proved=11 deferred=3 incomplete=0",
+    "3": "goal audit: complete_with_deferred_records; incomplete=[]"
   }
 }

@@ -1,0 +1,24 @@
+{
+  "budget_usd": 25.0,
+  "child_artifacts": {
+    "model_1": "artifacts/live_model_sweep_seed_42/source_artifacts/model_1/live_smoke_seed_42",
+    "model_2": "artifacts/live_model_sweep_seed_42/source_artifacts/model_2/live_smoke_seed_43",
+    "model_3": "artifacts/live_model_sweep_seed_42/source_artifacts/model_3/live_smoke_seed_44",
+    "model_4": "artifacts/live_model_sweep_seed_42/source_artifacts/model_4/live_smoke_seed_45",
+    "model_5": "artifacts/live_model_sweep_seed_42/source_artifacts/model_5/live_smoke_seed_46",
+    "model_6": "artifacts/live_model_sweep_seed_42/source_artifacts/model_6/live_smoke_seed_47",
+    "model_7": "artifacts/live_model_sweep_seed_42/source_artifacts/model_7/live_smoke_seed_48"
+  },
+  "prereg_path": "prereg/PREREG_LIVE-01.md",
+  "run_id": "live_model_sweep_seed_42",
+  "run_sequence": [
+    "model_1",
+    "model_2",
+    "model_3",
+    "model_4",
+    "model_5",
+    "model_6",
+    "model_7"
+  ],
+  "seed": 42
+}

@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "live model sweep: 7 configured model(s), budget cap $25.00",
+    "2": "live model sweep: attempted 7 model(s), adapter calls 7",
+    "3": "live model sweep status sweep_executed; live model runs 6"
+  }
+}

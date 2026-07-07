@@ -1,0 +1,29 @@
+{
+  "runs": [
+    {
+      "adapter_response": {
+        "choice_count": 1,
+        "content_preview": "Focus on minimal core-logic hardening + negative/overflow edges to satisfy hidden verifiers without example leakage.",
+        "response_id_present": true,
+        "usage_completion_tokens": 493,
+        "usage_prompt_tokens": 210,
+        "usage_total_tokens": 703
+      },
+      "candidate_patch": null,
+      "candidate_patch_parse_status": "missing_patch",
+      "hidden_verifier_failures": [
+        {
+          "parse_error": "missing_patch"
+        }
+      ],
+      "hidden_verifier_passed": false,
+      "hidden_verifier_total": 3,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "correct_minority",
+      "task_id": "codebug_add_01",
+      "task_index": 0,
+      "transport_label": "real",
+      "workspace_arm": "abundant"
+    }
+  ]
+}

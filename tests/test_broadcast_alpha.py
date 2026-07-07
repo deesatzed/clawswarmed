@@ -1194,6 +1194,169 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(len(captured_requests), 25)
         self.assertIn("live_dsh_pilot", manifest["child_artifacts"])
 
+    def test_live_model_sweep_reads_numbered_models_and_runs_one_smoke_per_model(self):
+        from broadcast_alpha.live_model_sweep import run_live_model_sweep
+
+        captured_requests = []
+
+        def fake_transport(request):
+            captured_requests.append(request)
+            return {
+                "id": f"chatcmpl_fake_sweep_{len(captured_requests)}",
+                "choices": [{"message": {"content": "{\"patch\": \"x + 2\"}"}}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 4, "total_tokens": 14},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+                "OPENROUTER_MODEL_2=test/model-b\n"
+            )
+            result = run_live_model_sweep(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                budget_usd=25.0,
+                transport=fake_transport,
+                transport_label="fake",
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            model_results = json.loads((result.artifact_path / "model_results.json").read_text())
+            manifest = json.loads((result.artifact_path / "manifest.json").read_text())
+            combined_artifacts = "\n".join(
+                [
+                    (result.artifact_path / "metrics.json").read_text(),
+                    (result.artifact_path / "model_results.json").read_text(),
+                    (result.artifact_path / "manifest.json").read_text(),
+                    (result.artifact_path / "result_card.md").read_text(),
+                    (result.artifact_path / "ledger.jsonl").read_text(),
+                ]
+            )
+
+        self.assertEqual(result.run_id, "live_model_sweep_seed_42")
+        self.assertEqual(metrics["sweep_status"], "sweep_executed")
+        self.assertEqual(metrics["model_count"], 2)
+        self.assertEqual(metrics["attempted_model_count"], 2)
+        self.assertEqual(metrics["adapter_call_count_total"], 2)
+        self.assertEqual(metrics["live_model_run_performed_count"], 0)
+        self.assertEqual(metrics["budget_usd"], 25.0)
+        self.assertEqual(metrics["transport_label"], "fake")
+        self.assertEqual(len(captured_requests), 2)
+        self.assertEqual([request["body"]["model"] for request in captured_requests], ["test/model-a", "test/model-b"])
+        self.assertEqual([row["model_ref"] for row in model_results["models"]], ["test/model-a", "test/model-b"])
+        self.assertTrue(all(row["hidden_verifier_pass_count"] == 1 for row in model_results["models"]))
+        self.assertEqual(set(manifest["child_artifacts"]), {"model_1", "model_2"})
+        self.assertNotIn("dummy-secret-value", combined_artifacts)
+
+    def test_live_model_sweep_blocks_without_spend_authorization(self):
+        from broadcast_alpha.live_model_sweep import run_live_model_sweep
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+            )
+            result = run_live_model_sweep(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                budget_usd=25.0,
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            model_results = json.loads((result.artifact_path / "model_results.json").read_text())
+
+        self.assertEqual(metrics["sweep_status"], "blocked_no_live_execution")
+        self.assertEqual(metrics["model_count"], 1)
+        self.assertEqual(metrics["attempted_model_count"], 0)
+        self.assertEqual(metrics["adapter_call_count_total"], 0)
+        self.assertEqual(model_results["models"], [])
+        self.assertIn("api_spend_not_authorized", metrics["reason_codes"])
+
+    def test_cli_run_live_model_sweep_creates_replayable_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+                "OPENROUTER_MODEL_2=test/model-b\n"
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-live-model-sweep",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    str(tmp_path / "artifacts"),
+                    "--env-file",
+                    str(env_file),
+                    "--budget-usd",
+                    "25",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(payload["run_id"], "live_model_sweep_seed_42")
+            self.assertEqual(metrics["sweep_status"], "blocked_no_live_execution")
+            self.assertTrue((artifact_path / "model_results.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("live model sweep", replay.stdout)
+
     def test_cli_run_live_sequence_default_creates_blocked_replayable_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run(
@@ -1787,6 +1950,59 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn("No live model-backed adapter call", by_id["live_model_backed_execution"]["evidence"])
         self.assertIn("Goal remains incomplete", result_card)
         self.assertIn('"kind": "goal_audit_metrics"', ledger)
+
+    def test_goal_audit_accepts_live_model_sweep_as_model_backed_evidence(self):
+        from broadcast_alpha.goal_audit import audit_goal
+        from broadcast_alpha.live_model_sweep import run_live_model_sweep
+        from broadcast_alpha.orchestrator import run_all
+
+        def fake_transport(_request):
+            return {
+                "id": "chatcmpl_fake_real_label",
+                "choices": [{"message": {"content": "{\"patch\": \"x + 2\"}"}}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 4, "total_tokens": 14},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact_root = Path(tmp)
+            env_file = artifact_root / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+            )
+            run_all(
+                seed=42,
+                tasks_per_cell=30,
+                epochs=5,
+                prereg_dir=APP_ROOT / "prereg",
+                artifact_root=artifact_root,
+                live_env={},
+            )
+            run_live_model_sweep(
+                seed=42,
+                artifact_root=artifact_root,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                budget_usd=25.0,
+                transport=fake_transport,
+                transport_label="real",
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            result = audit_goal(
+                artifact_root=artifact_root,
+                output_dir=artifact_root / "goal_audit_seed_42",
+                repo_root=APP_ROOT,
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            requirements = json.loads((result.artifact_path / "requirements.json").read_text())
+
+        by_id = {item["id"]: item for item in requirements["items"]}
+        self.assertEqual(metrics["overall_status"], "complete_with_deferred_records")
+        self.assertEqual(by_id["live_model_backed_execution"]["status"], "proved")
+        self.assertIn("Live model-backed execution recorded", by_id["live_model_backed_execution"]["evidence"])
+        self.assertEqual(by_id["live_model_backed_execution"]["value"]["live_model_sweep_adapter_call_count_total"], 1)
 
     def test_cli_audit_goal_creates_replayable_audit_artifact(self):
         from broadcast_alpha.orchestrator import run_all
