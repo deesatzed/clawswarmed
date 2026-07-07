@@ -3,6 +3,7 @@ import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from .council import build_council_plan
 from .evidence import build_inventory
 from .planner import build_showpiece_plan
 from .rqgm import EvaluatorSlot, consider_replacement
@@ -14,6 +15,7 @@ def dashboard_payload(workspace: Path) -> dict:
     return {
         "inventory": build_inventory(workspace),
         "plan": build_showpiece_plan("claswarmed"),
+        "council": build_council_plan("Build claswarmed", workspace),
         "epoch": {
             "slot": slot.name,
             "incumbent": slot.incumbent,
@@ -35,6 +37,13 @@ def render_dashboard(workspace: Path) -> str:
     phase_items = "\n".join(
         f"<li><strong>{html.escape(phase['name'])}</strong>: {html.escape(phase['goal'])}</li>"
         for phase in payload["plan"]["phases"]
+    )
+    council_rows = "\n".join(
+        f"<tr><td>{html.escape(panel['perspective'])}</td>"
+        f"<td>{html.escape(panel['assigned_model'])}</td>"
+        f"<td>{html.escape(panel['tool_policy'])}</td>"
+        f"<td>{html.escape(panel['focus'])}</td></tr>"
+        for panel in payload["council"]["panels"]
     )
     epoch = payload["epoch"]
     data = html.escape(json.dumps(payload, indent=2))
@@ -76,6 +85,13 @@ def render_dashboard(workspace: Path) -> str:
       <h2>Build Plan</h2>
       <ol>{phase_items}</ol>
     </section>
+    <section>
+      <h2>Council Plan</h2>
+      <table>
+        <thead><tr><th>Perspective</th><th>Model</th><th>Tools</th><th>Focus</th></tr></thead>
+        <tbody>{council_rows}</tbody>
+      </table>
+    </section>
     <section class="epoch">
       <h2>RQGM Epoch Demo</h2>
       <p>Slot <code>{html.escape(epoch['slot'])}</code> selected <code>{html.escape(epoch['active_evaluator'])}</code>.</p>
@@ -109,4 +125,3 @@ def serve_dashboard(workspace: Path, host: str = "127.0.0.1", port: int = 8765) 
     server = ThreadingHTTPServer((host, port), Handler)
     print(f"claswarmed dashboard: http://{host}:{port}")
     server.serve_forever()
-

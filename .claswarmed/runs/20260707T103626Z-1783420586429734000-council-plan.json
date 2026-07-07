@@ -1,0 +1,104 @@
+{
+  "created_at": "20260707T103626Z",
+  "kind": "council-plan",
+  "payload": {
+    "goal": "Build claswarmed Phase 2",
+    "judge": {
+      "assigned_model": "Claude",
+      "focus": "Synthesize panel outputs into accepted actions, rejected risks, and next gates.",
+      "tool_policy": "no-tools"
+    },
+    "panels": [
+      {
+        "assigned_model": "Gemini",
+        "budget": {
+          "max_tool_calls": 6,
+          "timeout_seconds": 60
+        },
+        "focus": "Map source evidence into system architecture and integration points.",
+        "perspective": "architect",
+        "tool_policy": "read-only"
+      },
+      {
+        "assigned_model": "Grok",
+        "budget": {
+          "max_tool_calls": 6,
+          "timeout_seconds": 60
+        },
+        "focus": "Find false assumptions, missing gates, and showpiece credibility risks.",
+        "perspective": "skeptic",
+        "tool_policy": "read-only"
+      },
+      {
+        "assigned_model": "Codex",
+        "budget": {
+          "max_tool_calls": 6,
+          "timeout_seconds": 60
+        },
+        "focus": "Turn findings into executable tasks, tests, and receipts.",
+        "perspective": "operator",
+        "tool_policy": "read-only"
+      }
+    ],
+    "project": "claswarmed",
+    "review_gates": [
+      {
+        "check": "Do not mutate source repos unless explicitly approved.",
+        "name": "source-evidence boundary"
+      },
+      {
+        "check": "Architect, skeptic, and operator outputs must be synthesized before action.",
+        "name": "council synthesis"
+      },
+      {
+        "check": "Evaluator replacement decisions occur only at epoch boundaries.",
+        "name": "rqgm evaluator checkpoint"
+      },
+      {
+        "check": "Tests, smoke commands, and CAM checks are recorded before claims.",
+        "name": "verification receipts"
+      }
+    ],
+    "roles": [
+      {
+        "model": "Codex",
+        "primary_job": "program manager",
+        "source": "GOAL.md program manager model",
+        "why": "Owns orchestration, code changes, verification, and final decisions."
+      },
+      {
+        "model": "Grok",
+        "primary_job": "architecture critic",
+        "source": "bld1.md strengths mapping",
+        "why": "Challenges assumptions, identifies blind spots, and reviews reasoning."
+      },
+      {
+        "model": "Claude",
+        "primary_job": "code quality reviewer",
+        "source": "bld1.md strengths mapping",
+        "why": "Reviews implementation quality, safety, maintainability, and docs."
+      },
+      {
+        "model": "Gemini",
+        "primary_job": "long-context analyst",
+        "source": "bld1.md and bld3.md architecture notes",
+        "why": "Synthesizes large source evidence and checks cross-document coherence."
+      },
+      {
+        "model": "OpenAI-compatible profile",
+        "primary_job": "runtime execution profile",
+        "source": "swarm-code/README.md configuration",
+        "why": "Matches swarm-code's bring-your-own OpenAI-compatible endpoint model."
+      }
+    ],
+    "source_pattern": "swarm-code/docs/FUSION.md",
+    "synthesis_schema": [
+      "consensus",
+      "contradictions",
+      "partial_coverage",
+      "unique_insights",
+      "blind_spots",
+      "accepted_actions"
+    ]
+  }
+}
