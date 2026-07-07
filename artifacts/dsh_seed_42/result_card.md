@@ -23,6 +23,13 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 
 24-cell DSH grid over deterministic codebug tasks with executable hidden tests. This is not an LLM-token run.
 
+## Seed detectability audit
+
+Seed detectability AUC: 0.5
+Camouflage failed: False
+Audit path: artifacts/dsh_seed_42/seed_audit.json
+
+
 ## Replay
 
 Ledger: artifacts/dsh_seed_42/ledger.jsonl

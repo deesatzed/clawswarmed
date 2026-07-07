@@ -8,6 +8,7 @@ from .epochs import EpochAuthority
 from .gate import naive_topk, random_gate, scarce_protected
 from .ledger import Ledger
 from .metrics import discrimination, glassgate_lift
+from .seed_audit import audit_seed_detectability
 from .task_bank import CodebugTask, load_codebug_tasks, verify_patch
 
 
@@ -182,17 +183,18 @@ def _selected_patch(
     influenced: bool,
     task_index: int,
 ) -> tuple[str, str, str]:
+    opaque_candidate_id = f"{task.id}:cand_{(task_index % 4) + 1:02d}"
     if seed_condition == "correct_minority":
         if influenced:
-            return task.correct_patch, f"{task.id}:correct_minority", "correct_minority"
-        return task.incorrect_patch, f"{task.id}:majority_wrong", "majority_baseline"
+            return task.correct_patch, opaque_candidate_id, "correct_minority"
+        return task.incorrect_patch, opaque_candidate_id, "majority_baseline"
     if seed_condition == "incorrect_minority":
         if influenced:
-            return task.incorrect_patch, f"{task.id}:incorrect_minority", "incorrect_minority"
-        return task.correct_patch, f"{task.id}:majority_correct", "majority_baseline"
+            return task.incorrect_patch, opaque_candidate_id, "incorrect_minority"
+        return task.correct_patch, opaque_candidate_id, "majority_baseline"
     if _organic_success(panel_type, arm, task_index):
-        return task.correct_patch, f"{task.id}:organic_correct", "organic"
-    return task.incorrect_patch, f"{task.id}:organic_wrong", "organic"
+        return task.correct_patch, opaque_candidate_id, "organic"
+    return task.incorrect_patch, opaque_candidate_id, "organic"
 
 
 def _ablation_patch(task: CodebugTask, seed_condition: str, influenced: bool, selected_patch: str) -> str:
@@ -255,6 +257,15 @@ def _result_card(run_id: str, seed: int, metrics: dict, title_note: str) -> str:
         f"| {arm} | {value} | n/a | {metrics['verified_solve_rate'].get(arm, 'n/a')} | n/a |"
         for arm, value in metrics["D_by_arm"].items()
     )
+    seed_audit_section = ""
+    if "seed_audit_path" in metrics:
+        seed_audit_section = f"""
+## Seed detectability audit
+
+Seed detectability AUC: {metrics['seed_detectability_auc']}
+Camouflage failed: {metrics['seed_camouflage_failed']}
+Audit path: {metrics['seed_audit_path']}
+"""
     return f"""# Result Card: {run_id}
 
 Prereg: {metrics['prereg_id']}
@@ -276,6 +287,7 @@ GLASSGATE_LIFT = {metrics["glassgate_lift"]} [95% CI: {metrics["glassgate_lift_c
 ## Interpretation
 
 {title_note}
+{seed_audit_section}
 
 ## Replay
 
@@ -671,6 +683,9 @@ def run_dsh(
                         "task_index": task_index,
                         "selected_candidate_id": selected_candidate_id,
                         "influence_source": influence_source,
+                        "selected_candidate_seed_status": "seeded"
+                        if influence_source in {"correct_minority", "incorrect_minority"}
+                        else "unseeded",
                         "influenced": has_influence,
                         "hidden_verifier_passed": passed,
                         "correct_patch_passes": correct_result.passed,
@@ -726,6 +741,7 @@ def run_dsh(
         for panel in PANEL_TYPES
     }
     lift = glassgate_lift(d_by_arm)
+    seed_audit = audit_seed_detectability(task_runs)
     replay_contexts = {
         "agent_1": {
             "1": "dsh grid: deterministic codebug task bank with hidden verifier",
@@ -734,6 +750,7 @@ def run_dsh(
         }
     }
     _write_json(artifact_path / "replay" / "contexts.json", replay_contexts)
+    ledger.append("seed_detectability_audit", seed_audit)
     ledger.append("metrics", {"glassgate_lift": lift, "cell_count": len(cells)})
     ledger_path = ledger.export_jsonl(artifact_path / "ledger.jsonl")
 
@@ -760,7 +777,8 @@ def run_dsh(
             "correlated_shared_context": 0.82,
             "partitioned_disjoint_shards": 0.28,
         },
-        "seed_detectability_auc": 0.53,
+        "seed_detectability_auc": seed_audit["auc"],
+        "seed_camouflage_failed": seed_audit["seed_camouflage_failed"],
         "premature_convergence_pc": None,
         "pc_d_corr": None,
         "intervention_delta_D": None,
@@ -775,6 +793,7 @@ def run_dsh(
         "task_bank_size": len(task_bank),
         "task_run_path": str(artifact_path / "task_runs.json"),
         "task_bank_manifest_path": str(artifact_path / "task_bank_manifest.json"),
+        "seed_audit_path": str(artifact_path / "seed_audit.json"),
         "ci_method": "bootstrap_resample_task_outcomes",
         "bootstrap_samples": 500,
     }
@@ -782,6 +801,7 @@ def run_dsh(
     _write_json(artifact_path / "grid.json", {"cells": cells})
     _write_json(artifact_path / "task_runs.json", {"runs": task_runs})
     _write_json(artifact_path / "task_bank_manifest.json", {"tasks": [task.public_dict() for task in task_bank]})
+    _write_json(artifact_path / "seed_audit.json", seed_audit)
     _write_json(artifact_path / "metrics.json", metrics)
     (artifact_path / "result_card.md").write_text(
         _result_card(

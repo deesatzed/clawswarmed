@@ -123,6 +123,12 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertTrue(seed_camouflage_failed(0.75, tolerance=0.1))
         self.assertFalse(seed_camouflage_failed(0.53, tolerance=0.1))
 
+    def test_seed_detectability_auc_handles_ties(self):
+        from broadcast_alpha.seed_audit import roc_auc
+
+        self.assertAlmostEqual(roc_auc([0, 0, 1, 1], [0.1, 0.4, 0.35, 0.8]), 0.75)
+        self.assertAlmostEqual(roc_auc([0, 0, 1, 1], [0.0, 0.0, 0.0, 0.0]), 0.5)
+
     def test_candidate_ablation_changes_influence(self):
         from broadcast_alpha.metrics import candidate_ablation_influence
 
@@ -353,6 +359,37 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertTrue(sample["correct_patch_passes"])
         self.assertFalse(sample["incorrect_patch_passes"])
         self.assertIn('"kind": "task_result"', ledger)
+
+    def test_run_dsh_records_seed_detectability_audit(self):
+        from broadcast_alpha.experiments import run_dsh
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_dsh(
+                prereg_path=APP_ROOT / "prereg" / "PREREG_DSH-01.md",
+                seed=42,
+                tasks_per_cell=30,
+                artifact_root=Path(tmp),
+            )
+            task_runs = json.loads((result.artifact_path / "task_runs.json").read_text())
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            seed_audit = json.loads((result.artifact_path / "seed_audit.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        selected_ids = [row["selected_candidate_id"] for row in task_runs["runs"]]
+        self.assertFalse(any("correct_minority" in selected_id for selected_id in selected_ids))
+        self.assertFalse(any("incorrect_minority" in selected_id for selected_id in selected_ids))
+        self.assertEqual(metrics["seed_audit_path"], str(result.artifact_path / "seed_audit.json"))
+        self.assertEqual(metrics["seed_detectability_auc"], seed_audit["auc"])
+        self.assertFalse(metrics["seed_camouflage_failed"])
+        self.assertTrue(seed_audit["camouflage_passed"])
+        self.assertEqual(seed_audit["auditor"], "marker_scan_auc_v1")
+        self.assertEqual(seed_audit["public_feature_fields"], ["selected_candidate_id"])
+        self.assertGreater(seed_audit["positive_count"], 0)
+        self.assertGreater(seed_audit["negative_count"], 0)
+        self.assertEqual(seed_audit["leak_markers_found"], [])
+        self.assertIn('"kind": "seed_detectability_audit"', ledger)
+        self.assertIn("Seed detectability audit", result_card)
 
     def test_run_dsh_builds_balanced_24_cell_grid(self):
         from broadcast_alpha.experiments import run_dsh

@@ -19,3 +19,15 @@ continue macro/RQGM rails.
 Do not implement a real probe until the exact paper, repository, or method
 source is located and cited.
 
+## Candidate Seed-Camouflage Subgate
+
+Before treating any macro result as credible, run a seed-detectability audit on
+public candidate fields. Seed labels may exist in hidden verification fields,
+but candidate IDs and public presentation fields must not expose markers such
+as `correct_minority`, `incorrect_minority`, `minority`, `seeded`, or `seed`.
+
+Pass criterion for the current deterministic audit:
+
+- `seed_detectability_auc` remains within 0.1 of chance.
+- `seed_camouflage_failed = false`.
+- `leak_markers_found = []`.

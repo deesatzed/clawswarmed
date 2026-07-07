@@ -1,0 +1,24 @@
+{
+  "auc": 0.5,
+  "auditor": "marker_scan_auc_v1",
+  "camouflage_passed": true,
+  "leak_markers": [
+    "correct_minority",
+    "incorrect_minority",
+    "minority",
+    "seeded",
+    "seed"
+  ],
+  "leak_markers_found": [],
+  "negative_count": 506,
+  "positive_count": 214,
+  "public_feature_fields": [
+    "selected_candidate_id"
+  ],
+  "score_distribution": {
+    "negative_marker_score_count": 0,
+    "positive_marker_score_count": 0
+  },
+  "seed_camouflage_failed": false,
+  "tolerance": 0.1
+}

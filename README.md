@@ -45,8 +45,8 @@ dependency decisions are made.
 
 `artifacts/dsh_seed_42/` is the current checked-in DSH macro run. It includes a
 30-task deterministic codebug bank, executable hidden-test verification,
-720 task-level run records, a chained ledger, replay context, bootstrap CI
-metadata, `metrics.json`, and `result_card.md`.
+720 task-level run records, a seed-detectability audit, a chained ledger,
+replay context, bootstrap CI metadata, `metrics.json`, and `result_card.md`.
 
 `artifacts/rqgm_seed_42/` is the current checked-in synthetic RQGM run. It
 includes a 5-epoch controlled evaluator trajectory, held-out anchored
@@ -57,6 +57,10 @@ authority records, replay context, `metrics.json`, and `result_card.md`.
 gate artifact. It freezes the J-lens rail because the exact named source was
 not verified and no white-box gatekeeper model with gradient/layer access is
 configured.
+
+`artifacts/dsh_seed_42/seed_audit.json` is the current seed-camouflage audit.
+It scans public selected-candidate IDs for explicit seed markers and reports
+`seed_detectability_auc = 0.5` with `seed_camouflage_failed = false`.
 
 ## Source Contract
 
