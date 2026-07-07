@@ -7,7 +7,7 @@ from .dashboard import serve_dashboard
 from .evidence import build_inventory
 from .planner import build_role_plan, build_showpiece_plan
 from .receipts import save_run_receipt
-from .rqgm import EvaluatorSlot, consider_replacement
+from .rqgm import EvaluatorSlot, consider_replacement, demo_epoch_transition, epoch_to_dict, save_lineage
 
 
 def _workspace_root() -> Path:
@@ -72,6 +72,10 @@ def build_parser() -> argparse.ArgumentParser:
     epoch = sub.add_parser("epoch-demo", help="Run a toy RQGM epoch transition")
     epoch.add_argument("--json", action="store_true")
 
+    epoch_run = sub.add_parser("epoch-run", help="Advance and optionally persist an RQGM epoch")
+    epoch_run.add_argument("--save", action="store_true")
+    epoch_run.add_argument("--json", action="store_true")
+
     dashboard = sub.add_parser("dashboard", help="Serve the local dashboard")
     dashboard.add_argument("--host", default="127.0.0.1")
     dashboard.add_argument("--port", type=int, default=8765)
@@ -104,6 +108,17 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "epoch-demo":
         _emit(_epoch_demo(), args.json)
+        return 0
+
+    if args.command == "epoch-run":
+        state = demo_epoch_transition()
+        payload = {
+            "project": "claswarmed",
+            "epoch": epoch_to_dict(state),
+        }
+        if args.save:
+            payload["lineage_path"] = save_lineage(Path.cwd(), state)
+        _emit(payload, args.json)
         return 0
 
     if args.command == "dashboard":

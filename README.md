@@ -12,6 +12,7 @@ python3 -m claswarmed plan --json
 python3 -m claswarmed roles --goal "Build claswarmed Phase 2" --json
 python3 -m claswarmed council-plan --goal "Build claswarmed Phase 2" --save --json
 python3 -m claswarmed epoch-demo --json
+python3 -m claswarmed epoch-run --save --json
 python3 -m claswarmed dashboard --host 127.0.0.1 --port 8765
 ```
 

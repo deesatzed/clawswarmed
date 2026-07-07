@@ -1,0 +1,29 @@
+{
+  "epoch_id": 2,
+  "lineage": [
+    {
+      "active_evaluator": "gemini-reviewer",
+      "anchor": "held-out coding tasks",
+      "challenger": "gemini-reviewer",
+      "erased_records": [
+        "code-review-001"
+      ],
+      "from_epoch": 1,
+      "note": "Applied selective erasure for records scored by the displaced evaluator claude-reviewer.",
+      "replaced": true,
+      "to_epoch": 2
+    }
+  ],
+  "slot": {
+    "incumbent": "gemini-reviewer",
+    "name": "code-review",
+    "score": 0.8
+  },
+  "utility_records": [
+    {
+      "evaluator": "rubric-anchor",
+      "id": "rubric-anchor-001",
+      "score": 0.9
+    }
+  ]
+}

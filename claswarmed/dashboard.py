@@ -6,16 +6,18 @@ from pathlib import Path
 from .council import build_council_plan
 from .evidence import build_inventory
 from .planner import build_showpiece_plan
-from .rqgm import EvaluatorSlot, consider_replacement
+from .rqgm import EvaluatorSlot, consider_replacement, demo_epoch_transition, epoch_to_dict
 
 
 def dashboard_payload(workspace: Path) -> dict:
     slot = EvaluatorSlot(name="code-review", incumbent="claude-reviewer", score=0.72)
     decision = consider_replacement(slot, challenger="gemini-reviewer", challenger_score=0.80)
+    epoch_state = demo_epoch_transition()
     return {
         "inventory": build_inventory(workspace),
         "plan": build_showpiece_plan("claswarmed"),
         "council": build_council_plan("Build claswarmed", workspace),
+        "lineage": epoch_to_dict(epoch_state),
         "epoch": {
             "slot": slot.name,
             "incumbent": slot.incumbent,
@@ -46,6 +48,7 @@ def render_dashboard(workspace: Path) -> str:
         for panel in payload["council"]["panels"]
     )
     epoch = payload["epoch"]
+    lineage_event = payload["lineage"]["lineage"][-1]
     data = html.escape(json.dumps(payload, indent=2))
     return f"""<!doctype html>
 <html lang="en">
@@ -96,6 +99,7 @@ def render_dashboard(workspace: Path) -> str:
       <h2>RQGM Epoch Demo</h2>
       <p>Slot <code>{html.escape(epoch['slot'])}</code> selected <code>{html.escape(epoch['active_evaluator'])}</code>.</p>
       <p>{html.escape(epoch['rationale'])}</p>
+      <p>Lineage epoch <code>{payload['lineage']['epoch_id']}</code>: {html.escape(lineage_event['note'])}</p>
     </section>
     <section>
       <h2>Machine Payload</h2>

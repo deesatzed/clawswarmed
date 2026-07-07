@@ -90,6 +90,45 @@ class RqgmTests(unittest.TestCase):
         self.assertEqual(replace.active_evaluator, "gemini-reviewer")
         self.assertIn("epoch boundary", replace.rationale)
 
+    def test_epoch_transition_persists_lineage_and_selective_erasure(self):
+        from claswarmed.rqgm import (
+            ChallengerScore,
+            EpochState,
+            EvaluatorSlot,
+            advance_epoch,
+            load_lineage,
+            save_lineage,
+        )
+
+        state = EpochState(
+            epoch_id=1,
+            slot=EvaluatorSlot(name="code-review", incumbent="claude-reviewer", score=0.72),
+            utility_records=[
+                {"id": "old-1", "evaluator": "claude-reviewer"},
+                {"id": "kept-1", "evaluator": "rubric-anchor"},
+            ],
+            lineage=[],
+        )
+        transition = advance_epoch(
+            state,
+            challengers=[
+                ChallengerScore(name="grok-reviewer", score=0.73, anchor="held-out coding tasks"),
+                ChallengerScore(name="gemini-reviewer", score=0.80, anchor="held-out coding tasks"),
+            ],
+        )
+
+        self.assertEqual(transition.epoch_id, 2)
+        self.assertEqual(transition.slot.incumbent, "gemini-reviewer")
+        self.assertEqual([record["id"] for record in transition.utility_records], ["kept-1"])
+        self.assertEqual(transition.lineage[-1]["erased_records"], ["old-1"])
+        self.assertIn("selective erasure", transition.lineage[-1]["note"])
+
+        path = save_lineage(APP_ROOT, transition)
+        loaded = load_lineage(path)
+        self.assertEqual(loaded["epoch_id"], 2)
+        self.assertEqual(loaded["slot"]["incumbent"], "gemini-reviewer")
+        Path(path).unlink()
+
 
 class DashboardTests(unittest.TestCase):
     def test_dashboard_renders_council_panel(self):
@@ -140,6 +179,29 @@ class CliTests(unittest.TestCase):
         self.assertIn("receipt", payload)
         self.assertTrue(Path(payload["receipt"]["path"]).exists())
         Path(payload["receipt"]["path"]).unlink()
+
+    def test_cli_epoch_run_outputs_json_and_can_persist_lineage(self):
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "claswarmed",
+                "epoch-run",
+                "--save",
+                "--json",
+            ],
+            cwd=APP_ROOT,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        )
+
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["project"], "claswarmed")
+        self.assertEqual(payload["epoch"]["epoch_id"], 2)
+        self.assertEqual(payload["epoch"]["slot"]["incumbent"], "gemini-reviewer")
+        self.assertTrue(Path(payload["lineage_path"]).exists())
+        Path(payload["lineage_path"]).unlink()
 
 
 if __name__ == "__main__":
