@@ -2,27 +2,28 @@
 
 ## Task Being Attempted
 
-Add a `run-live-sequence` rail that automates the safe live-provider order:
-provider readiness gate, one-call live smoke, and optional live DSH pilot only
-after smoke passes. Default execution must remain blocked/no-spend.
+Propagate the existing `run-live-sequence` rail into the consolidated
+`build-report` surface and the unattended `run-all` bundle while preserving
+no-spend defaults.
 
 ## Actual User Goal
 
-Move `GOAL_GLASSGATE.md` closer to a real replayable Glass Gate instrument by
-making the provider-backed path operational rather than a collection of manual
-commands. The sequence should be the single command to run once credentials,
-model, spend authorization, and `--execute-live` are intentionally supplied.
+Move `GOAL_GLASSGATE.md` closer to a real unattended showpiece by making the
+safe live-provider path visible in the same top-level artifacts as the macro
+number, seed audit, RQGM trajectory, and J-lens defer record. A user should not
+have to inspect a separate standalone artifact to see whether the live-provider
+sequence is ready, blocked, or promoted.
 
 ## Files Expected To Change
 
 | File | Expected Change | Risk |
 |---|---|---|
-| `broadcast_alpha/live_sequence.py` | New sequence rail with manifest, metrics, replay, and ledger. | Could accidentally perform more adapter calls than intended. |
-| `broadcast_alpha/cli.py` | Add `run-live-sequence` with explicit live gates and optional `--include-dsh-pilot`. | CLI could obscure spend implications. |
-| `tests/test_broadcast_alpha.py` | Add TDD coverage for blocked default, fake smoke pass, optional pilot promotion, and CLI artifact creation. | Fake transport tests could be mistaken for live evidence. |
-| `README.md`, `docs/LIVE_DSH_PILOT.md`, `docs/RUN_ALL.md` | Document sequence as the safe provider-backed path. | Docs could overclaim current checked-in evidence. |
-| `artifacts/` | Add `artifacts/live_sequence_seed_42/` in blocked no-credential mode. | Generated ledger churn. |
-| Root `DECISIONS.md`, `PROGRESS.md` | Record workflow decision and progress. | Root is not Git-backed. |
+| `broadcast_alpha/reporting.py` | Add `live_sequence_seed_42` loading, result-table row, claim, metrics, and result-card text. | Report could overclaim a blocked sequence as live evidence. |
+| `broadcast_alpha/orchestrator.py` | Run `run_live_sequence` in `run-all`, include it in child artifacts, run sequence, metrics, and replay text. | Could duplicate live gate/smoke artifacts or accidentally execute provider calls. |
+| `tests/test_broadcast_alpha.py` | Add TDD assertions for report/run-all propagation. | Tests could only check presence, not the no-spend semantics. |
+| `docs/FINAL_REPORT.md`, `docs/RUN_ALL.md`, `README.md` | Document live-sequence propagation and current blocked status. | Docs could imply the current evidence includes a live model call. |
+| `artifacts/` | Regenerate final report and run-all artifacts in blocked no-credential mode. | Generated ledger churn. |
+| Root `DECISIONS.md`, `PROGRESS.md` | Record workflow/progress update. | Root is not Git-backed. |
 
 ## Existing Patterns To Follow
 
@@ -30,20 +31,19 @@ model, spend authorization, and `--execute-live` are intentionally supplied.
   `expected_replay`.
 - Every rail writes `metrics.json`, `result_card.md`, `ledger.jsonl`, and
   `replay/contexts.json`.
-- `run-live-gate`, `run-live-smoke`, and `run-live-dsh` already preserve
-  no-secret artifacts and require explicit execution flags.
+- `run-live-gate`, `run-live-smoke`, `run-live-dsh`, and
+  `run-live-sequence` already preserve no-secret artifacts and require
+  explicit execution flags before provider calls.
 - `run-all` uses nested source artifacts and child-ledger verification.
 - Tests use fake/local transports for network-protected behavior.
 
 ## Assumptions
 
 - No real OpenRouter request is allowed in this pass.
-- The live sequence should not call the live gate adapter; it should use the
-  gate as a no-call readiness record, then spend only on smoke when explicitly
-  authorized.
-- The optional live DSH pilot is disabled by default and should run only if the
-  smoke rail records a verifier-backed pass.
-- A fake transport can prove sequencing without external API calls.
+- `run-all` should call `run_live_sequence` with the same no-spend defaults as
+  the separate live rails.
+- The separate live gate, smoke, and DSH pilot rows should remain for continuity
+  while the sequence becomes the preferred user path.
 
 ## Non-Goals For This Pass
 
@@ -51,33 +51,33 @@ model, spend authorization, and `--execute-live` are intentionally supplied.
 - Do not call OpenRouter or any external API.
 - Do not add non-stdlib dependencies.
 - Do not compute `GLASSGATE_LIFT` from live sequence, smoke, or pilot outputs.
-- Do not add the sequence to `run-all` unless it remains blocked/no-spend by
-  default.
+- Do not remove the existing live gate/smoke/DSH report fields.
 - Do not reopen the J-lens rail.
 
 ## Step-by-Step Plan
 
-1. Write failing tests for default blocked sequence, fake smoke execution, pilot
-   promotion gating, and CLI artifact creation.
-2. Implement `broadcast_alpha.live_sequence.run_live_sequence`.
-3. Add CLI `run-live-sequence`.
-4. Document the sequence as the future live-provider run path.
-5. Generate checked-in blocked no-credential sequence artifact.
-6. Run full verification and commit/push.
+1. Write failing tests that require `build-report` metrics/result table and
+   `run-all` manifest/metrics to include live-sequence status.
+2. Extend `build_result_report` with optional `live_sequence_seed_42`
+   summarization and a no-run fallback.
+3. Extend `run_all` to generate `live_sequence_seed_42` with no-spend defaults
+   and propagate final-report fields.
+4. Update docs and regenerate no-credential final report/run-all artifacts.
+5. Run full verification and commit/push.
 
 ## Acceptance Criteria
 
-- Default `run-live-sequence` writes `artifacts/live_sequence_seed_42/`.
-- Default sequence performs zero adapter calls and records
-  `sequence_status = blocked_before_smoke`.
-- Fake transport with explicit live gates runs exactly one smoke adapter call by
-  default and does not run the full DSH pilot.
-- With `include_dsh_pilot = true`, fake transport runs the live DSH pilot only
-  after smoke has a hidden-verifier pass.
-- Sequence metrics include child artifact paths, child ledger verification,
-  adapter call totals, promotion decision, and no `GLASSGATE_LIFT`.
-- Existing synthetic, macro, RQGM, J-lens, report, run-all, live smoke, and
-  live DSH tests pass.
+- `build-report` metrics include live sequence status, adapter call total,
+  smoke status, pilot status, promotion flag, and child-ledger verification.
+- `result_table.json` includes a `live_sequence` row.
+- `claim_matrix.json` includes a claim that the preferred live-provider
+  sequence is blocked or recorded.
+- `run-all` generates `source_artifacts/live_sequence_seed_42/`.
+- `run-all` manifest, metrics, result card, and replay text include live
+  sequence status.
+- Default regenerated artifacts still record zero adapter calls and no live
+  model run.
+- Existing tests pass.
 
 ## Verification Plan
 
@@ -85,7 +85,12 @@ model, spend authorization, and `--execute-live` are intentionally supplied.
 - `python3 -m unittest discover -s tests`
 - `python3 -m compileall -q broadcast_alpha tests`
 - `python3 -m py_compile claswarmed/*.py`
-- `python3 -m broadcast_alpha run-live-sequence --seed 42 --artifact-root artifacts --prereg prereg/PREREG_LIVE-01.md`
+- `python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42`
+- `python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5 --prereg-dir prereg --artifact-root artifacts`
+- `python3 -m broadcast_alpha export-ledger artifacts/final_report_seed_42 --format jsonl`
+- `python3 -m broadcast_alpha replay artifacts/final_report_seed_42 --agent agent_1 --step 3`
+- `python3 -m broadcast_alpha export-ledger artifacts/run_all_seed_42 --format jsonl`
+- `python3 -m broadcast_alpha replay artifacts/run_all_seed_42 --agent agent_1 --step 3`
 - `python3 -m broadcast_alpha export-ledger artifacts/live_sequence_seed_42 --format jsonl`
 - `python3 -m broadcast_alpha replay artifacts/live_sequence_seed_42 --agent agent_1 --step 3`
 - `git diff --check`
@@ -94,16 +99,17 @@ model, spend authorization, and `--execute-live` are intentionally supplied.
 
 ## Rollback Plan
 
-Revert the live sequence commit and remove `artifacts/live_sequence_seed_42/`.
+Revert the propagation commit and regenerate the previous final report/run-all
+artifacts from the last pushed commit.
 
 ## Risks
 
 | Risk | Mitigation |
 |---|---|
-| Accidental network or spend | Default path keeps `execute_live = false`; tests use fake transport; pilot promotion is opt-in. |
+| Accidental network or spend | `run_all` calls the sequence with default no-execution flags and env stripped in regenerated artifacts. |
 | Secret leakage into artifacts | Reuse existing env/status sanitizers and scan artifacts before commit. |
-| Overclaiming live behavior | Metrics and docs state blocked/fake sequence outputs are not live macro evidence and do not produce `GLASSGATE_LIFT`. |
-| Pilot runs after failed smoke | Gate pilot promotion on smoke hidden-verifier pass count. |
+| Overclaiming live behavior | Metrics, claims, and docs state blocked/fake sequence outputs are not live macro evidence and do not produce `GLASSGATE_LIFT`. |
+| Duplicate live rail records confuse users | Label the sequence as the preferred path and retain separate rails as underlying compatibility evidence. |
 
 ## Proceed / Block Decision
 

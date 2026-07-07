@@ -7,6 +7,7 @@ from .jlens import run_jlens_gate
 from .ledger import Ledger
 from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
+from .live_sequence import run_live_sequence
 from .reporting import build_result_report
 
 
@@ -58,6 +59,8 @@ Live smoke verifier pass rate: {metrics['live_smoke_hidden_verifier_pass_rate']}
 Live DSH pilot: {metrics['live_dsh_run_status']}
 Live DSH prereg: {metrics['live_dsh_prereg_id']}
 Live DSH verifier pass rate: {metrics['live_dsh_hidden_verifier_pass_rate']}
+Live sequence: {metrics['live_sequence_status']}
+Live sequence adapter calls: {metrics['live_sequence_adapter_call_count_total']}
 
 ## Child artifacts
 
@@ -120,6 +123,13 @@ def run_all(
         env=live_env,
         prereg_path=prereg_dir / "PREREG_LIVE-01.md",
     )
+    live_sequence = run_live_sequence(
+        seed=seed,
+        artifact_root=child_root,
+        env_file=live_env_file,
+        env=live_env,
+        prereg_path=prereg_dir / "PREREG_LIVE-01.md",
+    )
     final_report = build_result_report(artifact_root=child_root, output_dir=final_report_path)
 
     child_artifacts = {
@@ -130,6 +140,7 @@ def run_all(
         "live_model_gate": str(live_gate.artifact_path),
         "live_smoke": str(live_smoke.artifact_path),
         "live_dsh_pilot": str(live_dsh.artifact_path),
+        "live_sequence": str(live_sequence.artifact_path),
         "final_report": str(final_report.artifact_path),
     }
     child_paths = {
@@ -140,6 +151,7 @@ def run_all(
         "live_model_gate": live_gate.artifact_path,
         "live_smoke": live_smoke.artifact_path,
         "live_dsh_pilot": live_dsh.artifact_path,
+        "live_sequence": live_sequence.artifact_path,
         "final_report": final_report.artifact_path,
     }
     child_ledgers_verified = {
@@ -161,14 +173,15 @@ def run_all(
             "live_model_gate",
             "live_smoke",
             "live_dsh_pilot",
+            "live_sequence",
             "final_report",
         ],
     }
     replay_contexts = {
         "agent_1": {
-            "1": "unattended bundle: generated synthetic, DSH, RQGM, J-lens gate, live model gate, live smoke, live DSH pilot, and final report artifacts",
+            "1": "unattended bundle: generated synthetic, DSH, RQGM, J-lens gate, live model gate, live smoke, live DSH pilot, live sequence, and final report artifacts",
             "2": f"unattended bundle: GLASSGATE_LIFT {final_metrics['glassgate_lift']} with seed adversarial AUC {final_metrics['seed_adversarial_auc']}",
-            "3": "unattended bundle: final report ready, all child ledgers verified, J-lens rail frozen/deferred, live model run not performed",
+            "3": f"unattended bundle: final report ready, all child ledgers verified, J-lens rail frozen/deferred, live sequence {final_metrics['live_sequence_status']}, live model run not performed",
         }
     }
     metrics = {
@@ -210,6 +223,13 @@ def run_all(
         "live_dsh_hidden_verifier_pass_count": final_metrics["live_dsh_hidden_verifier_pass_count"],
         "live_dsh_hidden_verifier_pass_rate": final_metrics["live_dsh_hidden_verifier_pass_rate"],
         "live_dsh_model_run_performed": final_metrics["live_dsh_model_run_performed"],
+        "live_sequence_status": final_metrics["live_sequence_status"],
+        "live_sequence_adapter_call_count_total": final_metrics["live_sequence_adapter_call_count_total"],
+        "live_sequence_smoke_status": final_metrics["live_sequence_smoke_status"],
+        "live_sequence_smoke_hidden_verifier_pass_count": final_metrics["live_sequence_smoke_hidden_verifier_pass_count"],
+        "live_sequence_pilot_status": final_metrics["live_sequence_pilot_status"],
+        "live_sequence_pilot_promoted": final_metrics["live_sequence_pilot_promoted"],
+        "live_sequence_all_child_ledgers_verified": final_metrics["live_sequence_all_child_ledgers_verified"],
         "child_ledgers_verified": child_ledgers_verified,
         "all_child_ledgers_verified": all(child_ledgers_verified.values()),
         "manifest_path": str(artifact_path / "manifest.json"),

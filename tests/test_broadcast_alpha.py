@@ -1168,6 +1168,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         from broadcast_alpha.jlens import run_jlens_gate
         from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
+        from broadcast_alpha.live_sequence import run_live_sequence
         from broadcast_alpha.reporting import build_result_report
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -1194,6 +1195,12 @@ class BroadcastAlphaTests(unittest.TestCase):
                 prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
             )
             run_live_dsh(seed=42, artifact_root=artifact_root, env={})
+            run_live_sequence(
+                seed=42,
+                artifact_root=artifact_root,
+                env={},
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
             result = build_result_report(artifact_root=artifact_root, output_dir=artifact_root / "final_report_seed_42")
             metrics = json.loads((result.artifact_path / "metrics.json").read_text())
             result_table = json.loads((result.artifact_path / "result_table.json").read_text())
@@ -1218,6 +1225,12 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
         self.assertEqual(metrics["live_dsh_hidden_verifier_pass_count"], 0)
         self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
+        self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
+        self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
+        self.assertEqual(metrics["live_sequence_smoke_status"], "blocked_no_live_execution")
+        self.assertEqual(metrics["live_sequence_pilot_status"], "not_requested")
+        self.assertFalse(metrics["live_sequence_pilot_promoted"])
+        self.assertTrue(metrics["live_sequence_all_child_ledgers_verified"])
         self.assertTrue(metrics["all_source_ledgers_verified"])
         self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
         self.assertEqual(
@@ -1230,20 +1243,24 @@ class BroadcastAlphaTests(unittest.TestCase):
                 "live_model_gate",
                 "live_smoke",
                 "live_dsh_pilot",
+                "live_sequence",
             },
         )
         self.assertTrue(all(row["ledger_verified"] for row in result_table["rows"]))
         self.assertTrue(all(claim["evidence_path"] for claim in claim_matrix["claims"]))
+        self.assertTrue(any("live-provider sequence" in claim["claim"] for claim in claim_matrix["claims"]))
         self.assertIn("GLASSGATE_LIFT", result_card)
         self.assertIn("Adversarial token AUC", result_card)
         self.assertIn("J-lens rail frozen", result_card)
         self.assertIn("Live model rail", result_card)
+        self.assertIn("Live sequence", result_card)
 
     def test_cli_build_report_creates_replayable_report_artifact(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
         from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
+        from broadcast_alpha.live_sequence import run_live_sequence
 
         with tempfile.TemporaryDirectory() as tmp:
             artifact_root = Path(tmp)
@@ -1269,6 +1286,12 @@ class BroadcastAlphaTests(unittest.TestCase):
                 prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
             )
             run_live_dsh(seed=42, artifact_root=artifact_root, env={})
+            run_live_sequence(
+                seed=42,
+                artifact_root=artifact_root,
+                env={},
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
             result = subprocess.run(
                 [
                     sys.executable,
@@ -1298,6 +1321,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
             self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
+            self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
+            self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
 
             replay = subprocess.run(
                 [
@@ -1366,8 +1391,15 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
             self.assertEqual(metrics["live_dsh_hidden_verifier_pass_count"], 0)
             self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
+            self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
+            self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
+            self.assertEqual(metrics["live_sequence_smoke_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["live_sequence_pilot_status"], "not_requested")
+            self.assertFalse(metrics["live_sequence_pilot_promoted"])
+            self.assertTrue(metrics["live_sequence_all_child_ledgers_verified"])
             self.assertTrue(metrics["all_child_ledgers_verified"])
             self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")
+            self.assertEqual(final_metrics["live_sequence_status"], "blocked_before_smoke")
             self.assertEqual(
                 set(manifest["child_artifacts"]),
                 {
@@ -1378,6 +1410,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                     "live_model_gate",
                     "live_smoke",
                     "live_dsh_pilot",
+                    "live_sequence",
                     "final_report",
                 },
             )
@@ -1385,6 +1418,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_gate_seed_42" / "provider_status.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_smoke_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_dsh_seed_42" / "task_runs.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "live_sequence_seed_42" / "manifest.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 
     def test_cli_run_all_creates_replayable_unattended_bundle(self):
@@ -1420,6 +1454,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
+            self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
             self.assertTrue((artifact_path / "final_report" / "result_table.md").exists())
 
             replay = subprocess.run(

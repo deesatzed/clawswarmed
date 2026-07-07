@@ -103,6 +103,14 @@ Live smoke adapter calls: {metrics['live_smoke_adapter_call_count']}
 Live smoke hidden verifier pass count: {metrics['live_smoke_hidden_verifier_pass_count']}
 Live smoke hidden verifier pass rate: {metrics['live_smoke_hidden_verifier_pass_rate']}
 
+## Live sequence
+
+Live sequence status: {metrics['live_sequence_status']}
+Live sequence adapter calls: {metrics['live_sequence_adapter_call_count_total']}
+Live sequence smoke status: {metrics['live_sequence_smoke_status']}
+Live sequence pilot status: {metrics['live_sequence_pilot_status']}
+Live sequence pilot promoted: {metrics['live_sequence_pilot_promoted']}
+
 ## Live DSH pilot
 
 Live DSH pilot status: {metrics['live_dsh_run_status']}
@@ -131,6 +139,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     live_path = artifact_root / "live_gate_seed_42"
     live_smoke_path = artifact_root / "live_smoke_seed_42"
     live_dsh_path = artifact_root / "live_dsh_seed_42"
+    live_sequence_path = artifact_root / "live_sequence_seed_42"
 
     dsh_metrics = _read_json(dsh_path / "metrics.json")
     seed_audit = _read_json(dsh_path / "seed_audit.json")
@@ -180,6 +189,20 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "reason_codes": ["live_dsh_artifact_missing"],
         }
         live_dsh_ledger_verified = False
+    if (live_sequence_path / "metrics.json").exists():
+        live_sequence_metrics = _read_json(live_sequence_path / "metrics.json")
+        live_sequence_ledger_verified = _verify_ledger(live_sequence_path)
+    else:
+        live_sequence_metrics = {
+            "sequence_status": "not_run",
+            "adapter_call_count_total": 0,
+            "smoke_run_status": "not_run",
+            "smoke_hidden_verifier_pass_count": 0,
+            "pilot_run_status": "not_requested",
+            "pilot_promoted": False,
+            "all_child_ledgers_verified": False,
+        }
+        live_sequence_ledger_verified = False
 
     ledger_verified = {
         "macro_dsh": _verify_ledger(dsh_path),
@@ -189,6 +212,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_model_gate": live_ledger_verified,
         "live_smoke": live_smoke_ledger_verified,
         "live_dsh_pilot": live_dsh_ledger_verified,
+        "live_sequence": live_sequence_ledger_verified,
     }
     rows = [
         {
@@ -246,6 +270,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "primary_value": live_dsh_metrics["run_status"],
             "ledger_verified": ledger_verified["live_dsh_pilot"],
             "evidence_path": str(live_dsh_path / "metrics.json"),
+        },
+        {
+            "section": "live_sequence",
+            "artifact_path": str(live_sequence_path),
+            "primary_metric": "sequence_status",
+            "primary_value": live_sequence_metrics["sequence_status"],
+            "ledger_verified": ledger_verified["live_sequence"],
+            "evidence_path": str(live_sequence_path / "metrics.json"),
         },
     ]
     claims = [
@@ -346,9 +378,40 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
                 "reason_codes": live_dsh_metrics["reason_codes"],
             },
         },
+        {
+            "claim": "Preferred live-provider sequence has an explicit blocked or promotion record.",
+            "status": "blocked_with_sequence_record"
+            if live_sequence_metrics["sequence_status"] == "blocked_before_smoke"
+            else "sequence_recorded"
+            if live_sequence_metrics["sequence_status"]
+            in {
+                "smoke_passed_pilot_not_requested",
+                "pilot_executed_after_smoke_pass",
+                "smoke_failed_pilot_not_promoted",
+                "smoke_failed_pilot_not_requested",
+            }
+            else "missing_sequence_record",
+            "evidence_path": str(live_sequence_path / "metrics.json"),
+            "value": {
+                "sequence_status": live_sequence_metrics["sequence_status"],
+                "adapter_call_count_total": live_sequence_metrics["adapter_call_count_total"],
+                "smoke_run_status": live_sequence_metrics["smoke_run_status"],
+                "smoke_hidden_verifier_pass_count": live_sequence_metrics["smoke_hidden_verifier_pass_count"],
+                "pilot_run_status": live_sequence_metrics["pilot_run_status"],
+                "pilot_promoted": live_sequence_metrics["pilot_promoted"],
+                "all_child_ledgers_verified": live_sequence_metrics["all_child_ledgers_verified"],
+            },
+        },
     ]
 
     all_ledgers_verified = all(ledger_verified.values())
+    live_sequence_status_ok = live_sequence_metrics["sequence_status"] in {
+        "blocked_before_smoke",
+        "smoke_passed_pilot_not_requested",
+        "pilot_executed_after_smoke_pass",
+        "smoke_failed_pilot_not_promoted",
+        "smoke_failed_pilot_not_requested",
+    }
     report_status = (
         "complete_with_deferred_jlens"
         if all_ledgers_verified
@@ -356,6 +419,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         and live_metrics["rail_status"] in {"unavailable", "gated_ready_no_spend", "configured_not_executed"}
         and live_smoke_metrics["run_status"] in {"blocked_no_live_execution", "adapter_pilot_executed_fake_transport", "live_dsh_executed"}
         and live_dsh_metrics["run_status"] in {"blocked_no_live_execution", "adapter_pilot_executed_fake_transport", "live_dsh_executed"}
+        and live_sequence_status_ok
         else "incomplete"
     )
     metrics = {
@@ -397,6 +461,13 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_dsh_hidden_verifier_pass_rate": live_dsh_metrics["hidden_verifier_pass_rate"],
         "live_dsh_model_run_performed": live_dsh_metrics["live_model_run_performed"],
         "live_dsh_reason_codes": live_dsh_metrics["reason_codes"],
+        "live_sequence_status": live_sequence_metrics["sequence_status"],
+        "live_sequence_adapter_call_count_total": live_sequence_metrics["adapter_call_count_total"],
+        "live_sequence_smoke_status": live_sequence_metrics["smoke_run_status"],
+        "live_sequence_smoke_hidden_verifier_pass_count": live_sequence_metrics["smoke_hidden_verifier_pass_count"],
+        "live_sequence_pilot_status": live_sequence_metrics["pilot_run_status"],
+        "live_sequence_pilot_promoted": live_sequence_metrics["pilot_promoted"],
+        "live_sequence_all_child_ledgers_verified": live_sequence_metrics["all_child_ledgers_verified"],
         "all_source_ledgers_verified": all_ledgers_verified,
         "result_table_path": str(output_dir / "result_table.json"),
         "claim_matrix_path": str(output_dir / "claim_matrix.json"),
@@ -407,9 +478,9 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     }
     replay_contexts = {
         "agent_1": {
-            "1": "final report: macro DSH, seed audit, RQGM, J-lens source gate, live model gate, live smoke, and live DSH pilot artifacts loaded",
+            "1": "final report: macro DSH, seed audit, RQGM, J-lens source gate, live model gate, live smoke, live DSH pilot, and live sequence artifacts loaded",
             "2": f"final report: GLASSGATE_LIFT {metrics['glassgate_lift']} with seed AUC {metrics['seed_detectability_auc']}",
-            "3": "final report: source ledgers verified, J-lens frozen/deferred, live model run not performed",
+            "3": f"final report: source ledgers verified, J-lens frozen/deferred, live sequence {metrics['live_sequence_status']}, live model run not performed",
         }
     }
 

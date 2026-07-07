@@ -13,6 +13,7 @@ showpiece needs one entry point that answers:
 - Was the epoch trajectory generated?
 - What happened to the J-lens rail?
 - Was live/model-backed execution configured or run?
+- Is the preferred live-provider sequence blocked, smoke-ready, or promoted?
 - Do the ledgers verify?
 
 `build-report` creates that single surface.
@@ -62,6 +63,11 @@ live_dsh_prereg_id = PREREG_LIVE-01
 live_dsh_adapter_call_count = 0
 live_dsh_hidden_verifier_pass_count = 0
 live_dsh_hidden_verifier_pass_rate = 0.0
+live_sequence_status = blocked_before_smoke
+live_sequence_adapter_call_count_total = 0
+live_sequence_smoke_status = blocked_no_live_execution
+live_sequence_pilot_status = not_requested
+live_sequence_pilot_promoted = false
 all_source_ledgers_verified = true
 ```
 
@@ -79,5 +85,5 @@ python3 -m broadcast_alpha replay artifacts/final_report_seed_42 --agent agent_1
 Expected context:
 
 ```text
-final report: source ledgers verified, J-lens frozen/deferred, live model run not performed
+final report: source ledgers verified, J-lens frozen/deferred, live sequence blocked_before_smoke, live model run not performed
 ```

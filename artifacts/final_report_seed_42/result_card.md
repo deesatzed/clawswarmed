@@ -24,6 +24,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 - live_model_gate: rail_status = unavailable
 - live_smoke: run_status = blocked_no_live_execution
 - live_dsh_pilot: run_status = blocked_no_live_execution
+- live_sequence: sequence_status = blocked_before_smoke
 
 ## Seed detectability audit
 
@@ -56,6 +57,14 @@ Live smoke status: blocked_no_live_execution
 Live smoke adapter calls: 0
 Live smoke hidden verifier pass count: 0
 Live smoke hidden verifier pass rate: 0.0
+
+## Live sequence
+
+Live sequence status: blocked_before_smoke
+Live sequence adapter calls: 0
+Live sequence smoke status: blocked_no_live_execution
+Live sequence pilot status: not_requested
+Live sequence pilot promoted: False
 
 ## Live DSH pilot
 

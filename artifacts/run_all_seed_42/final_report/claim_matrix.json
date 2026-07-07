@@ -25,6 +25,7 @@
         "jlens_gate": true,
         "live_dsh_pilot": true,
         "live_model_gate": true,
+        "live_sequence": true,
         "live_smoke": true,
         "macro_dsh": true,
         "rqgm_epoch": true,
@@ -116,6 +117,20 @@
           "live_model_run_not_performed"
         ],
         "run_status": "blocked_no_live_execution"
+      }
+    },
+    {
+      "claim": "Preferred live-provider sequence has an explicit blocked or promotion record.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/live_sequence_seed_42/metrics.json",
+      "status": "blocked_with_sequence_record",
+      "value": {
+        "adapter_call_count_total": 0,
+        "all_child_ledgers_verified": true,
+        "pilot_promoted": false,
+        "pilot_run_status": "not_requested",
+        "sequence_status": "blocked_before_smoke",
+        "smoke_hidden_verifier_pass_count": 0,
+        "smoke_run_status": "blocked_no_live_execution"
       }
     }
   ]
