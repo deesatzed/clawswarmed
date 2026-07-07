@@ -2,7 +2,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .experiments import run_synthetic
+from .experiments import run_dsh, run_synthetic
 from .ledger import Ledger
 from .replay import replay_context
 
@@ -20,6 +20,12 @@ def build_parser() -> argparse.ArgumentParser:
     run = sub.add_parser("run-synthetic", help="Run the deterministic synthetic harness")
     run.add_argument("--seed", type=int, default=42)
     run.add_argument("--artifact-root", default="artifacts")
+
+    dsh = sub.add_parser("run-dsh", help="Run the preregistered DSH macro grid")
+    dsh.add_argument("--prereg", default="prereg/PREREG_DSH-01.md")
+    dsh.add_argument("--seed", type=int, default=42)
+    dsh.add_argument("--tasks-per-cell", type=int, default=30)
+    dsh.add_argument("--artifact-root", default="artifacts")
 
     summarize = sub.add_parser("summarize", help="Print metrics for an artifact")
     summarize.add_argument("artifact")
@@ -48,6 +54,16 @@ def main(argv: list[str] | None = None) -> int:
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0
 
+    if args.command == "run-dsh":
+        result = run_dsh(
+            prereg_path=Path(args.prereg),
+            seed=args.seed,
+            tasks_per_cell=args.tasks_per_cell,
+            artifact_root=Path(args.artifact_root),
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
     if args.command == "summarize":
         artifact_path = Path(args.artifact)
         _emit(json.loads((artifact_path / "metrics.json").read_text()))
@@ -67,4 +83,3 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     return 2
-

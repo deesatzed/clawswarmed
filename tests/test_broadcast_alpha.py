@@ -209,6 +209,58 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "metrics.json").exists())
             self.assertTrue((artifact_path / "result_card.md").exists())
 
+    def test_run_dsh_builds_balanced_24_cell_grid(self):
+        from broadcast_alpha.experiments import run_dsh
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_dsh(
+                prereg_path=APP_ROOT / "prereg" / "PREREG_DSH-01.md",
+                seed=42,
+                tasks_per_cell=30,
+                artifact_root=Path(tmp),
+            )
+            grid = json.loads((result.artifact_path / "grid.json").read_text())
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+
+        self.assertEqual(len(grid["cells"]), 24)
+        self.assertTrue(all(cell["task_count"] == 30 for cell in grid["cells"]))
+        self.assertEqual(metrics["cell_count"], 24)
+        self.assertEqual(metrics["task_count_per_cell"], 30)
+        self.assertEqual(metrics["total_task_runs"], 720)
+        self.assertIn("candidate_ablation_rate", metrics)
+        self.assertEqual(set(metrics["D_by_arm"]), {"abundant", "random", "scarce_naive_topk", "scarce_protected"})
+        self.assertEqual(len(metrics["glassgate_lift_ci95"]), 2)
+
+    def test_cli_run_dsh_creates_macro_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-dsh",
+                    "--prereg",
+                    "prereg/PREREG_DSH-01.md",
+                    "--seed",
+                    "42",
+                    "--tasks-per-cell",
+                    "30",
+                    "--artifact-root",
+                    tmp,
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            result_card = (artifact_path / "result_card.md").read_text()
+
+            self.assertTrue((artifact_path / "metrics.json").exists())
+            self.assertTrue((artifact_path / "grid.json").exists())
+            self.assertIn("24-cell DSH grid", result_card)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -22,6 +22,7 @@ The primary Glass Gate implementation lives under `broadcast_alpha/`.
 ```bash
 python3 -m broadcast_alpha init
 python3 -m broadcast_alpha run-synthetic --seed 42
+python3 -m broadcast_alpha run-dsh --prereg prereg/PREREG_DSH-01.md --seed 42 --tasks-per-cell 30
 python3 -m broadcast_alpha summarize artifacts/<run_id>
 python3 -m broadcast_alpha replay artifacts/<run_id> --agent agent_1 --step 3
 python3 -m broadcast_alpha export-ledger artifacts/<run_id> --format jsonl

@@ -1,0 +1,53 @@
+{
+  "D_by_arm": {
+    "abundant": 0.15,
+    "random": 0.216667,
+    "scarce_naive_topk": 0.116667,
+    "scarce_protected": 0.616667
+  },
+  "D_by_panel_type": {
+    "correlated_shared_context": 0.225,
+    "partitioned_disjoint_shards": 0.325
+  },
+  "candidate_ablation_rate": 0.194444,
+  "cell_count": 24,
+  "glassgate_lift": 0.4,
+  "glassgate_lift_ci95": [
+    0.35,
+    0.45
+  ],
+  "influence_correct": {
+    "abundant": 0.566667,
+    "random": 0.5,
+    "scarce_naive_topk": 0.433333,
+    "scarce_protected": 0.833333
+  },
+  "influence_incorrect": {
+    "abundant": 0.416667,
+    "random": 0.283333,
+    "scarce_naive_topk": 0.316667,
+    "scarce_protected": 0.216667
+  },
+  "intervention_delta_D": null,
+  "ledger_path": "artifacts/dsh_seed_42/ledger.jsonl",
+  "panel_correlation_rho": {
+    "correlated_shared_context": 0.82,
+    "partitioned_disjoint_shards": 0.28
+  },
+  "pc_d_corr": null,
+  "premature_convergence_pc": null,
+  "prereg_id": "PREREG_DSH-01",
+  "replay_bundle_path": "artifacts/dsh_seed_42/replay",
+  "result_card_path": "artifacts/dsh_seed_42/result_card.md",
+  "run_id": "dsh_seed_42",
+  "seed_detectability_auc": 0.53,
+  "task_count_per_cell": 30,
+  "token_cost_per_solve": null,
+  "total_task_runs": 720,
+  "verified_solve_rate": {
+    "abundant": 0.466667,
+    "random": 0.483333,
+    "scarce_naive_topk": 0.461111,
+    "scarce_protected": 0.588889
+  }
+}
