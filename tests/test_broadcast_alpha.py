@@ -875,6 +875,122 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             self.assertIn("Live smoke blocked", replay.stdout)
 
+    def test_prepare_live_smoke_preview_redacts_secret_and_hidden_tests(self):
+        from broadcast_alpha.live_readiness import prepare_live_smoke
+        from broadcast_alpha.task_bank import load_codebug_tasks
+
+        first_task = load_codebug_tasks()[0]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n")
+            result = prepare_live_smoke(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            request_preview = json.loads((result.artifact_path / "request_preview.json").read_text())
+            gate_checklist = json.loads((result.artifact_path / "gate_checklist.json").read_text())
+            combined_artifacts = "\n".join(
+                [
+                    (result.artifact_path / "metrics.json").read_text(),
+                    (result.artifact_path / "request_preview.json").read_text(),
+                    (result.artifact_path / "gate_checklist.json").read_text(),
+                    (result.artifact_path / "result_card.md").read_text(),
+                    (result.artifact_path / "ledger.jsonl").read_text(),
+                ]
+            )
+
+        self.assertEqual(result.run_id, "live_readiness_seed_42")
+        self.assertEqual(metrics["readiness_status"], "ready_pending_authorization")
+        self.assertEqual(metrics["adapter_call_count"], 0)
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertFalse(metrics["secret_values_recorded"])
+        self.assertTrue(metrics["openrouter_api_key_present"])
+        self.assertTrue(metrics["model_configured"])
+        self.assertEqual(request_preview["headers"]["Authorization"], "REDACTED")
+        self.assertEqual(request_preview["body"]["model"], "test/model")
+        self.assertEqual(request_preview["metadata"]["workspace_arm"], "abundant")
+        self.assertEqual(request_preview["metadata"]["seed_condition"], "correct_minority")
+        self.assertEqual(request_preview["task"]["hidden_test_count"], 3)
+        self.assertNotIn("hidden_tests", request_preview["task"])
+        self.assertNotIn("correct_patch", request_preview["task"])
+        self.assertNotIn("incorrect_patch", request_preview["task"])
+        self.assertNotIn("dummy-secret-value", combined_artifacts)
+        self.assertNotIn(first_task.correct_patch, combined_artifacts)
+        self.assertNotIn(first_task.incorrect_patch, combined_artifacts)
+        self.assertIn("--execute-live", gate_checklist["next_command"])
+
+    def test_cli_prepare_live_smoke_creates_replayable_readiness_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "prepare-live-smoke",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    tmp,
+                    "--prereg",
+                    "prereg/PREREG_LIVE-01.md",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(payload["run_id"], "live_readiness_seed_42")
+            self.assertEqual(metrics["readiness_status"], "blocked_missing_configuration")
+            self.assertEqual(metrics["adapter_call_count"], 0)
+            self.assertTrue((artifact_path / "request_preview.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("live readiness", replay.stdout)
+
     def test_live_sequence_default_blocks_before_smoke_without_adapter_calls(self):
         from broadcast_alpha.live_sequence import run_live_sequence
 

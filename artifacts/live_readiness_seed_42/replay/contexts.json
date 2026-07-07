@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "live readiness: sanitized one-call smoke request preview generated",
+    "2": "live readiness: blocked_missing_configuration; adapter calls 0",
+    "3": "live readiness: no API call made; authorization redacted; hidden tests excluded"
+  }
+}

@@ -8,6 +8,7 @@ from .jlens import run_jlens_gate
 from .ledger import Ledger
 from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
+from .live_readiness import prepare_live_smoke
 from .live_sequence import run_live_sequence
 from .orchestrator import run_all
 from .reporting import build_result_report
@@ -84,6 +85,13 @@ def build_parser() -> argparse.ArgumentParser:
     live_sequence.add_argument("--execute-live", action="store_true")
     live_sequence.add_argument("--model")
     live_sequence.add_argument("--include-dsh-pilot", action="store_true")
+
+    live_readiness = sub.add_parser("prepare-live-smoke", help="Preview the sanitized one-call live smoke request")
+    live_readiness.add_argument("--prereg", default="prereg/PREREG_LIVE-01.md")
+    live_readiness.add_argument("--seed", type=int, default=42)
+    live_readiness.add_argument("--artifact-root", default="artifacts")
+    live_readiness.add_argument("--env-file")
+    live_readiness.add_argument("--model")
 
     report = sub.add_parser("build-report", help="Build consolidated result table and claim matrix")
     report.add_argument("--artifact-root", default="artifacts")
@@ -206,6 +214,17 @@ def main(argv: list[str] | None = None) -> int:
             execute_live=args.execute_live,
             model=args.model,
             include_dsh_pilot=args.include_dsh_pilot,
+            prereg_path=Path(args.prereg),
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "prepare-live-smoke":
+        result = prepare_live_smoke(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            env_file=Path(args.env_file) if args.env_file else None,
+            model=args.model,
             prereg_path=Path(args.prereg),
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})

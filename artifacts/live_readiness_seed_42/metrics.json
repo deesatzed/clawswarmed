@@ -1,0 +1,36 @@
+{
+  "adapter_call_count": 0,
+  "gate_checklist_path": "artifacts/live_readiness_seed_42/gate_checklist.json",
+  "hidden_tests_included": false,
+  "ledger_path": "artifacts/live_readiness_seed_42/ledger.jsonl",
+  "live_model_run_performed": false,
+  "model_configured": false,
+  "model_ref": null,
+  "next_command": "python3 -m broadcast_alpha run-live-sequence --prereg prereg/PREREG_LIVE-01.md --seed 42 --authorize-api-spend --execute-live",
+  "openrouter_api_key_present": false,
+  "planned_panel_type": "correlated_shared_context",
+  "planned_seed_condition": "correct_minority",
+  "planned_task_id": "codebug_add_01",
+  "planned_workspace_arm": "abundant",
+  "prereg_exists": true,
+  "prereg_path": "prereg/PREREG_LIVE-01.md",
+  "provider": "openrouter",
+  "readiness_status": "blocked_missing_configuration",
+  "replay_bundle_path": "artifacts/live_readiness_seed_42/replay",
+  "request_preview_path": "artifacts/live_readiness_seed_42/request_preview.json",
+  "result_card_path": "artifacts/live_readiness_seed_42/result_card.md",
+  "run_id": "live_readiness_seed_42",
+  "secret_values_recorded": false,
+  "seed": 42,
+  "seed_conditions_supported": [
+    "correct_minority",
+    "incorrect_minority",
+    "none"
+  ],
+  "workspace_arms_supported": [
+    "abundant",
+    "random",
+    "scarce_naive_topk",
+    "scarce_protected"
+  ]
+}

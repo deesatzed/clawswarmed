@@ -2,26 +2,27 @@
 
 ## Task Being Attempted
 
-Add a `audit-goal` evidence rail that reads current repo files and generated
-artifacts, emits a requirement-by-requirement Glass Gate status matrix, and
-records remaining gaps without claiming completion.
+Add a `prepare-live-smoke` readiness rail that exports a sanitized preview of
+the exact one-call live smoke request and its execution gates without making a
+network call or recording secrets.
 
 ## Actual User Goal
 
-Move `GOAL_GLASSGATE.md` closer to a finishable research instrument by making
-the completion gate executable and auditable. The user should be able to run a
-command that says which required claims are proved by current artifacts, which
-rails are cleanly deferred, and which requirements remain incomplete.
+Move `GOAL_GLASSGATE.md` closer to the remaining live/model-backed requirement
+by making the first real provider call inspectable before it is authorized. The
+user should be able to see the planned smoke request, hidden-verifier boundary,
+required gates, and exact follow-up command without exposing credentials or
+spending API budget.
 
 ## Files Expected To Change
 
 | File | Expected Change | Risk |
 |---|---|---|
-| `broadcast_alpha/goal_audit.py` | New audit rail with requirement matrix, metrics, replay, result card, and ledger. | Could overstate completion if statuses are too broad. |
-| `broadcast_alpha/cli.py` | Add `audit-goal` command. | CLI could be confused with final completion. |
-| `tests/test_broadcast_alpha.py` | Add TDD coverage for audit artifact, conservative statuses, CLI replay, and ledger verification. | Tests could bake in weak evidence. |
-| `docs/GOAL_AUDIT.md`, `README.md` | Document the audit command and current conservative verdict. | Docs could become stale if the audit output changes. |
-| `artifacts/goal_audit_seed_42/` | Generated current audit artifact. | Generated ledger churn. |
+| `broadcast_alpha/live_readiness.py` | New readiness rail with sanitized request preview, gate checklist, metrics, replay, result card, and ledger. | Could accidentally include secrets or hidden tests. |
+| `broadcast_alpha/cli.py` | Add `prepare-live-smoke` command. | CLI could be confused with execution. |
+| `tests/test_broadcast_alpha.py` | Add TDD coverage for sanitized request preview, zero adapter calls, CLI replay, and ledger verification. | Tests must check no secret and no hidden-test leakage. |
+| `docs/LIVE_EXECUTION_READINESS.md`, `README.md`, `docs/LIVE_DSH_PILOT.md` | Document the readiness preview and its boundary. | Docs could imply readiness equals execution. |
+| `artifacts/live_readiness_seed_42/` | Generated current no-spend readiness artifact. | Generated ledger churn. |
 | Root `DECISIONS.md`, `PROGRESS.md` | Record workflow/progress update. | Root is not Git-backed. |
 
 ## Existing Patterns To Follow
@@ -30,49 +31,51 @@ rails are cleanly deferred, and which requirements remain incomplete.
   `expected_replay`.
 - Every rail writes `metrics.json`, `result_card.md`, `ledger.jsonl`, and
   `replay/contexts.json`.
-- `build-report` and `run-all` already produce consolidated metrics with
-  macro, seed audit, RQGM, J-lens, and live sequence fields.
-- Ledgers are verified through `Ledger.from_jsonl(...).verify_chain()`.
+- `run-live-smoke` uses `live_dsh._task_request()` to build the one-cell smoke
+  request. Reuse that shape instead of creating a second prompt path.
+- Live rails record env var presence by name only and never record secret
+  values.
 - Tests use fake/local transports for network-protected behavior.
 
 ## Assumptions
 
 - No real OpenRouter request is allowed in this pass.
-- The audit should be conservative and mark the overall goal incomplete while a
-  real live/model-backed run is absent.
-- A frozen J-lens rail with `JLENS-FREEZE-001` is a clean defer record, not a
-  pass for mechanistic claims.
-- The command reads existing artifacts; it does not run experiments.
+- The readiness rail can read env presence and model values, but it must not
+  record API key values.
+- The request preview may include the public codebug prompt and panel/arm/seed
+  metadata, but it must not include hidden tests.
+- The command reads local task/prereg/env metadata and does not run experiments.
 
 ## Non-Goals For This Pass
 
 - Do not run a live model-backed call.
 - Do not call OpenRouter or any external API.
 - Do not add non-stdlib dependencies.
-- Do not change macro, RQGM, live, or report outputs except adding the audit.
+- Do not change macro, RQGM, live, report, run-all, or audit outputs except
+  adding the readiness artifact.
 - Do not mark `GOAL_GLASSGATE.md` complete.
 - Do not reopen the J-lens rail.
 
 ## Step-by-Step Plan
 
-1. Write failing tests for `audit_goal` and CLI `audit-goal`.
-2. Implement `broadcast_alpha.goal_audit.audit_goal`.
+1. Write failing tests for API and CLI readiness artifacts.
+2. Implement `broadcast_alpha.live_readiness.prepare_live_smoke`.
 3. Add CLI command.
-4. Document the audit rail and generate `artifacts/goal_audit_seed_42/`.
+4. Document the readiness artifact and generate
+   `artifacts/live_readiness_seed_42/`.
 5. Run verification and commit/push.
 
 ## Acceptance Criteria
 
-- `audit-goal` writes `artifacts/goal_audit_seed_42/`.
-- Audit artifact includes `requirements.json`, `metrics.json`,
-  `result_card.md`, `ledger.jsonl`, and `replay/contexts.json`.
-- Requirements include proved entries for macro `GLASSGATE_LIFT`, D arms,
-  seed audit, run-all bundle, replay/ledger evidence, and RQGM epochs.
-- Requirements include a deferred J-lens/bridge/mechanistic record when the
-  J-lens freeze evidence exists.
-- Requirements include an incomplete live/model-backed execution record while
-  adapter calls remain zero.
-- Overall audit status is not complete until incomplete requirements are gone.
+- `prepare-live-smoke` writes `artifacts/live_readiness_seed_42/`.
+- Artifact includes `request_preview.json`, `gate_checklist.json`,
+  `metrics.json`, `result_card.md`, `ledger.jsonl`, and
+  `replay/contexts.json`.
+- Request preview uses the live smoke task request shape, redacts
+  authorization, and includes no API key value.
+- Request preview includes no hidden-test expected values.
+- Metrics record zero adapter calls and no live model run.
+- Gate checklist names all required gates before execution.
 - Existing tests pass.
 
 ## Verification Plan
@@ -81,26 +84,26 @@ rails are cleanly deferred, and which requirements remain incomplete.
 - `python3 -m unittest discover -s tests`
 - `python3 -m compileall -q broadcast_alpha tests`
 - `python3 -m py_compile claswarmed/*.py`
-- `python3 -m broadcast_alpha audit-goal --artifact-root artifacts --output artifacts/goal_audit_seed_42`
-- `python3 -m broadcast_alpha summarize artifacts/goal_audit_seed_42`
-- `python3 -m broadcast_alpha export-ledger artifacts/goal_audit_seed_42 --format jsonl`
-- `python3 -m broadcast_alpha replay artifacts/goal_audit_seed_42 --agent agent_1 --step 3`
+- `python3 -m broadcast_alpha prepare-live-smoke --artifact-root artifacts --prereg prereg/PREREG_LIVE-01.md --seed 42`
+- `python3 -m broadcast_alpha summarize artifacts/live_readiness_seed_42`
+- `python3 -m broadcast_alpha export-ledger artifacts/live_readiness_seed_42 --format jsonl`
+- `python3 -m broadcast_alpha replay artifacts/live_readiness_seed_42 --agent agent_1 --step 3`
 - `git diff --check`
 - secret scan for provider key patterns in code/docs/artifacts
 - `git status --short --branch`
 
 ## Rollback Plan
 
-Revert the audit rail commit and remove `artifacts/goal_audit_seed_42/`.
+Revert the readiness rail commit and remove `artifacts/live_readiness_seed_42/`.
 
 ## Risks
 
 | Risk | Mitigation |
 |---|---|
-| Overclaiming completion | Use explicit `proved`, `deferred_with_record`, and `incomplete` statuses, and make any incomplete item force non-complete overall status. |
-| Audit drift | Source audit fields directly from current artifacts and docs, not hand-written constants where evidence exists. |
-| Generated artifact mistaken for final signoff | Result card states that the broader goal remains incomplete while live/model-backed execution is absent. |
-| Secret leakage | Audit reads sanitized metrics only and the final verification includes a secret scan. |
+| Secret leakage | Redact `Authorization`, never write API key values, and scan artifacts before commit. |
+| Hidden-test leakage | Build request preview from public task data only and test that hidden expected values are absent. |
+| Preview mistaken for execution | Metrics hard-code `adapter_call_count = 0`, `live_model_run_performed = false`, and result card states no API call was made. |
+| Prompt drift | Reuse `live_dsh._task_request()` to preserve the live smoke request shape. |
 
 ## Proceed / Block Decision
 

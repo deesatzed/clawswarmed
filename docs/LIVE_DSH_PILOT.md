@@ -13,6 +13,10 @@ the deterministic macro result.
 request, verifier, ledger, replay, and no-secret machinery, but hard-limits the
 run to one DSH cell and one task.
 
+`prepare-live-smoke` is the no-spend inspection step before any provider call.
+It writes a sanitized request preview, redacts authorization, excludes hidden
+tests and seeded patches, and records the exact gates required before execution.
+
 `run-live-sequence` is the intended one-command provider path. It records
 provider readiness, runs smoke only when all live gates are explicitly opened,
 and promotes to the 24-cell pilot only when `--include-dsh-pilot` is supplied
@@ -21,6 +25,7 @@ and smoke has a verifier-backed pass.
 ## Command
 
 ```bash
+python3 -m broadcast_alpha prepare-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-sequence --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
@@ -37,6 +42,7 @@ Real provider-backed execution requires:
 ## Current Artifact
 
 ```text
+artifacts/live_readiness_seed_42/
 artifacts/live_sequence_seed_42/
 artifacts/live_smoke_seed_42/
 artifacts/live_dsh_seed_42/
@@ -44,6 +50,8 @@ artifacts/live_dsh_seed_42/
 
 Files:
 
+- `request_preview.json` for readiness preview
+- `gate_checklist.json` for readiness preview
 - `metrics.json`
 - `task_runs.json`
 - `result_card.md`
@@ -55,6 +63,8 @@ Files:
 The checked-in artifact is blocked by design:
 
 ```text
+live_readiness.readiness_status = blocked_missing_configuration
+live_readiness.adapter_call_count = 0
 live_smoke.run_status = blocked_no_live_execution
 live_smoke.cell_limit = 1
 live_smoke.planned_task_runs = 1

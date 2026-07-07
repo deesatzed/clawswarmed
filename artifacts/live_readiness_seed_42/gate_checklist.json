@@ -1,0 +1,22 @@
+{
+  "adapter_call_count": 0,
+  "live_model_run_performed": false,
+  "missing_configuration": [
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_MODEL_or_model_arg"
+  ],
+  "model_configured": false,
+  "model_ref": null,
+  "next_command": "python3 -m broadcast_alpha run-live-sequence --prereg prereg/PREREG_LIVE-01.md --seed 42 --authorize-api-spend --execute-live",
+  "openrouter_api_key_present": false,
+  "prereg_exists": true,
+  "prereg_path": "prereg/PREREG_LIVE-01.md",
+  "provider": "openrouter",
+  "required_before_execution": [
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_MODEL or --model",
+    "--authorize-api-spend",
+    "--execute-live",
+    "PREREG_LIVE-01.md present"
+  ]
+}

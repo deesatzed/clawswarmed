@@ -1,0 +1,44 @@
+{
+  "authorization_redacted": true,
+  "body": {
+    "max_tokens": 80,
+    "messages": [
+      {
+        "content": "You are a bounded Broadcast-alpha pilot agent. Reply with one concise candidate rationale. Do not claim hidden-test access.",
+        "role": "system"
+      },
+      {
+        "content": "Task codebug_add_01 index 0. Public prompt: Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs. Panel=correlated_shared_context arm=abundant seed_condition=correct_minority. Preserve useful dissent before final consensus.",
+        "role": "user"
+      }
+    ],
+    "model": "OPENROUTER_MODEL_REQUIRED",
+    "temperature": 0
+  },
+  "headers": {
+    "Authorization": "REDACTED",
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://github.com/deesatzed/clawswarmed",
+    "X-Title": "clawswarmed Broadcast-alpha"
+  },
+  "hidden_tests_included": false,
+  "metadata": {
+    "panel_type": "correlated_shared_context",
+    "seed_condition": "correct_minority",
+    "task_id": "codebug_add_01",
+    "task_index": 0,
+    "workspace_arm": "abundant"
+  },
+  "task": {
+    "function_name": "repair_add",
+    "hidden_test_count": 3,
+    "id": "codebug_add_01",
+    "parameters": [
+      "x"
+    ],
+    "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+    "suite": "codebug",
+    "verifier": "hidden_tests"
+  },
+  "url": "https://openrouter.ai/api/v1/chat/completions"
+}

@@ -27,6 +27,7 @@ python3 -m broadcast_alpha run-rqgm --prereg prereg/PREREG_EPOCH-01.md --seed 42
 python3 -m broadcast_alpha run-jlens-gate --seed 42
 python3 -m broadcast_alpha run-live-gate --seed 42
 python3 -m broadcast_alpha run-live-gate --seed 42 --env-file /path/to/.env --model openrouter/model-slug --authorize-api-spend --execute-live
+python3 -m broadcast_alpha prepare-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-sequence --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
@@ -78,6 +79,11 @@ It is the bounded one-cell, one-task path for a future provider-backed smoke.
 The checked-in run is blocked with zero adapter calls, and fake-transport tests
 prove that an authorized smoke executes exactly one verifier-backed task. It
 does not produce `GLASSGATE_LIFT`.
+
+`artifacts/live_readiness_seed_42/` is the current checked-in live smoke
+readiness artifact. It previews the sanitized one-call smoke request, redacts
+authorization, excludes hidden tests and seeded patches, records the required
+execution gates, and performs zero adapter calls.
 
 `artifacts/live_sequence_seed_42/` is the current checked-in live execution
 sequence artifact. It records the future one-command provider path: readiness
