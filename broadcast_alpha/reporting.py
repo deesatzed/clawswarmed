@@ -96,6 +96,11 @@ Live model run performed: {metrics['live_model_run_performed']}
 OpenRouter API key present by name: {metrics['live_openrouter_api_key_present']}
 No secret values recorded: {not metrics['live_secret_values_recorded']}
 
+## Live DSH pilot
+
+Live DSH pilot status: {metrics['live_dsh_run_status']}
+Live DSH adapter calls: {metrics['live_dsh_adapter_call_count']}
+
 ## Replay
 
 Ledger: {metrics['ledger_path']}
@@ -114,6 +119,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     rqgm_path = artifact_root / "rqgm_seed_42"
     jlens_path = artifact_root / "jlens_gate_seed_42"
     live_path = artifact_root / "live_gate_seed_42"
+    live_dsh_path = artifact_root / "live_dsh_seed_42"
 
     dsh_metrics = _read_json(dsh_path / "metrics.json")
     seed_audit = _read_json(dsh_path / "seed_audit.json")
@@ -132,6 +138,17 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "reason_codes": ["live_gate_artifact_missing"],
         }
         live_ledger_verified = False
+    if (live_dsh_path / "metrics.json").exists():
+        live_dsh_metrics = _read_json(live_dsh_path / "metrics.json")
+        live_dsh_ledger_verified = _verify_ledger(live_dsh_path)
+    else:
+        live_dsh_metrics = {
+            "run_status": "not_run",
+            "adapter_call_count": 0,
+            "live_model_run_performed": False,
+            "reason_codes": ["live_dsh_artifact_missing"],
+        }
+        live_dsh_ledger_verified = False
 
     ledger_verified = {
         "macro_dsh": _verify_ledger(dsh_path),
@@ -139,6 +156,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "rqgm_epoch": _verify_ledger(rqgm_path),
         "jlens_gate": _verify_ledger(jlens_path),
         "live_model_gate": live_ledger_verified,
+        "live_dsh_pilot": live_dsh_ledger_verified,
     }
     rows = [
         {
@@ -180,6 +198,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "primary_value": live_metrics["rail_status"],
             "ledger_verified": ledger_verified["live_model_gate"],
             "evidence_path": str(live_path / "metrics.json"),
+        },
+        {
+            "section": "live_dsh_pilot",
+            "artifact_path": str(live_dsh_path),
+            "primary_metric": "run_status",
+            "primary_value": live_dsh_metrics["run_status"],
+            "ledger_verified": ledger_verified["live_dsh_pilot"],
+            "evidence_path": str(live_dsh_path / "metrics.json"),
         },
     ]
     claims = [
@@ -242,6 +268,21 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
                 "reason_codes": live_metrics["reason_codes"],
             },
         },
+        {
+            "claim": "Live DSH pilot rail has an explicit blocked or pilot-executed record.",
+            "status": "blocked_with_gate_record"
+            if live_dsh_metrics["run_status"] == "blocked_no_live_execution"
+            else "pilot_executed_recorded"
+            if live_dsh_metrics["run_status"] in {"adapter_pilot_executed_fake_transport", "live_dsh_executed"}
+            else "missing_gate_record",
+            "evidence_path": str(live_dsh_path / "metrics.json"),
+            "value": {
+                "run_status": live_dsh_metrics["run_status"],
+                "adapter_call_count": live_dsh_metrics["adapter_call_count"],
+                "live_model_run_performed": live_dsh_metrics["live_model_run_performed"],
+                "reason_codes": live_dsh_metrics["reason_codes"],
+            },
+        },
     ]
 
     all_ledgers_verified = all(ledger_verified.values())
@@ -250,6 +291,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         if all_ledgers_verified
         and jlens_metrics["rail_status"] == "frozen"
         and live_metrics["rail_status"] in {"unavailable", "gated_ready_no_spend", "configured_not_executed"}
+        and live_dsh_metrics["run_status"] in {"blocked_no_live_execution", "adapter_pilot_executed_fake_transport", "live_dsh_executed"}
         else "incomplete"
     )
     metrics = {
@@ -274,6 +316,10 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_openrouter_api_key_present": live_metrics["openrouter_api_key_present"],
         "live_secret_values_recorded": live_metrics["secret_values_recorded"],
         "live_reason_codes": live_metrics["reason_codes"],
+        "live_dsh_run_status": live_dsh_metrics["run_status"],
+        "live_dsh_adapter_call_count": live_dsh_metrics["adapter_call_count"],
+        "live_dsh_model_run_performed": live_dsh_metrics["live_model_run_performed"],
+        "live_dsh_reason_codes": live_dsh_metrics["reason_codes"],
         "all_source_ledgers_verified": all_ledgers_verified,
         "result_table_path": str(output_dir / "result_table.json"),
         "claim_matrix_path": str(output_dir / "claim_matrix.json"),
@@ -284,7 +330,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     }
     replay_contexts = {
         "agent_1": {
-            "1": "final report: macro DSH, seed audit, RQGM, J-lens source gate, and live model gate artifacts loaded",
+            "1": "final report: macro DSH, seed audit, RQGM, J-lens source gate, live model gate, and live DSH pilot artifacts loaded",
             "2": f"final report: GLASSGATE_LIFT {metrics['glassgate_lift']} with seed AUC {metrics['seed_detectability_auc']}",
             "3": "final report: source ledgers verified, J-lens frozen/deferred, live model run not performed",
         }

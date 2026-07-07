@@ -471,6 +471,149 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn("execute_live_not_requested", metrics["reason_codes"])
         self.assertNotIn("dummy-secret-value", artifacts)
 
+    def test_live_dsh_default_blocks_without_adapter_execution(self):
+        from broadcast_alpha.live_dsh import run_live_dsh
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_live_dsh(seed=42, tasks_per_cell=1, artifact_root=Path(tmp), env={})
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            task_runs = json.loads((result.artifact_path / "task_runs.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertEqual(metrics["run_status"], "blocked_no_live_execution")
+        self.assertEqual(metrics["cell_count"], 24)
+        self.assertEqual(metrics["planned_task_runs"], 24)
+        self.assertEqual(metrics["task_run_count"], 0)
+        self.assertEqual(metrics["adapter_call_count"], 0)
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertIn("missing_openrouter_api_key", metrics["reason_codes"])
+        self.assertEqual(task_runs["runs"], [])
+        self.assertIn('"kind": "live_dsh_blocked"', ledger)
+        self.assertIn("Live DSH pilot blocked", result_card)
+
+    def test_live_dsh_fake_transport_runs_balanced_pilot_without_secret_values(self):
+        from broadcast_alpha.live_dsh import run_live_dsh
+
+        captured_requests = []
+
+        def fake_transport(request):
+            captured_requests.append(request)
+            return {
+                "id": f"chatcmpl_fake_{len(captured_requests)}",
+                "choices": [{"message": {"content": "pilot candidate response"}}],
+                "usage": {"prompt_tokens": 9, "completion_tokens": 3, "total_tokens": 12},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n")
+            result = run_live_dsh(
+                seed=42,
+                tasks_per_cell=1,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                transport=fake_transport,
+                transport_label="fake",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            task_runs = json.loads((result.artifact_path / "task_runs.json").read_text())
+            combined_artifacts = "\n".join(
+                [
+                    (result.artifact_path / "metrics.json").read_text(),
+                    (result.artifact_path / "task_runs.json").read_text(),
+                    (result.artifact_path / "result_card.md").read_text(),
+                    (result.artifact_path / "ledger.jsonl").read_text(),
+                    (result.artifact_path / "replay" / "contexts.json").read_text(),
+                ]
+            )
+
+        self.assertEqual(metrics["run_status"], "adapter_pilot_executed_fake_transport")
+        self.assertEqual(metrics["cell_count"], 24)
+        self.assertEqual(metrics["task_run_count"], 24)
+        self.assertEqual(metrics["adapter_call_count"], 24)
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertEqual(metrics["transport_label"], "fake")
+        self.assertEqual(metrics["adapter_usage_total_tokens"], 24 * 12)
+        self.assertEqual(len(captured_requests), 24)
+        self.assertEqual(captured_requests[0]["body"]["model"], "test/model")
+        self.assertIn("Bearer dummy-secret-value", captured_requests[0]["headers"]["Authorization"])
+        self.assertEqual({row["panel_type"] for row in task_runs["runs"]}, {"correlated_shared_context", "partitioned_disjoint_shards"})
+        self.assertEqual({row["workspace_arm"] for row in task_runs["runs"]}, {"abundant", "random", "scarce_naive_topk", "scarce_protected"})
+        self.assertEqual({row["seed_condition"] for row in task_runs["runs"]}, {"correct_minority", "incorrect_minority", "none"})
+        self.assertTrue(all(row["adapter_response"]["content_preview"] == "pilot candidate response" for row in task_runs["runs"]))
+        self.assertNotIn("dummy-secret-value", combined_artifacts)
+        self.assertIn('"kind": "live_dsh_task_result"', combined_artifacts)
+        self.assertIn("fake transport", combined_artifacts)
+
+    def test_cli_run_live_dsh_default_creates_blocked_replayable_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-live-dsh",
+                    "--seed",
+                    "42",
+                    "--tasks-per-cell",
+                    "1",
+                    "--artifact-root",
+                    tmp,
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(metrics["run_status"], "blocked_no_live_execution")
+            self.assertTrue((artifact_path / "task_runs.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("Live DSH pilot blocked", replay.stdout)
+
     def test_metrics_json_schema(self):
         from broadcast_alpha.experiments import run_synthetic
 
@@ -581,6 +724,7 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_build_report_summarizes_required_rails(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.live_dsh import run_live_dsh
         from broadcast_alpha.live_gate import run_live_gate
         from broadcast_alpha.reporting import build_result_report
 
@@ -601,6 +745,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             run_jlens_gate(seed=42, artifact_root=artifact_root)
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
+            run_live_dsh(seed=42, artifact_root=artifact_root, env={})
             result = build_result_report(artifact_root=artifact_root, output_dir=artifact_root / "final_report_seed_42")
             metrics = json.loads((result.artifact_path / "metrics.json").read_text())
             result_table = json.loads((result.artifact_path / "result_table.json").read_text())
@@ -617,11 +762,13 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["live_model_rail_status"], "unavailable")
         self.assertFalse(metrics["live_adapter_call_performed"])
         self.assertFalse(metrics["live_model_run_performed"])
+        self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
+        self.assertEqual(metrics["live_dsh_adapter_call_count"], 0)
         self.assertTrue(metrics["all_source_ledgers_verified"])
         self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
         self.assertEqual(
             {row["section"] for row in result_table["rows"]},
-            {"macro_dsh", "seed_detectability", "rqgm_epoch", "jlens_gate", "live_model_gate"},
+            {"macro_dsh", "seed_detectability", "rqgm_epoch", "jlens_gate", "live_model_gate", "live_dsh_pilot"},
         )
         self.assertTrue(all(row["ledger_verified"] for row in result_table["rows"]))
         self.assertTrue(all(claim["evidence_path"] for claim in claim_matrix["claims"]))
@@ -633,6 +780,7 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_cli_build_report_creates_replayable_report_artifact(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.live_dsh import run_live_dsh
         from broadcast_alpha.live_gate import run_live_gate
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -652,6 +800,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             run_jlens_gate(seed=42, artifact_root=artifact_root)
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
+            run_live_dsh(seed=42, artifact_root=artifact_root, env={})
             result = subprocess.run(
                 [
                     sys.executable,
@@ -677,6 +826,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "claim_matrix.json").exists())
             self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
+            self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
 
             replay = subprocess.run(
                 [
@@ -737,14 +887,17 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertFalse(metrics["live_adapter_call_performed"])
             self.assertFalse(metrics["live_model_run_performed"])
+            self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["live_dsh_adapter_call_count"], 0)
             self.assertTrue(metrics["all_child_ledgers_verified"])
             self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(
                 set(manifest["child_artifacts"]),
-                {"synthetic", "dsh", "rqgm", "jlens_gate", "live_model_gate", "final_report"},
+                {"synthetic", "dsh", "rqgm", "jlens_gate", "live_model_gate", "live_dsh_pilot", "final_report"},
             )
             self.assertTrue((result.artifact_path / "source_artifacts" / "dsh_seed_42" / "seed_audit.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_gate_seed_42" / "provider_status.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "live_dsh_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 
     def test_cli_run_all_creates_replayable_unattended_bundle(self):
@@ -778,6 +931,7 @@ class BroadcastAlphaTests(unittest.TestCase):
 
             self.assertEqual(metrics["run_status"], "complete_with_deferred_jlens")
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
+            self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertTrue((artifact_path / "final_report" / "result_table.md").exists())
 
             replay = subprocess.run(

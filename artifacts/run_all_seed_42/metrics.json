@@ -14,6 +14,7 @@
     "dsh": true,
     "final_report": true,
     "jlens_gate": true,
+    "live_dsh_pilot": true,
     "live_model_gate": true,
     "rqgm": true,
     "synthetic": true
@@ -31,6 +32,9 @@
   "jlens_rail_status": "frozen",
   "ledger_path": "artifacts/run_all_seed_42/ledger.jsonl",
   "live_adapter_call_performed": false,
+  "live_dsh_adapter_call_count": 0,
+  "live_dsh_model_run_performed": false,
+  "live_dsh_run_status": "blocked_no_live_execution",
   "live_model_rail_status": "unavailable",
   "live_model_run_performed": false,
   "live_openrouter_api_key_present": false,

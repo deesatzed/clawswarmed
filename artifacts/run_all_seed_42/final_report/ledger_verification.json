@@ -1,5 +1,6 @@
 {
   "jlens_gate": true,
+  "live_dsh_pilot": true,
   "live_model_gate": true,
   "macro_dsh": true,
   "rqgm_epoch": true,

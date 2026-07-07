@@ -54,6 +54,8 @@ jlens_rail_status = frozen
 live_model_rail_status = unavailable
 adapter_call_performed = false
 live_model_run_performed = false
+live_dsh_run_status = blocked_no_live_execution
+live_dsh_adapter_call_count = 0
 all_source_ledgers_verified = true
 ```
 

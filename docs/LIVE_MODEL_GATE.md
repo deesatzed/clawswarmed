@@ -58,6 +58,19 @@ tests exercise the adapter through a fake transport, proving request
 construction, response sanitization, ledgering, replay, and secret exclusion
 without making an external call.
 
+## Live DSH Pilot
+
+The live-panel command is:
+
+```bash
+python3 -m broadcast_alpha run-live-dsh --seed 42 --tasks-per-cell 1
+```
+
+By default it creates a blocked artifact because live execution is not
+authorized. A real provider-backed pilot requires the same gates as
+`run-live-gate`: key, model, `--authorize-api-spend`, and `--execute-live`.
+Tests exercise the 24-cell pilot through fake transport only.
+
 ## Current Artifact
 
 ```text

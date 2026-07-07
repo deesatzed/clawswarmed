@@ -35,6 +35,7 @@ Nested artifacts:
 - `source_artifacts/rqgm_seed_42/`
 - `source_artifacts/jlens_gate_seed_42/`
 - `source_artifacts/live_gate_seed_42/`
+- `source_artifacts/live_dsh_seed_42/`
 - `final_report/`
 
 ## Current Result
@@ -50,6 +51,8 @@ jlens_rail_status = frozen
 live_model_rail_status = unavailable
 adapter_call_performed = false
 live_model_run_performed = false
+live_dsh_run_status = blocked_no_live_execution
+live_dsh_adapter_call_count = 0
 all_child_ledgers_verified = true
 ```
 
@@ -71,4 +74,5 @@ This bundle is unattended and replayable, but it is still deterministic and
 synthetic. It does not claim a live model-backed panel run. The live-provider
 gate is included so the bundle records whether the model rail was configured,
 authorized, and executed instead of leaving that gap implicit. The checked-in
-bundle does not pass credentials, `--authorize-api-spend`, or `--execute-live`.
+bundle also includes the live DSH pilot rail, but it does not pass credentials,
+`--authorize-api-spend`, or `--execute-live`.

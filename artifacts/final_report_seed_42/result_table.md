@@ -7,3 +7,4 @@
 | rqgm_epoch | epoch_count | 5 | True | artifacts/rqgm_seed_42 |
 | jlens_gate | rail_status | frozen | True | artifacts/jlens_gate_seed_42 |
 | live_model_gate | rail_status | unavailable | True | artifacts/live_gate_seed_42 |
+| live_dsh_pilot | run_status | blocked_no_live_execution | True | artifacts/live_dsh_seed_42 |

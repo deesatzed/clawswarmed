@@ -39,6 +39,14 @@
       "primary_metric": "rail_status",
       "primary_value": "unavailable",
       "section": "live_model_gate"
+    },
+    {
+      "artifact_path": "artifacts/live_dsh_seed_42",
+      "evidence_path": "artifacts/live_dsh_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "run_status",
+      "primary_value": "blocked_no_live_execution",
+      "section": "live_dsh_pilot"
     }
   ]
 }
