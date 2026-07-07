@@ -1,0 +1,214 @@
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+APP_ROOT = Path(__file__).resolve().parents[1]
+
+
+class BroadcastAlphaTests(unittest.TestCase):
+    def test_contracts_include_task_and_metrics_records(self):
+        from broadcast_alpha.contracts import MetricsRecord, Task
+
+        task = Task(id="task_001", suite="codebug", verifier="hidden_tests")
+        metrics = MetricsRecord(
+            run_id="run_001",
+            prereg_id="PREREG_DSH-01",
+            glassgate_lift=0.3,
+            glassgate_lift_ci95=[0.2, 0.4],
+        )
+
+        self.assertEqual(task.to_dict()["verifier"], "hidden_tests")
+        self.assertEqual(metrics.to_dict()["glassgate_lift"], 0.3)
+
+    def test_ledger_append_and_verify_10k(self):
+        from broadcast_alpha.ledger import Ledger
+
+        ledger = Ledger()
+        for index in range(10_000):
+            ledger.append(kind="submission", body={"index": index}, evaluator_id="eval_0", epoch_id="epoch_0")
+
+        self.assertEqual(len(ledger.receipts), 10_000)
+        self.assertTrue(ledger.verify_chain())
+
+    def test_ledger_tamper_detection(self):
+        from broadcast_alpha.ledger import Ledger
+
+        ledger = Ledger()
+        ledger.append(kind="submission", body={"claim": "original"})
+        ledger.append(kind="decision", body={"admit": True})
+        ledger.receipts[0].body["claim"] = "tampered"
+
+        self.assertFalse(ledger.verify_chain())
+
+    def test_replay_byte_exact(self):
+        from broadcast_alpha.experiments import run_synthetic
+        from broadcast_alpha.replay import replay_context
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_synthetic(seed=42, artifact_root=Path(tmp))
+            context = replay_context(result.artifact_path, agent_id="agent_1", step=3)
+
+            self.assertEqual(context, result.expected_replay["agent_1"]["3"])
+
+    def test_discrimination_formula(self):
+        from broadcast_alpha.metrics import discrimination
+
+        self.assertAlmostEqual(discrimination(6, 10, 2, 10), 0.4)
+
+    def test_glassgate_lift_formula(self):
+        from broadcast_alpha.metrics import glassgate_lift
+
+        d_by_arm = {
+            "abundant": 0.1,
+            "random": 0.2,
+            "scarce_naive_topk": 0.0,
+            "scarce_protected": 0.5,
+        }
+
+        self.assertAlmostEqual(glassgate_lift(d_by_arm), 0.3)
+
+    def test_random_gate_reproducibility(self):
+        from broadcast_alpha.contracts import Candidate
+        from broadcast_alpha.gate import random_gate
+
+        candidates = [Candidate(id=f"cand_{i}", score=i / 10, slot_type="high_confidence") for i in range(10)]
+
+        first = random_gate(candidates, k=4, seed=17)
+        second = random_gate(candidates, k=4, seed=17)
+
+        self.assertEqual([c.id for c in first], [c.id for c in second])
+
+    def test_naive_topk_orders_by_score(self):
+        from broadcast_alpha.contracts import Candidate
+        from broadcast_alpha.gate import naive_topk
+
+        candidates = [
+            Candidate(id="low", score=0.1, slot_type="high_confidence"),
+            Candidate(id="high", score=0.9, slot_type="high_confidence"),
+            Candidate(id="mid", score=0.5, slot_type="high_confidence"),
+        ]
+
+        self.assertEqual([c.id for c in naive_topk(candidates, k=2)], ["high", "mid"])
+
+    def test_protected_gate_reserves_dissent_slots(self):
+        from broadcast_alpha.contracts import Candidate
+        from broadcast_alpha.gate import scarce_protected
+
+        candidates = [
+            Candidate(id="conf_a", score=0.9, slot_type="high_confidence"),
+            Candidate(id="conf_b", score=0.8, slot_type="high_confidence"),
+            Candidate(id="conf_c", score=0.7, slot_type="high_confidence"),
+            Candidate(id="conf_d", score=0.6, slot_type="high_confidence"),
+            Candidate(id="minority", score=0.2, slot_type="minority_report"),
+            Candidate(id="risk", score=0.1, slot_type="risk_if_suppressed"),
+            Candidate(id="disagree", score=0.3, slot_type="highest_disagreement"),
+            Candidate(id="verify", score=0.4, slot_type="verifier_action"),
+        ]
+
+        selected = scarce_protected(candidates, k=7)
+        selected_ids = {candidate.id for candidate in selected}
+
+        self.assertIn("minority", selected_ids)
+        self.assertIn("risk", selected_ids)
+        self.assertIn("disagree", selected_ids)
+        self.assertIn("verify", selected_ids)
+
+    def test_seed_camouflage_auc_flag(self):
+        from broadcast_alpha.metrics import seed_camouflage_failed
+
+        self.assertTrue(seed_camouflage_failed(0.75, tolerance=0.1))
+        self.assertFalse(seed_camouflage_failed(0.53, tolerance=0.1))
+
+    def test_candidate_ablation_changes_influence(self):
+        from broadcast_alpha.metrics import candidate_ablation_influence
+
+        self.assertTrue(candidate_ablation_influence(original_passed=True, ablated_passed=False))
+        self.assertFalse(candidate_ablation_influence(original_passed=True, ablated_passed=True))
+
+    def test_epoch_tombstone_masks_current_authority_but_preserves_history(self):
+        from broadcast_alpha.epochs import EpochAuthority
+
+        authority = EpochAuthority(active_evaluator="eval_a")
+        authority.add_score("score_1", evaluator_id="eval_a", value=0.7)
+        authority.tombstone_evaluator("eval_a", reason="replaced at epoch boundary")
+
+        self.assertEqual(authority.current_scores(), [])
+        self.assertEqual(len(authority.history), 1)
+        self.assertEqual(authority.history[0]["status"], "tombstoned")
+
+    def test_single_token_verdict_assertion(self):
+        from broadcast_alpha.jlens import assert_single_token
+
+        self.assertEqual(assert_single_token("yes"), "yes")
+        with self.assertRaises(ValueError):
+            assert_single_token("not sure")
+
+    def test_null_jlens_probe_interface(self):
+        from broadcast_alpha.jlens import NullJLensProbe
+
+        result = NullJLensProbe().run("admit", "evidence text")
+
+        self.assertEqual(result["status"], "unavailable")
+        self.assertIn("source", result["reason"])
+
+    def test_metrics_json_schema(self):
+        from broadcast_alpha.experiments import run_synthetic
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_synthetic(seed=42, artifact_root=Path(tmp))
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+
+        required = {
+            "run_id",
+            "prereg_id",
+            "glassgate_lift",
+            "glassgate_lift_ci95",
+            "D_by_arm",
+            "D_by_panel_type",
+            "verified_solve_rate",
+            "influence_correct",
+            "influence_incorrect",
+            "panel_correlation_rho",
+            "seed_detectability_auc",
+            "premature_convergence_pc",
+            "pc_d_corr",
+            "intervention_delta_D",
+            "token_cost_per_solve",
+            "replay_bundle_path",
+            "result_card_path",
+        }
+        self.assertTrue(required.issubset(metrics))
+
+    def test_result_card_generation(self):
+        from broadcast_alpha.experiments import run_synthetic
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_synthetic(seed=42, artifact_root=Path(tmp))
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertIn("GLASSGATE_LIFT", result_card)
+        self.assertIn("D by arm", result_card)
+        self.assertIn("Replay", result_card)
+
+    def test_cli_run_synthetic_creates_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [sys.executable, "-m", "broadcast_alpha", "run-synthetic", "--seed", "42", "--artifact-root", tmp],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+
+            self.assertTrue((artifact_path / "metrics.json").exists())
+            self.assertTrue((artifact_path / "result_card.md").exists())
+
+
+if __name__ == "__main__":
+    unittest.main()

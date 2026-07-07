@@ -1,0 +1,49 @@
+{
+  "D_by_arm": {
+    "abundant": 0.09999999999999998,
+    "random": 0.2,
+    "scarce_naive_topk": 0.0,
+    "scarce_protected": 0.5
+  },
+  "D_by_panel_type": {
+    "correlated_shared_context": 0.1,
+    "partitioned_disjoint_shards": 0.5
+  },
+  "glassgate_lift": 0.3,
+  "glassgate_lift_ci95": [
+    0.2,
+    0.4
+  ],
+  "influence_correct": {
+    "abundant": 0.6,
+    "random": 0.6,
+    "scarce_naive_topk": 0.6,
+    "scarce_protected": 0.6
+  },
+  "influence_incorrect": {
+    "abundant": 0.1,
+    "random": 0.1,
+    "scarce_naive_topk": 0.1,
+    "scarce_protected": 0.1
+  },
+  "intervention_delta_D": null,
+  "ledger_path": "artifacts/synthetic_seed_42/ledger.jsonl",
+  "panel_correlation_rho": {
+    "correlated_shared_context": 0.8,
+    "partitioned_disjoint_shards": 0.25
+  },
+  "pc_d_corr": null,
+  "premature_convergence_pc": null,
+  "prereg_id": "PREREG_DSH-01",
+  "replay_bundle_path": "artifacts/synthetic_seed_42/replay",
+  "result_card_path": "artifacts/synthetic_seed_42/result_card.md",
+  "run_id": "synthetic_seed_42",
+  "seed_detectability_auc": 0.53,
+  "token_cost_per_solve": null,
+  "verified_solve_rate": {
+    "abundant": 0.7,
+    "random": 0.7,
+    "scarce_naive_topk": 0.7,
+    "scarce_protected": 0.7
+  }
+}
