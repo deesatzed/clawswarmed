@@ -50,6 +50,7 @@ Adversarial token AUC: {metrics['seed_adversarial_auc']}
 RQGM epochs: {metrics['epoch_count']}
 J-lens rail: {metrics['jlens_rail_status']}
 Live model rail: {metrics['live_model_rail_status']}
+Adapter call performed: {metrics['live_adapter_call_performed']}
 Live model run performed: {metrics['live_model_run_performed']}
 
 ## Child artifacts
@@ -156,6 +157,7 @@ def run_all(
         "jlens_rail_status": final_metrics["jlens_rail_status"],
         "jlens_failure_ledger_entry_id": final_metrics["jlens_failure_ledger_entry_id"],
         "live_model_rail_status": final_metrics["live_model_rail_status"],
+        "live_adapter_call_performed": final_metrics["live_adapter_call_performed"],
         "live_model_run_performed": final_metrics["live_model_run_performed"],
         "live_openrouter_api_key_present": final_metrics["live_openrouter_api_key_present"],
         "live_reason_codes": final_metrics["live_reason_codes"],

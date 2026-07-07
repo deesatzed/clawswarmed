@@ -91,6 +91,7 @@ Failure ledger entry: {metrics['jlens_failure_ledger_entry_id']}
 ## Live model rail
 
 Live model rail status: {metrics['live_model_rail_status']}
+Adapter call performed: {metrics['live_adapter_call_performed']}
 Live model run performed: {metrics['live_model_run_performed']}
 OpenRouter API key present by name: {metrics['live_openrouter_api_key_present']}
 No secret values recorded: {not metrics['live_secret_values_recorded']}
@@ -125,6 +126,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         live_metrics = {
             "rail_status": "not_run",
             "openrouter_api_key_present": False,
+            "adapter_call_performed": False,
             "live_model_run_performed": False,
             "secret_values_recorded": False,
             "reason_codes": ["live_gate_artifact_missing"],
@@ -235,6 +237,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "value": {
                 "rail_status": live_metrics["rail_status"],
                 "openrouter_api_key_present": live_metrics["openrouter_api_key_present"],
+                "adapter_call_performed": live_metrics["adapter_call_performed"],
                 "live_model_run_performed": live_metrics["live_model_run_performed"],
                 "reason_codes": live_metrics["reason_codes"],
             },
@@ -266,6 +269,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "jlens_rail_status": jlens_metrics["rail_status"],
         "jlens_failure_ledger_entry_id": jlens_metrics["failure_ledger_entry_id"],
         "live_model_rail_status": live_metrics["rail_status"],
+        "live_adapter_call_performed": live_metrics["adapter_call_performed"],
         "live_model_run_performed": live_metrics["live_model_run_performed"],
         "live_openrouter_api_key_present": live_metrics["openrouter_api_key_present"],
         "live_secret_values_recorded": live_metrics["secret_values_recorded"],

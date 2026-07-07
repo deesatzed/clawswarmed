@@ -43,6 +43,7 @@ Failure ledger entry: JLENS-FREEZE-001
 ## Live model rail
 
 Live model rail status: unavailable
+Adapter call performed: False
 Live model run performed: False
 OpenRouter API key present by name: False
 No secret values recorded: True

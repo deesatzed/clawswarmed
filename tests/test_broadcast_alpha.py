@@ -270,6 +270,84 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn('"kind": "live_gate_decision"', combined_artifacts)
         self.assertIn("No API call was made", combined_artifacts)
 
+    def test_live_gate_requires_execute_live_even_when_spend_is_authorized(self):
+        from broadcast_alpha.live_gate import run_live_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\n")
+            result = run_live_gate(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=False,
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+
+        self.assertEqual(metrics["rail_status"], "configured_not_executed")
+        self.assertFalse(metrics["adapter_call_performed"])
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertIn("execute_live_not_requested", metrics["reason_codes"])
+        self.assertNotIn("dummy-secret-value", ledger)
+
+    def test_live_gate_fake_transport_execution_is_replayable_and_sanitized(self):
+        from broadcast_alpha.live_gate import run_live_gate
+
+        captured_requests = []
+
+        def fake_transport(request):
+            captured_requests.append(request)
+            return {
+                "id": "chatcmpl_fake",
+                "choices": [{"message": {"content": "minority insight admitted"}}],
+                "usage": {"prompt_tokens": 12, "completion_tokens": 4, "total_tokens": 16},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n")
+            result = run_live_gate(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                transport=fake_transport,
+                transport_label="fake",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            provider_status = json.loads((result.artifact_path / "provider_status.json").read_text())
+            combined_artifacts = "\n".join(
+                [
+                    (result.artifact_path / "metrics.json").read_text(),
+                    (result.artifact_path / "provider_status.json").read_text(),
+                    (result.artifact_path / "result_card.md").read_text(),
+                    (result.artifact_path / "ledger.jsonl").read_text(),
+                    (result.artifact_path / "replay" / "contexts.json").read_text(),
+                ]
+            )
+
+        self.assertEqual(metrics["rail_status"], "adapter_executed_fake_transport")
+        self.assertTrue(metrics["adapter_call_performed"])
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertEqual(metrics["transport_label"], "fake")
+        self.assertEqual(metrics["adapter_response"]["response_id_present"], True)
+        self.assertEqual(metrics["adapter_response"]["content_preview"], "minority insight admitted")
+        self.assertEqual(metrics["adapter_response"]["usage_total_tokens"], 16)
+        self.assertEqual(provider_status["model_configured"], True)
+        self.assertEqual(len(captured_requests), 1)
+        self.assertEqual(captured_requests[0]["body"]["model"], "test/model")
+        self.assertIn("Bearer dummy-secret-value", captured_requests[0]["headers"]["Authorization"])
+        self.assertNotIn("dummy-secret-value", combined_artifacts)
+        self.assertIn('"kind": "adapter_response"', combined_artifacts)
+        self.assertIn("fake transport", combined_artifacts)
+
     def test_live_gate_missing_key_records_unavailable(self):
         from broadcast_alpha.live_gate import run_live_gate
 
@@ -350,6 +428,48 @@ class BroadcastAlphaTests(unittest.TestCase):
                 stdout=subprocess.PIPE,
             )
             self.assertIn("No live model run", replay.stdout)
+
+    def test_cli_run_live_gate_authorized_without_execute_stays_blocked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\n")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-live-gate",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    str(tmp_path / "artifacts"),
+                    "--env-file",
+                    str(env_file),
+                    "--authorize-api-spend",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+            artifacts = "\n".join(
+                [
+                    (artifact_path / "metrics.json").read_text(),
+                    (artifact_path / "provider_status.json").read_text(),
+                    (artifact_path / "result_card.md").read_text(),
+                    (artifact_path / "ledger.jsonl").read_text(),
+                ]
+            )
+
+        self.assertEqual(metrics["rail_status"], "configured_not_executed")
+        self.assertFalse(metrics["adapter_call_performed"])
+        self.assertIn("execute_live_not_requested", metrics["reason_codes"])
+        self.assertNotIn("dummy-secret-value", artifacts)
 
     def test_metrics_json_schema(self):
         from broadcast_alpha.experiments import run_synthetic
@@ -495,6 +615,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["epoch_count"], 5)
         self.assertEqual(metrics["jlens_rail_status"], "frozen")
         self.assertEqual(metrics["live_model_rail_status"], "unavailable")
+        self.assertFalse(metrics["live_adapter_call_performed"])
         self.assertFalse(metrics["live_model_run_performed"])
         self.assertTrue(metrics["all_source_ledgers_verified"])
         self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
@@ -614,6 +735,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["seed_adversarial_auc"], 0.5)
             self.assertEqual(metrics["jlens_rail_status"], "frozen")
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
+            self.assertFalse(metrics["live_adapter_call_performed"])
             self.assertFalse(metrics["live_model_run_performed"])
             self.assertTrue(metrics["all_child_ledgers_verified"])
             self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")

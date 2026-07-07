@@ -26,6 +26,7 @@ python3 -m broadcast_alpha run-dsh --prereg prereg/PREREG_DSH-01.md --seed 42 --
 python3 -m broadcast_alpha run-rqgm --prereg prereg/PREREG_EPOCH-01.md --seed 42 --epochs 5
 python3 -m broadcast_alpha run-jlens-gate --seed 42
 python3 -m broadcast_alpha run-live-gate --seed 42
+python3 -m broadcast_alpha run-live-gate --seed 42 --env-file /path/to/.env --model openrouter/model-slug --authorize-api-spend --execute-live
 python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42
 python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5 --prereg-dir prereg --artifact-root artifacts
 python3 -m broadcast_alpha summarize artifacts/<run_id>
@@ -64,7 +65,9 @@ configured.
 `artifacts/live_gate_seed_42/` is the current checked-in live-provider gate
 artifact. It records OpenRouter configuration presence by variable name only,
 records that API spend was not authorized, proves no secret values were stored,
-and confirms no live model call was made.
+and confirms no live model call was made. The code includes a tested
+OpenRouter adapter path, but real provider execution requires explicit
+`--authorize-api-spend` and `--execute-live` flags plus credentials and a model.
 
 `artifacts/dsh_seed_42/seed_audit.json` is the current seed-camouflage audit.
 It scans public selected-candidate IDs for explicit seed markers, runs a simple

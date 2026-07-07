@@ -14,6 +14,7 @@ Adversarial token AUC: 0.5
 RQGM epochs: 5
 J-lens rail: frozen
 Live model rail: unavailable
+Adapter call performed: False
 Live model run performed: False
 
 ## Child artifacts

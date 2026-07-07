@@ -47,6 +47,8 @@ def build_parser() -> argparse.ArgumentParser:
     live.add_argument("--env-file")
     live.add_argument("--authorize-api-spend", action="store_true")
     live.add_argument("--network-probe", action="store_true")
+    live.add_argument("--execute-live", action="store_true")
+    live.add_argument("--model")
 
     report = sub.add_parser("build-report", help="Build consolidated result table and claim matrix")
     report.add_argument("--artifact-root", default="artifacts")
@@ -119,6 +121,8 @@ def main(argv: list[str] | None = None) -> int:
             env_file=Path(args.env_file) if args.env_file else None,
             api_spend_authorized=args.authorize_api_spend,
             network_probe=args.network_probe,
+            execute_live=args.execute_live,
+            model=args.model,
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0

@@ -52,6 +52,7 @@ epoch_count = 5
 replacement_count = 3
 jlens_rail_status = frozen
 live_model_rail_status = unavailable
+adapter_call_performed = false
 live_model_run_performed = false
 all_source_ledgers_verified = true
 ```

@@ -11,12 +11,14 @@ OpenRouter API key present by name: False
 API spend authorized: False
 Network probe run: False
 Live model run performed: False
+Adapter call performed: False
+Adapter transport: real
 
 No API call was made. No secret values were recorded.
 
 ## Reason codes
 
-missing_openrouter_api_key, api_spend_not_authorized, network_probe_not_requested, live_model_run_not_performed
+missing_openrouter_api_key, api_spend_not_authorized, execute_live_not_requested, network_probe_not_requested, live_model_run_not_performed
 
 ## Replay
 

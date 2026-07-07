@@ -61,12 +61,14 @@
       "evidence_path": "artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42/metrics.json",
       "status": "not_performed_with_gate_record",
       "value": {
+        "adapter_call_performed": false,
         "live_model_run_performed": false,
         "openrouter_api_key_present": false,
         "rail_status": "unavailable",
         "reason_codes": [
           "missing_openrouter_api_key",
           "api_spend_not_authorized",
+          "execute_live_not_requested",
           "network_probe_not_requested",
           "live_model_run_not_performed"
         ]

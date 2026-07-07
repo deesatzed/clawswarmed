@@ -48,6 +48,7 @@ seed_adversarial_auc = 0.5
 epoch_count = 5
 jlens_rail_status = frozen
 live_model_rail_status = unavailable
+adapter_call_performed = false
 live_model_run_performed = false
 all_child_ledgers_verified = true
 ```
@@ -69,4 +70,5 @@ unattended bundle: final report ready, all child ledgers verified, J-lens rail f
 This bundle is unattended and replayable, but it is still deterministic and
 synthetic. It does not claim a live model-backed panel run. The live-provider
 gate is included so the bundle records whether the model rail was configured,
-authorized, and executed instead of leaving that gap implicit.
+authorized, and executed instead of leaving that gap implicit. The checked-in
+bundle does not pass credentials, `--authorize-api-spend`, or `--execute-live`.
