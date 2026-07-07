@@ -88,6 +88,13 @@ Current evaluator: {metrics['current_evaluator_id']}
 J-lens rail frozen: {metrics['jlens_rail_status'] == 'frozen'}
 Failure ledger entry: {metrics['jlens_failure_ledger_entry_id']}
 
+## Live model rail
+
+Live model rail status: {metrics['live_model_rail_status']}
+Live model run performed: {metrics['live_model_run_performed']}
+OpenRouter API key present by name: {metrics['live_openrouter_api_key_present']}
+No secret values recorded: {not metrics['live_secret_values_recorded']}
+
 ## Replay
 
 Ledger: {metrics['ledger_path']}
@@ -105,17 +112,31 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     dsh_path = artifact_root / "dsh_seed_42"
     rqgm_path = artifact_root / "rqgm_seed_42"
     jlens_path = artifact_root / "jlens_gate_seed_42"
+    live_path = artifact_root / "live_gate_seed_42"
 
     dsh_metrics = _read_json(dsh_path / "metrics.json")
     seed_audit = _read_json(dsh_path / "seed_audit.json")
     rqgm_metrics = _read_json(rqgm_path / "metrics.json")
     jlens_metrics = _read_json(jlens_path / "metrics.json")
+    if (live_path / "metrics.json").exists():
+        live_metrics = _read_json(live_path / "metrics.json")
+        live_ledger_verified = _verify_ledger(live_path)
+    else:
+        live_metrics = {
+            "rail_status": "not_run",
+            "openrouter_api_key_present": False,
+            "live_model_run_performed": False,
+            "secret_values_recorded": False,
+            "reason_codes": ["live_gate_artifact_missing"],
+        }
+        live_ledger_verified = False
 
     ledger_verified = {
         "macro_dsh": _verify_ledger(dsh_path),
         "seed_detectability": _verify_ledger(dsh_path),
         "rqgm_epoch": _verify_ledger(rqgm_path),
         "jlens_gate": _verify_ledger(jlens_path),
+        "live_model_gate": live_ledger_verified,
     }
     rows = [
         {
@@ -149,6 +170,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "primary_value": jlens_metrics["rail_status"],
             "ledger_verified": ledger_verified["jlens_gate"],
             "evidence_path": str(jlens_path / "metrics.json"),
+        },
+        {
+            "section": "live_model_gate",
+            "artifact_path": str(live_path),
+            "primary_metric": "rail_status",
+            "primary_value": live_metrics["rail_status"],
+            "ledger_verified": ledger_verified["live_model_gate"],
+            "evidence_path": str(live_path / "metrics.json"),
         },
     ]
     claims = [
@@ -197,10 +226,29 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
                 "failure_ledger_entry_id": jlens_metrics["failure_ledger_entry_id"],
             },
         },
+        {
+            "claim": "Live/model-backed execution has an explicit no-secrets provider gate record.",
+            "status": "not_performed_with_gate_record"
+            if live_metrics["rail_status"] in {"unavailable", "gated_ready_no_spend", "configured_not_executed"}
+            else "missing_gate_record",
+            "evidence_path": str(live_path / "metrics.json"),
+            "value": {
+                "rail_status": live_metrics["rail_status"],
+                "openrouter_api_key_present": live_metrics["openrouter_api_key_present"],
+                "live_model_run_performed": live_metrics["live_model_run_performed"],
+                "reason_codes": live_metrics["reason_codes"],
+            },
+        },
     ]
 
     all_ledgers_verified = all(ledger_verified.values())
-    report_status = "complete_with_deferred_jlens" if all_ledgers_verified and jlens_metrics["rail_status"] == "frozen" else "incomplete"
+    report_status = (
+        "complete_with_deferred_jlens"
+        if all_ledgers_verified
+        and jlens_metrics["rail_status"] == "frozen"
+        and live_metrics["rail_status"] in {"unavailable", "gated_ready_no_spend", "configured_not_executed"}
+        else "incomplete"
+    )
     metrics = {
         "run_id": run_id,
         "report_status": report_status,
@@ -217,6 +265,11 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "current_evaluator_id": rqgm_metrics["current_evaluator_id"],
         "jlens_rail_status": jlens_metrics["rail_status"],
         "jlens_failure_ledger_entry_id": jlens_metrics["failure_ledger_entry_id"],
+        "live_model_rail_status": live_metrics["rail_status"],
+        "live_model_run_performed": live_metrics["live_model_run_performed"],
+        "live_openrouter_api_key_present": live_metrics["openrouter_api_key_present"],
+        "live_secret_values_recorded": live_metrics["secret_values_recorded"],
+        "live_reason_codes": live_metrics["reason_codes"],
         "all_source_ledgers_verified": all_ledgers_verified,
         "result_table_path": str(output_dir / "result_table.json"),
         "claim_matrix_path": str(output_dir / "claim_matrix.json"),
@@ -227,9 +280,9 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     }
     replay_contexts = {
         "agent_1": {
-            "1": "final report: macro DSH, seed audit, RQGM, and J-lens source gate artifacts loaded",
+            "1": "final report: macro DSH, seed audit, RQGM, J-lens source gate, and live model gate artifacts loaded",
             "2": f"final report: GLASSGATE_LIFT {metrics['glassgate_lift']} with seed AUC {metrics['seed_detectability_auc']}",
-            "3": "final report: source ledgers verified and J-lens rail recorded as frozen/deferred",
+            "3": "final report: source ledgers verified, J-lens frozen/deferred, live model run not performed",
         }
     }
 

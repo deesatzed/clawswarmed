@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -7,6 +8,14 @@ from pathlib import Path
 
 
 APP_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _without_openrouter_env() -> dict:
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("OPENROUTER_")
+    }
 
 
 class BroadcastAlphaTests(unittest.TestCase):
@@ -222,6 +231,126 @@ class BroadcastAlphaTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             verify_single_token_labels(["yes", "not sure"])
 
+    def test_live_gate_records_provider_presence_without_secret_values(self):
+        from broadcast_alpha.live_gate import run_live_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n"
+            )
+            result = run_live_gate(seed=42, artifact_root=tmp_path, env_file=env_file, env={})
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            provider_status = json.loads((result.artifact_path / "provider_status.json").read_text())
+            combined_artifacts = "\n".join(
+                [
+                    (result.artifact_path / "metrics.json").read_text(),
+                    (result.artifact_path / "provider_status.json").read_text(),
+                    (result.artifact_path / "result_card.md").read_text(),
+                    (result.artifact_path / "ledger.jsonl").read_text(),
+                ]
+            )
+
+        self.assertEqual(metrics["rail_status"], "gated_ready_no_spend")
+        self.assertTrue(metrics["openrouter_api_key_present"])
+        self.assertFalse(metrics["api_spend_authorized"])
+        self.assertFalse(metrics["network_probe_run"])
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertIn("api_spend_not_authorized", metrics["reason_codes"])
+        self.assertEqual(
+            provider_status["required_env"]["OPENROUTER_API_KEY"],
+            {"present": True, "value_recorded": False},
+        )
+        self.assertEqual(
+            provider_status["required_env"]["OPENROUTER_MODEL"],
+            {"present": True, "value_recorded": False},
+        )
+        self.assertNotIn("dummy-secret-value", combined_artifacts)
+        self.assertIn('"kind": "live_gate_decision"', combined_artifacts)
+        self.assertIn("No API call was made", combined_artifacts)
+
+    def test_live_gate_missing_key_records_unavailable(self):
+        from broadcast_alpha.live_gate import run_live_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_live_gate(seed=42, artifact_root=Path(tmp), env={})
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            replay = json.loads((result.artifact_path / "replay" / "contexts.json").read_text())
+
+        self.assertEqual(metrics["rail_status"], "unavailable")
+        self.assertFalse(metrics["openrouter_api_key_present"])
+        self.assertIn("missing_openrouter_api_key", metrics["reason_codes"])
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertIn("No live model run", replay["agent_1"]["3"])
+
+    def test_cli_run_live_gate_creates_replayable_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\n")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-live-gate",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    str(tmp_path / "artifacts"),
+                    "--env-file",
+                    str(env_file),
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(metrics["rail_status"], "gated_ready_no_spend")
+            self.assertTrue((artifact_path / "provider_status.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("No live model run", replay.stdout)
+
     def test_metrics_json_schema(self):
         from broadcast_alpha.experiments import run_synthetic
 
@@ -332,6 +461,7 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_build_report_summarizes_required_rails(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.live_gate import run_live_gate
         from broadcast_alpha.reporting import build_result_report
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -350,6 +480,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 artifact_root=artifact_root,
             )
             run_jlens_gate(seed=42, artifact_root=artifact_root)
+            run_live_gate(seed=42, artifact_root=artifact_root, env={})
             result = build_result_report(artifact_root=artifact_root, output_dir=artifact_root / "final_report_seed_42")
             metrics = json.loads((result.artifact_path / "metrics.json").read_text())
             result_table = json.loads((result.artifact_path / "result_table.json").read_text())
@@ -363,21 +494,25 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertFalse(metrics["seed_camouflage_failed"])
         self.assertEqual(metrics["epoch_count"], 5)
         self.assertEqual(metrics["jlens_rail_status"], "frozen")
+        self.assertEqual(metrics["live_model_rail_status"], "unavailable")
+        self.assertFalse(metrics["live_model_run_performed"])
         self.assertTrue(metrics["all_source_ledgers_verified"])
         self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
         self.assertEqual(
             {row["section"] for row in result_table["rows"]},
-            {"macro_dsh", "seed_detectability", "rqgm_epoch", "jlens_gate"},
+            {"macro_dsh", "seed_detectability", "rqgm_epoch", "jlens_gate", "live_model_gate"},
         )
         self.assertTrue(all(row["ledger_verified"] for row in result_table["rows"]))
         self.assertTrue(all(claim["evidence_path"] for claim in claim_matrix["claims"]))
         self.assertIn("GLASSGATE_LIFT", result_card)
         self.assertIn("Adversarial token AUC", result_card)
         self.assertIn("J-lens rail frozen", result_card)
+        self.assertIn("Live model rail", result_card)
 
     def test_cli_build_report_creates_replayable_report_artifact(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.live_gate import run_live_gate
 
         with tempfile.TemporaryDirectory() as tmp:
             artifact_root = Path(tmp)
@@ -395,6 +530,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 artifact_root=artifact_root,
             )
             run_jlens_gate(seed=42, artifact_root=artifact_root)
+            run_live_gate(seed=42, artifact_root=artifact_root, env={})
             result = subprocess.run(
                 [
                     sys.executable,
@@ -410,6 +546,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 check=True,
                 text=True,
                 stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
             )
             payload = json.loads(result.stdout)
             artifact_path = Path(payload["artifact_path"])
@@ -418,6 +555,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "result_table.md").exists())
             self.assertTrue((artifact_path / "claim_matrix.json").exists())
             self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
+            self.assertEqual(metrics["live_model_rail_status"], "unavailable")
 
             replay = subprocess.run(
                 [
@@ -465,6 +603,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 epochs=5,
                 prereg_dir=APP_ROOT / "prereg",
                 artifact_root=Path(tmp),
+                live_env={},
             )
             metrics = json.loads((result.artifact_path / "metrics.json").read_text())
             manifest = json.loads((result.artifact_path / "manifest.json").read_text())
@@ -474,13 +613,16 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["glassgate_lift"], 0.4)
             self.assertEqual(metrics["seed_adversarial_auc"], 0.5)
             self.assertEqual(metrics["jlens_rail_status"], "frozen")
+            self.assertEqual(metrics["live_model_rail_status"], "unavailable")
+            self.assertFalse(metrics["live_model_run_performed"])
             self.assertTrue(metrics["all_child_ledgers_verified"])
             self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(
                 set(manifest["child_artifacts"]),
-                {"synthetic", "dsh", "rqgm", "jlens_gate", "final_report"},
+                {"synthetic", "dsh", "rqgm", "jlens_gate", "live_model_gate", "final_report"},
             )
             self.assertTrue((result.artifact_path / "source_artifacts" / "dsh_seed_42" / "seed_audit.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "live_gate_seed_42" / "provider_status.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 
     def test_cli_run_all_creates_replayable_unattended_bundle(self):
@@ -506,12 +648,14 @@ class BroadcastAlphaTests(unittest.TestCase):
                 check=True,
                 text=True,
                 stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
             )
             payload = json.loads(result.stdout)
             artifact_path = Path(payload["artifact_path"])
             metrics = json.loads((artifact_path / "metrics.json").read_text())
 
             self.assertEqual(metrics["run_status"], "complete_with_deferred_jlens")
+            self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertTrue((artifact_path / "final_report" / "result_table.md").exists())
 
             replay = subprocess.run(

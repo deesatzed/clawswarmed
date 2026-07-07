@@ -13,6 +13,8 @@ Seed detectability AUC: 0.5
 Adversarial token AUC: 0.5
 RQGM epochs: 5
 J-lens rail: frozen
+Live model rail: unavailable
+Live model run performed: False
 
 ## Child artifacts
 
@@ -22,6 +24,7 @@ J-lens rail: frozen
 | dsh | artifacts/run_all_seed_42/source_artifacts/dsh_seed_42 | True |
 | rqgm | artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42 | True |
 | jlens_gate | artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42 | True |
+| live_model_gate | artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42 | True |
 | final_report | artifacts/run_all_seed_42/final_report | True |
 
 ## Replay

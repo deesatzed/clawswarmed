@@ -1,0 +1,27 @@
+{
+  "api_spend_authorized": false,
+  "ledger_path": "artifacts/live_gate_seed_42/ledger.jsonl",
+  "live_model_run_performed": false,
+  "network_probe_requested": false,
+  "network_probe_run": false,
+  "next_required_unblockers": [
+    "Provide OPENROUTER_API_KEY to the process or a reviewed env file.",
+    "Explicitly authorize API/model spend before any live model call.",
+    "Implement and test the live model adapter before enabling network execution."
+  ],
+  "openrouter_api_key_present": false,
+  "openrouter_model_present": false,
+  "provider": "openrouter",
+  "provider_status_path": "artifacts/live_gate_seed_42/provider_status.json",
+  "rail_status": "unavailable",
+  "reason_codes": [
+    "missing_openrouter_api_key",
+    "api_spend_not_authorized",
+    "network_probe_not_requested",
+    "live_model_run_not_performed"
+  ],
+  "replay_bundle_path": "artifacts/live_gate_seed_42/replay",
+  "result_card_path": "artifacts/live_gate_seed_42/result_card.md",
+  "run_id": "live_gate_seed_42",
+  "secret_values_recorded": false
+}

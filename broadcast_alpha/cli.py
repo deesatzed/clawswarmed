@@ -5,6 +5,7 @@ from pathlib import Path
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .jlens import run_jlens_gate
 from .ledger import Ledger
+from .live_gate import run_live_gate
 from .orchestrator import run_all
 from .reporting import build_result_report
 from .replay import replay_context
@@ -40,6 +41,13 @@ def build_parser() -> argparse.ArgumentParser:
     jlens.add_argument("--seed", type=int, default=42)
     jlens.add_argument("--artifact-root", default="artifacts")
 
+    live = sub.add_parser("run-live-gate", help="Inspect live model provider readiness without API calls")
+    live.add_argument("--seed", type=int, default=42)
+    live.add_argument("--artifact-root", default="artifacts")
+    live.add_argument("--env-file")
+    live.add_argument("--authorize-api-spend", action="store_true")
+    live.add_argument("--network-probe", action="store_true")
+
     report = sub.add_parser("build-report", help="Build consolidated result table and claim matrix")
     report.add_argument("--artifact-root", default="artifacts")
     report.add_argument("--output", default="artifacts/final_report_seed_42")
@@ -50,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     all_run.add_argument("--epochs", type=int, default=5)
     all_run.add_argument("--prereg-dir", default="prereg")
     all_run.add_argument("--artifact-root", default="artifacts")
+    all_run.add_argument("--live-env-file")
 
     summarize = sub.add_parser("summarize", help="Print metrics for an artifact")
     summarize.add_argument("artifact")
@@ -103,6 +112,17 @@ def main(argv: list[str] | None = None) -> int:
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0
 
+    if args.command == "run-live-gate":
+        result = run_live_gate(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            env_file=Path(args.env_file) if args.env_file else None,
+            api_spend_authorized=args.authorize_api_spend,
+            network_probe=args.network_probe,
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
     if args.command == "build-report":
         result = build_result_report(artifact_root=Path(args.artifact_root), output_dir=Path(args.output))
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
@@ -115,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
             epochs=args.epochs,
             prereg_dir=Path(args.prereg_dir),
             artifact_root=Path(args.artifact_root),
+            live_env_file=Path(args.live_env_file) if args.live_env_file else None,
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0

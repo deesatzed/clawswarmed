@@ -1,0 +1,18 @@
+{
+  "api_spend_authorized": false,
+  "live_model_run_performed": false,
+  "network_probe_requested": false,
+  "network_probe_run": false,
+  "provider": "openrouter",
+  "required_env": {
+    "OPENROUTER_API_KEY": {
+      "present": false,
+      "value_recorded": false
+    },
+    "OPENROUTER_MODEL": {
+      "present": false,
+      "value_recorded": false
+    }
+  },
+  "secret_values_recorded": false
+}

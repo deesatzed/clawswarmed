@@ -21,6 +21,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 - seed_detectability: seed_detectability_auc = 0.5
 - rqgm_epoch: epoch_count = 5
 - jlens_gate: rail_status = frozen
+- live_model_gate: rail_status = unavailable
 
 ## Seed detectability audit
 
@@ -38,6 +39,13 @@ Current evaluator: eval_gate_v5
 
 J-lens rail frozen: True
 Failure ledger entry: JLENS-FREEZE-001
+
+## Live model rail
+
+Live model rail status: unavailable
+Live model run performed: False
+OpenRouter API key present by name: False
+No secret values recorded: True
 
 ## Replay
 

@@ -34,6 +34,7 @@ Nested artifacts:
 - `source_artifacts/dsh_seed_42/`
 - `source_artifacts/rqgm_seed_42/`
 - `source_artifacts/jlens_gate_seed_42/`
+- `source_artifacts/live_gate_seed_42/`
 - `final_report/`
 
 ## Current Result
@@ -46,6 +47,8 @@ seed_detectability_auc = 0.5
 seed_adversarial_auc = 0.5
 epoch_count = 5
 jlens_rail_status = frozen
+live_model_rail_status = unavailable
+live_model_run_performed = false
 all_child_ledgers_verified = true
 ```
 
@@ -58,10 +61,12 @@ python3 -m broadcast_alpha replay artifacts/run_all_seed_42 --agent agent_1 --st
 Expected context:
 
 ```text
-unattended bundle: final report ready, all child ledgers verified, J-lens rail frozen/deferred
+unattended bundle: final report ready, all child ledgers verified, J-lens rail frozen/deferred, live model run not performed
 ```
 
 ## Boundary
 
 This bundle is unattended and replayable, but it is still deterministic and
-synthetic. It does not claim a live model-backed panel run.
+synthetic. It does not claim a live model-backed panel run. The live-provider
+gate is included so the bundle records whether the model rail was configured,
+authorized, and executed instead of leaving that gap implicit.

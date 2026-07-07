@@ -12,6 +12,7 @@ showpiece needs one entry point that answers:
 - Did the seed audit pass?
 - Was the epoch trajectory generated?
 - What happened to the J-lens rail?
+- Was live/model-backed execution configured or run?
 - Do the ledgers verify?
 
 `build-report` creates that single surface.
@@ -50,6 +51,8 @@ seed_camouflage_failed = false
 epoch_count = 5
 replacement_count = 3
 jlens_rail_status = frozen
+live_model_rail_status = unavailable
+live_model_run_performed = false
 all_source_ledgers_verified = true
 ```
 
@@ -67,5 +70,5 @@ python3 -m broadcast_alpha replay artifacts/final_report_seed_42 --agent agent_1
 Expected context:
 
 ```text
-final report: source ledgers verified and J-lens rail recorded as frozen/deferred
+final report: source ledgers verified, J-lens frozen/deferred, live model run not performed
 ```
