@@ -1,3 +1,5 @@
+import re
+
 from .metrics import seed_camouflage_failed
 
 
@@ -35,6 +37,32 @@ def _seed_label(row: dict) -> int:
     return 0
 
 
+def _tokens(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def adversarial_token_auc(labels: list[int], texts: list[str]) -> float:
+    if len(labels) != len(texts):
+        raise ValueError("labels and texts must have the same length")
+    base_rate = sum(labels) / len(labels)
+    token_counts: dict[str, list[int]] = {}
+    for label, text in zip(labels, texts, strict=True):
+        for token in set(_tokens(text)):
+            counts = token_counts.setdefault(token, [0, 0])
+            counts[0] += label
+            counts[1] += 1
+    token_rates = {
+        token: positive / total
+        for token, (positive, total) in token_counts.items()
+        if total
+    }
+    scores = [
+        max((token_rates[token] for token in set(_tokens(text)) if token in token_rates), default=base_rate)
+        for text in texts
+    ]
+    return roc_auc(labels, scores)
+
+
 def audit_seed_detectability(
     task_runs: list[dict],
     tolerance: float = 0.1,
@@ -42,25 +70,35 @@ def audit_seed_detectability(
 ) -> dict:
     fields = public_feature_fields or PUBLIC_FEATURE_FIELDS
     labels = [_seed_label(row) for row in task_runs]
-    scores = []
+    marker_scores = []
+    public_texts = []
     leak_markers_found = set()
     for row in task_runs:
         text = _public_text(row, fields)
+        public_texts.append(text)
         row_markers = [marker for marker in LEAK_MARKERS if marker in text]
         if row_markers:
             leak_markers_found.update(row_markers)
-            scores.append(1.0)
+            marker_scores.append(1.0)
         else:
-            scores.append(0.0)
+            marker_scores.append(0.0)
 
-    auc = round(roc_auc(labels, scores), 6)
-    failed = seed_camouflage_failed(auc, tolerance=tolerance)
+    marker_auc = round(roc_auc(labels, marker_scores), 6)
+    adversarial_auc = round(adversarial_token_auc(labels, public_texts), 6)
+    auc = max(marker_auc, adversarial_auc)
+    marker_failed = seed_camouflage_failed(marker_auc, tolerance=tolerance)
+    adversarial_failed = seed_camouflage_failed(adversarial_auc, tolerance=tolerance)
+    failed = marker_failed or adversarial_failed
     return {
-        "auditor": "marker_scan_auc_v1",
+        "auditor": "marker_and_adversarial_token_auc_v1",
         "auc": auc,
+        "marker_auc": marker_auc,
+        "adversarial_auc": adversarial_auc,
         "tolerance": tolerance,
         "camouflage_passed": not failed,
         "seed_camouflage_failed": failed,
+        "marker_camouflage_failed": marker_failed,
+        "adversarial_camouflage_failed": adversarial_failed,
         "positive_count": sum(labels),
         "negative_count": len(labels) - sum(labels),
         "public_feature_fields": fields,
@@ -68,10 +106,10 @@ def audit_seed_detectability(
         "leak_markers_found": sorted(leak_markers_found),
         "score_distribution": {
             "positive_marker_score_count": sum(
-                1 for label, score in zip(labels, scores, strict=True) if label == 1 and score == 1.0
+                1 for label, score in zip(labels, marker_scores, strict=True) if label == 1 and score == 1.0
             ),
             "negative_marker_score_count": sum(
-                1 for label, score in zip(labels, scores, strict=True) if label == 0 and score == 1.0
+                1 for label, score in zip(labels, marker_scores, strict=True) if label == 0 and score == 1.0
             ),
         },
     }

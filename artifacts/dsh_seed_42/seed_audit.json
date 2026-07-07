@@ -1,6 +1,8 @@
 {
+  "adversarial_auc": 0.5,
+  "adversarial_camouflage_failed": false,
   "auc": 0.5,
-  "auditor": "marker_scan_auc_v1",
+  "auditor": "marker_and_adversarial_token_auc_v1",
   "camouflage_passed": true,
   "leak_markers": [
     "correct_minority",
@@ -10,6 +12,8 @@
     "seed"
   ],
   "leak_markers_found": [],
+  "marker_auc": 0.5,
+  "marker_camouflage_failed": false,
   "negative_count": 506,
   "positive_count": 214,
   "public_feature_fields": [

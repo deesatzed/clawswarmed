@@ -26,6 +26,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 ## Seed detectability audit
 
 Seed detectability AUC: 0.5
+Adversarial token AUC: 0.5
 Camouflage failed: False
 Audit path: artifacts/dsh_seed_42/seed_audit.json
 

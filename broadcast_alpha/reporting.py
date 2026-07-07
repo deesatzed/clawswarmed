@@ -74,6 +74,7 @@ GLASSGATE_LIFT = {metrics['glassgate_lift']} [95% CI: {metrics['glassgate_lift_c
 ## Seed detectability audit
 
 Seed detectability AUC: {metrics['seed_detectability_auc']}
+Adversarial token AUC: {metrics['seed_adversarial_auc']}
 Camouflage failed: {metrics['seed_camouflage_failed']}
 
 ## RQGM epoch trajectory
@@ -208,6 +209,8 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "D_by_arm": dsh_metrics["D_by_arm"],
         "D_by_panel_type": dsh_metrics["D_by_panel_type"],
         "seed_detectability_auc": seed_audit["auc"],
+        "seed_marker_auc": seed_audit["marker_auc"],
+        "seed_adversarial_auc": seed_audit["adversarial_auc"],
         "seed_camouflage_failed": seed_audit["seed_camouflage_failed"],
         "epoch_count": rqgm_metrics["epoch_count"],
         "replacement_count": rqgm_metrics["replacement_count"],

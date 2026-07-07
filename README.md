@@ -60,8 +60,9 @@ not verified and no white-box gatekeeper model with gradient/layer access is
 configured.
 
 `artifacts/dsh_seed_42/seed_audit.json` is the current seed-camouflage audit.
-It scans public selected-candidate IDs for explicit seed markers and reports
-`seed_detectability_auc = 0.5` with `seed_camouflage_failed = false`.
+It scans public selected-candidate IDs for explicit seed markers, runs a simple
+adversarial token audit, and reports `seed_detectability_auc = 0.5`,
+`seed_adversarial_auc = 0.5`, and `seed_camouflage_failed = false`.
 
 `artifacts/final_report_seed_42/` is the current consolidated report artifact.
 It reads the macro DSH, seed audit, RQGM, and J-lens gate artifacts, verifies

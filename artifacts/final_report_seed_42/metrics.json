@@ -28,6 +28,8 @@
   "result_card_path": "artifacts/final_report_seed_42/result_card.md",
   "result_table_path": "artifacts/final_report_seed_42/result_table.json",
   "run_id": "final_report_seed_42",
+  "seed_adversarial_auc": 0.5,
   "seed_camouflage_failed": false,
-  "seed_detectability_auc": 0.5
+  "seed_detectability_auc": 0.5,
+  "seed_marker_auc": 0.5
 }

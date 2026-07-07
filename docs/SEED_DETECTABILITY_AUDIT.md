@@ -11,7 +11,8 @@ dissent.
 
 ## Implemented Audit
 
-`broadcast_alpha.seed_audit` implements `marker_scan_auc_v1`.
+`broadcast_alpha.seed_audit` implements
+`marker_and_adversarial_token_auc_v1`.
 
 The audit uses hidden run labels only as ground truth. The public feature set
 is intentionally narrow:
@@ -20,14 +21,16 @@ is intentionally narrow:
 selected_candidate_id
 ```
 
-The auditor scans that field for explicit leakage markers:
+The auditor first scans that field for explicit leakage markers:
 
 ```text
 correct_minority, incorrect_minority, minority, seeded, seed
 ```
 
-It then computes ROC AUC with tie handling. When every public candidate ID has
-the same marker score, AUC is 0.5.
+It also runs a simple adversarial token audit over the same public field. The
+adversarial audit learns token-level seed rates from the public text and scores
+rows by the strongest public token signal. Both audits use ROC AUC with tie
+handling. When every public candidate ID has the same score, AUC is 0.5.
 
 ## Current Artifact
 
@@ -47,6 +50,8 @@ Current result:
 
 ```text
 seed_detectability_auc = 0.5
+marker_auc = 0.5
+adversarial_auc = 0.5
 seed_camouflage_failed = false
 leak_markers_found = []
 positive_count = 214
@@ -55,7 +60,8 @@ negative_count = 506
 
 ## Boundary
 
-This is a deterministic marker-leak audit, not a learned adversarial classifier.
-It proves that the current public candidate IDs no longer leak obvious seed
-labels. It does not prove that every possible public feature distribution is
-uninformative.
+This is a deterministic marker and token-level adversarial audit, not a broad
+learned classifier over rich task prompts or model outputs. It proves that the
+current public candidate IDs no longer leak obvious seed labels or task-identity
+tokens useful to this adversary. It does not prove that every possible public
+feature distribution is uninformative.

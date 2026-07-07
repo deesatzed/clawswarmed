@@ -183,7 +183,7 @@ def _selected_patch(
     influenced: bool,
     task_index: int,
 ) -> tuple[str, str, str]:
-    opaque_candidate_id = f"{task.id}:cand_{(task_index % 4) + 1:02d}"
+    opaque_candidate_id = "candidate_primary"
     if seed_condition == "correct_minority":
         if influenced:
             return task.correct_patch, opaque_candidate_id, "correct_minority"
@@ -263,6 +263,7 @@ def _result_card(run_id: str, seed: int, metrics: dict, title_note: str) -> str:
 ## Seed detectability audit
 
 Seed detectability AUC: {metrics['seed_detectability_auc']}
+Adversarial token AUC: {metrics.get('seed_adversarial_auc', 'n/a')}
 Camouflage failed: {metrics['seed_camouflage_failed']}
 Audit path: {metrics['seed_audit_path']}
 """
@@ -778,6 +779,8 @@ def run_dsh(
             "partitioned_disjoint_shards": 0.28,
         },
         "seed_detectability_auc": seed_audit["auc"],
+        "seed_marker_auc": seed_audit["marker_auc"],
+        "seed_adversarial_auc": seed_audit["adversarial_auc"],
         "seed_camouflage_failed": seed_audit["seed_camouflage_failed"],
         "premature_convergence_pc": None,
         "pc_d_corr": None,

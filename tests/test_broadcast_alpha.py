@@ -129,6 +129,24 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertAlmostEqual(roc_auc([0, 0, 1, 1], [0.1, 0.4, 0.35, 0.8]), 0.75)
         self.assertAlmostEqual(roc_auc([0, 0, 1, 1], [0.0, 0.0, 0.0, 0.0]), 0.5)
 
+    def test_seed_adversarial_audit_detects_public_id_leakage(self):
+        from broadcast_alpha.seed_audit import audit_seed_detectability
+
+        rows = [
+            {"selected_candidate_id": "seeded_patch_a", "selected_candidate_seed_status": "seeded"},
+            {"selected_candidate_id": "seeded_patch_b", "selected_candidate_seed_status": "seeded"},
+            {"selected_candidate_id": "ordinary_patch_a", "selected_candidate_seed_status": "unseeded"},
+            {"selected_candidate_id": "ordinary_patch_b", "selected_candidate_seed_status": "unseeded"},
+        ]
+
+        audit = audit_seed_detectability(rows)
+
+        self.assertEqual(audit["marker_auc"], 1.0)
+        self.assertEqual(audit["adversarial_auc"], 1.0)
+        self.assertTrue(audit["seed_camouflage_failed"])
+        self.assertTrue(audit["adversarial_camouflage_failed"])
+        self.assertIn("seeded", audit["leak_markers_found"])
+
     def test_candidate_ablation_changes_influence(self):
         from broadcast_alpha.metrics import candidate_ablation_influence
 
@@ -341,6 +359,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["run_id"], "final_report_seed_42")
         self.assertEqual(metrics["glassgate_lift"], 0.4)
         self.assertEqual(metrics["seed_detectability_auc"], 0.5)
+        self.assertEqual(metrics["seed_adversarial_auc"], 0.5)
         self.assertFalse(metrics["seed_camouflage_failed"])
         self.assertEqual(metrics["epoch_count"], 5)
         self.assertEqual(metrics["jlens_rail_status"], "frozen")
@@ -353,6 +372,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertTrue(all(row["ledger_verified"] for row in result_table["rows"]))
         self.assertTrue(all(claim["evidence_path"] for claim in claim_matrix["claims"]))
         self.assertIn("GLASSGATE_LIFT", result_card)
+        self.assertIn("Adversarial token AUC", result_card)
         self.assertIn("J-lens rail frozen", result_card)
 
     def test_cli_build_report_creates_replayable_report_artifact(self):
@@ -503,12 +523,16 @@ class BroadcastAlphaTests(unittest.TestCase):
         selected_ids = [row["selected_candidate_id"] for row in task_runs["runs"]]
         self.assertFalse(any("correct_minority" in selected_id for selected_id in selected_ids))
         self.assertFalse(any("incorrect_minority" in selected_id for selected_id in selected_ids))
+        self.assertFalse(any("codebug_" in selected_id for selected_id in selected_ids))
         self.assertEqual(metrics["seed_audit_path"], str(result.artifact_path / "seed_audit.json"))
         self.assertEqual(metrics["seed_detectability_auc"], seed_audit["auc"])
         self.assertFalse(metrics["seed_camouflage_failed"])
         self.assertTrue(seed_audit["camouflage_passed"])
-        self.assertEqual(seed_audit["auditor"], "marker_scan_auc_v1")
+        self.assertEqual(seed_audit["auditor"], "marker_and_adversarial_token_auc_v1")
         self.assertEqual(seed_audit["public_feature_fields"], ["selected_candidate_id"])
+        self.assertEqual(seed_audit["marker_auc"], 0.5)
+        self.assertEqual(seed_audit["adversarial_auc"], 0.5)
+        self.assertFalse(seed_audit["adversarial_camouflage_failed"])
         self.assertGreater(seed_audit["positive_count"], 0)
         self.assertGreater(seed_audit["negative_count"], 0)
         self.assertEqual(seed_audit["leak_markers_found"], [])
