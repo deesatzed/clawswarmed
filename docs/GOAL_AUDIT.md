@@ -36,13 +36,15 @@ Files:
 
 ```text
 overall_status = not_complete
-proved_count >= 7
+proved_count >= 8
 deferred_count >= 3
 incomplete_count >= 1
 ```
 
-The known incomplete item is live/model-backed execution: the checked-in
-evidence remains no-spend/no-network, with zero live-sequence adapter calls.
+The audit now checks the 10,000 mixed-receipt ledger stress proof as a distinct
+requirement. The known incomplete item is still live/model-backed execution:
+the checked-in evidence remains no-spend/no-network, with zero live-sequence
+adapter calls.
 
 The J-lens, bridge, and mechanistic admission rails are not treated as proved;
 they are marked `deferred_with_record` when the J-lens freeze record

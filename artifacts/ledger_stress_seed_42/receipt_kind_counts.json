@@ -1,0 +1,10 @@
+{
+  "board_promotion": 1250,
+  "candidate_ablation": 1250,
+  "candidate_submitted": 1250,
+  "decision_recorded": 1250,
+  "epoch_boundary": 1250,
+  "evaluator_score": 1250,
+  "gate_admission": 1250,
+  "hidden_verifier_result": 1250
+}

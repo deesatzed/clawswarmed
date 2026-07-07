@@ -6,6 +6,7 @@ from .experiments import run_dsh, run_rqgm, run_synthetic
 from .goal_audit import audit_goal
 from .jlens import run_jlens_gate
 from .ledger import Ledger
+from .ledger_stress import run_ledger_stress
 from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
 from .live_readiness import prepare_live_smoke
@@ -24,6 +25,11 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("init", help="Print initialization status")
+
+    stress = sub.add_parser("run-ledger-stress", help="Run the 10k mixed-receipt ledger stress proof")
+    stress.add_argument("--seed", type=int, default=42)
+    stress.add_argument("--receipt-count", type=int, default=10_000)
+    stress.add_argument("--artifact-root", default="artifacts")
 
     run = sub.add_parser("run-synthetic", help="Run the deterministic synthetic harness")
     run.add_argument("--seed", type=int, default=42)
@@ -130,6 +136,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "init":
         _emit({"project": "broadcast_alpha", "status": "initialized"})
+        return 0
+
+    if args.command == "run-ledger-stress":
+        result = run_ledger_stress(
+            seed=args.seed,
+            receipt_count=args.receipt_count,
+            artifact_root=Path(args.artifact_root),
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0
 
     if args.command == "run-synthetic":

@@ -5,6 +5,7 @@ from pathlib import Path
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .jlens import run_jlens_gate
 from .ledger import Ledger
+from .ledger_stress import run_ledger_stress
 from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
 from .live_sequence import run_live_sequence
@@ -49,6 +50,8 @@ GLASSGATE_LIFT = {metrics['glassgate_lift']} [95% CI: {metrics['glassgate_lift_c
 Run status: {metrics['run_status']}
 Seed detectability AUC: {metrics['seed_detectability_auc']}
 Adversarial token AUC: {metrics['seed_adversarial_auc']}
+Ledger stress receipts: {metrics['ledger_stress_synthetic_receipt_count']}
+Ledger stress tamper detection: {metrics['ledger_stress_tamper_detection_passed']}
 RQGM epochs: {metrics['epoch_count']}
 J-lens rail: {metrics['jlens_rail_status']}
 Live model rail: {metrics['live_model_rail_status']}
@@ -93,6 +96,7 @@ def run_all(
     final_report_path = artifact_path / "final_report"
     artifact_path.mkdir(parents=True, exist_ok=True)
 
+    ledger_stress = run_ledger_stress(seed=seed, receipt_count=10_000, artifact_root=child_root)
     synthetic = run_synthetic(seed=seed, artifact_root=child_root)
     dsh = run_dsh(
         prereg_path=prereg_dir / "PREREG_DSH-01.md",
@@ -133,6 +137,7 @@ def run_all(
     final_report = build_result_report(artifact_root=child_root, output_dir=final_report_path)
 
     child_artifacts = {
+        "ledger_stress": str(ledger_stress.artifact_path),
         "synthetic": str(synthetic.artifact_path),
         "dsh": str(dsh.artifact_path),
         "rqgm": str(rqgm.artifact_path),
@@ -144,6 +149,7 @@ def run_all(
         "final_report": str(final_report.artifact_path),
     }
     child_paths = {
+        "ledger_stress": ledger_stress.artifact_path,
         "synthetic": synthetic.artifact_path,
         "dsh": dsh.artifact_path,
         "rqgm": rqgm.artifact_path,
@@ -167,6 +173,7 @@ def run_all(
         "child_artifacts": child_artifacts,
         "run_sequence": [
             "synthetic",
+            "ledger_stress",
             "dsh",
             "rqgm",
             "jlens_gate",
@@ -179,7 +186,7 @@ def run_all(
     }
     replay_contexts = {
         "agent_1": {
-            "1": "unattended bundle: generated synthetic, DSH, RQGM, J-lens gate, live model gate, live smoke, live DSH pilot, live sequence, and final report artifacts",
+            "1": "unattended bundle: generated ledger stress, synthetic, DSH, RQGM, J-lens gate, live model gate, live smoke, live DSH pilot, live sequence, and final report artifacts",
             "2": f"unattended bundle: GLASSGATE_LIFT {final_metrics['glassgate_lift']} with seed adversarial AUC {final_metrics['seed_adversarial_auc']}",
             "3": f"unattended bundle: final report ready, all child ledgers verified, J-lens rail frozen/deferred, live sequence {final_metrics['live_sequence_status']}, live model run not performed",
         }
@@ -194,6 +201,12 @@ def run_all(
         "glassgate_lift_ci95": final_metrics["glassgate_lift_ci95"],
         "D_by_arm": final_metrics["D_by_arm"],
         "D_by_panel_type": final_metrics["D_by_panel_type"],
+        "ledger_stress_synthetic_receipt_count": final_metrics["ledger_stress_synthetic_receipt_count"],
+        "ledger_stress_total_receipt_count": final_metrics["ledger_stress_total_receipt_count"],
+        "ledger_stress_mixed_kind_count": final_metrics["ledger_stress_mixed_kind_count"],
+        "ledger_stress_pre_metrics_chain_verified": final_metrics["ledger_stress_pre_metrics_chain_verified"],
+        "ledger_stress_ledger_verified": final_metrics["ledger_stress_ledger_verified"],
+        "ledger_stress_tamper_detection_passed": final_metrics["ledger_stress_tamper_detection_passed"],
         "seed_detectability_auc": final_metrics["seed_detectability_auc"],
         "seed_marker_auc": final_metrics["seed_marker_auc"],
         "seed_adversarial_auc": final_metrics["seed_adversarial_auc"],

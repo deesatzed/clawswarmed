@@ -30,6 +30,7 @@ Top-level files:
 
 Nested artifacts:
 
+- `source_artifacts/ledger_stress_seed_42/`
 - `source_artifacts/synthetic_seed_42/`
 - `source_artifacts/dsh_seed_42/`
 - `source_artifacts/rqgm_seed_42/`
@@ -48,6 +49,9 @@ GLASSGATE_LIFT = 0.4
 glassgate_lift_ci95 = [0.15, 0.55]
 seed_detectability_auc = 0.5
 seed_adversarial_auc = 0.5
+ledger_stress_synthetic_receipt_count = 10000
+ledger_stress_mixed_kind_count = 8
+ledger_stress_tamper_detection_passed = true
 epoch_count = 5
 jlens_rail_status = frozen
 live_model_rail_status = unavailable
@@ -87,11 +91,11 @@ This bundle is unattended and replayable, but it is still deterministic and
 synthetic. It does not claim a live model-backed panel run. The live-provider
 gate is included so the bundle records whether the model rail was configured,
 authorized, and executed instead of leaving that gap implicit. The checked-in
-bundle also includes the one-call live smoke rail, the live DSH pilot rail, and
-the preferred live-provider sequence, but it does not pass credentials,
-`--authorize-api-spend`, or `--execute-live`. These live rails are
-preregistered under `prereg/PREREG_LIVE-01.md`; blocked and fake-transport runs
-do not produce a live `GLASSGATE_LIFT` claim.
+bundle also includes the 10,000-receipt ledger stress proof, one-call live
+smoke rail, the live DSH pilot rail, and the preferred live-provider sequence,
+but it does not pass credentials, `--authorize-api-spend`, or `--execute-live`.
+These live rails are preregistered under `prereg/PREREG_LIVE-01.md`; blocked
+and fake-transport runs do not produce a live `GLASSGATE_LIFT` claim.
 
 For future provider-backed execution, use `run-live-sequence` first. Its
 default checked-in artifact is `artifacts/live_sequence_seed_42/`, and it is

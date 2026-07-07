@@ -23,6 +23,7 @@
       "status": "proved_for_current_artifacts",
       "value": {
         "jlens_gate": true,
+        "ledger_stress": true,
         "live_dsh_pilot": true,
         "live_model_gate": true,
         "live_sequence": true,
@@ -30,6 +31,17 @@
         "macro_dsh": true,
         "rqgm_epoch": true,
         "seed_detectability": true
+      }
+    },
+    {
+      "claim": "10,000 mixed synthetic receipts verify and tamper detection fails a mutated copy.",
+      "evidence_path": "artifacts/ledger_stress_seed_42/metrics.json",
+      "status": "proved_for_current_stress_artifact",
+      "value": {
+        "ledger_verified": true,
+        "mixed_kind_count": 8,
+        "synthetic_receipt_count": 10000,
+        "tamper_detection_passed": true
       }
     },
     {

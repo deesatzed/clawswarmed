@@ -17,6 +17,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 
 ## Required evidence
 
+- ledger_stress: synthetic_receipt_count = 10000
 - macro_dsh: GLASSGATE_LIFT = 0.4
 - seed_detectability: seed_detectability_auc = 0.5
 - rqgm_epoch: epoch_count = 5
@@ -25,6 +26,12 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 - live_smoke: run_status = blocked_no_live_execution
 - live_dsh_pilot: run_status = blocked_no_live_execution
 - live_sequence: sequence_status = blocked_before_smoke
+
+## 10k ledger stress
+
+Synthetic stress receipts: 10000
+Mixed receipt kinds: 8
+Tamper detection passed: True
 
 ## Seed detectability audit
 

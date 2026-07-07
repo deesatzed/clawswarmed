@@ -11,6 +11,8 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 Run status: complete_with_deferred_jlens
 Seed detectability AUC: 0.5
 Adversarial token AUC: 0.5
+Ledger stress receipts: 10000
+Ledger stress tamper detection: True
 RQGM epochs: 5
 J-lens rail: frozen
 Live model rail: unavailable
@@ -28,6 +30,7 @@ Live sequence adapter calls: 0
 
 | Artifact | Path | Ledger verified |
 |---|---|---:|
+| ledger_stress | artifacts/run_all_seed_42/source_artifacts/ledger_stress_seed_42 | True |
 | synthetic | artifacts/run_all_seed_42/source_artifacts/synthetic_seed_42 | True |
 | dsh | artifacts/run_all_seed_42/source_artifacts/dsh_seed_42 | True |
 | rqgm | artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42 | True |

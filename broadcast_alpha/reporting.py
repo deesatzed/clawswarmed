@@ -71,6 +71,12 @@ GLASSGATE_LIFT = {metrics['glassgate_lift']} [95% CI: {metrics['glassgate_lift_c
 
 {row_summary}
 
+## 10k ledger stress
+
+Synthetic stress receipts: {metrics['ledger_stress_synthetic_receipt_count']}
+Mixed receipt kinds: {metrics['ledger_stress_mixed_kind_count']}
+Tamper detection passed: {metrics['ledger_stress_tamper_detection_passed']}
+
 ## Seed detectability audit
 
 Seed detectability AUC: {metrics['seed_detectability_auc']}
@@ -134,6 +140,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     output_dir.mkdir(parents=True, exist_ok=True)
 
     dsh_path = artifact_root / "dsh_seed_42"
+    ledger_stress_path = artifact_root / "ledger_stress_seed_42"
     rqgm_path = artifact_root / "rqgm_seed_42"
     jlens_path = artifact_root / "jlens_gate_seed_42"
     live_path = artifact_root / "live_gate_seed_42"
@@ -143,6 +150,19 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
 
     dsh_metrics = _read_json(dsh_path / "metrics.json")
     seed_audit = _read_json(dsh_path / "seed_audit.json")
+    if (ledger_stress_path / "metrics.json").exists():
+        ledger_stress_metrics = _read_json(ledger_stress_path / "metrics.json")
+        ledger_stress_ledger_verified = _verify_ledger(ledger_stress_path)
+    else:
+        ledger_stress_metrics = {
+            "synthetic_receipt_count": 0,
+            "total_receipt_count": 0,
+            "mixed_kind_count": 0,
+            "pre_metrics_chain_verified": False,
+            "ledger_verified": False,
+            "tamper_detection_passed": False,
+        }
+        ledger_stress_ledger_verified = False
     rqgm_metrics = _read_json(rqgm_path / "metrics.json")
     jlens_metrics = _read_json(jlens_path / "metrics.json")
     if (live_path / "metrics.json").exists():
@@ -206,6 +226,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
 
     ledger_verified = {
         "macro_dsh": _verify_ledger(dsh_path),
+        "ledger_stress": ledger_stress_ledger_verified,
         "seed_detectability": _verify_ledger(dsh_path),
         "rqgm_epoch": _verify_ledger(rqgm_path),
         "jlens_gate": _verify_ledger(jlens_path),
@@ -215,6 +236,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_sequence": live_sequence_ledger_verified,
     }
     rows = [
+        {
+            "section": "ledger_stress",
+            "artifact_path": str(ledger_stress_path),
+            "primary_metric": "synthetic_receipt_count",
+            "primary_value": ledger_stress_metrics["synthetic_receipt_count"],
+            "ledger_verified": ledger_verified["ledger_stress"],
+            "evidence_path": str(ledger_stress_path / "metrics.json"),
+        },
         {
             "section": "macro_dsh",
             "artifact_path": str(dsh_path),
@@ -298,6 +327,24 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "status": "proved_for_current_artifacts",
             "evidence_path": str(output_dir / "ledger_verification.json"),
             "value": ledger_verified,
+        },
+        {
+            "claim": "10,000 mixed synthetic receipts verify and tamper detection fails a mutated copy.",
+            "status": "proved_for_current_stress_artifact"
+            if ledger_stress_metrics["synthetic_receipt_count"] >= 10_000
+            and ledger_stress_metrics["mixed_kind_count"] >= 2
+            and ledger_stress_metrics["pre_metrics_chain_verified"]
+            and ledger_stress_metrics["ledger_verified"]
+            and ledger_stress_metrics["tamper_detection_passed"]
+            and ledger_verified["ledger_stress"]
+            else "missing_or_failed_stress_artifact",
+            "evidence_path": str(ledger_stress_path / "metrics.json"),
+            "value": {
+                "synthetic_receipt_count": ledger_stress_metrics["synthetic_receipt_count"],
+                "mixed_kind_count": ledger_stress_metrics["mixed_kind_count"],
+                "ledger_verified": ledger_stress_metrics["ledger_verified"],
+                "tamper_detection_passed": ledger_stress_metrics["tamper_detection_passed"],
+            },
         },
         {
             "claim": "Seed detectability audit is present and passes the current marker-leak gate.",
@@ -429,6 +476,12 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "glassgate_lift_ci95": dsh_metrics["glassgate_lift_ci95"],
         "D_by_arm": dsh_metrics["D_by_arm"],
         "D_by_panel_type": dsh_metrics["D_by_panel_type"],
+        "ledger_stress_synthetic_receipt_count": ledger_stress_metrics["synthetic_receipt_count"],
+        "ledger_stress_total_receipt_count": ledger_stress_metrics["total_receipt_count"],
+        "ledger_stress_mixed_kind_count": ledger_stress_metrics["mixed_kind_count"],
+        "ledger_stress_pre_metrics_chain_verified": ledger_stress_metrics["pre_metrics_chain_verified"],
+        "ledger_stress_ledger_verified": ledger_stress_metrics["ledger_verified"] and ledger_verified["ledger_stress"],
+        "ledger_stress_tamper_detection_passed": ledger_stress_metrics["tamper_detection_passed"],
         "seed_detectability_auc": seed_audit["auc"],
         "seed_marker_auc": seed_audit["marker_auc"],
         "seed_adversarial_auc": seed_audit["adversarial_auc"],
@@ -478,7 +531,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     }
     replay_contexts = {
         "agent_1": {
-            "1": "final report: macro DSH, seed audit, RQGM, J-lens source gate, live model gate, live smoke, live DSH pilot, and live sequence artifacts loaded",
+            "1": "final report: ledger stress, macro DSH, seed audit, RQGM, J-lens source gate, live model gate, live smoke, live DSH pilot, and live sequence artifacts loaded",
             "2": f"final report: GLASSGATE_LIFT {metrics['glassgate_lift']} with seed AUC {metrics['seed_detectability_auc']}",
             "3": f"final report: source ledgers verified, J-lens frozen/deferred, live sequence {metrics['live_sequence_status']}, live model run not performed",
         }

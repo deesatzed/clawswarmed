@@ -132,12 +132,20 @@ def audit_goal(
 
     final_report = _final_report_path(artifact_root)
     run_all = artifact_root / "run_all_seed_42"
+    ledger_stress = artifact_root / "ledger_stress_seed_42"
+    if not (ledger_stress / "metrics.json").exists():
+        ledger_stress = run_all / "source_artifacts" / "ledger_stress_seed_42"
     live_sequence = artifact_root / "live_sequence_seed_42"
     if not (live_sequence / "metrics.json").exists():
         live_sequence = run_all / "source_artifacts" / "live_sequence_seed_42"
 
     final_metrics = _read_json(final_report / "metrics.json") if (final_report / "metrics.json").exists() else {}
     run_all_metrics = _read_json(run_all / "metrics.json") if (run_all / "metrics.json").exists() else {}
+    ledger_stress_metrics = (
+        _read_json(ledger_stress / "metrics.json")
+        if (ledger_stress / "metrics.json").exists()
+        else {}
+    )
     live_sequence_metrics = (
         _read_json(live_sequence / "metrics.json")
         if (live_sequence / "metrics.json").exists()
@@ -161,6 +169,14 @@ def audit_goal(
         run_all_metrics.get("run_status") == "complete_with_deferred_jlens"
         and bool(run_all_metrics.get("all_child_ledgers_verified"))
         and _ledger_verified(run_all)
+    )
+    ledger_stress_ok = (
+        int(ledger_stress_metrics.get("synthetic_receipt_count", 0) or 0) >= 10_000
+        and int(ledger_stress_metrics.get("mixed_kind_count", 0) or 0) >= 2
+        and bool(ledger_stress_metrics.get("pre_metrics_chain_verified"))
+        and bool(ledger_stress_metrics.get("ledger_verified"))
+        and bool(ledger_stress_metrics.get("tamper_detection_passed"))
+        and _ledger_verified(ledger_stress)
     )
     live_adapter_calls = int(live_sequence_metrics.get("adapter_call_count_total", 0) or 0)
     live_model_run_performed = bool(
@@ -226,6 +242,22 @@ def audit_goal(
                 "run_all_ledger_verified": _ledger_verified(run_all),
                 "all_source_ledgers_verified": final_metrics.get("all_source_ledgers_verified"),
                 "all_child_ledgers_verified": run_all_metrics.get("all_child_ledgers_verified"),
+            },
+        ),
+        _item(
+            "ledger_stress_10k",
+            "At least 10,000 mixed synthetic receipts verify and a tampered copy fails verification.",
+            "proved" if ledger_stress_ok else "incomplete",
+            ledger_stress / "metrics.json",
+            "10,000 mixed synthetic receipts verify and tamper detection passes."
+            if ledger_stress_ok
+            else "10,000 mixed-receipt ledger stress proof is missing or failed.",
+            {
+                "synthetic_receipt_count": ledger_stress_metrics.get("synthetic_receipt_count"),
+                "mixed_kind_count": ledger_stress_metrics.get("mixed_kind_count"),
+                "pre_metrics_chain_verified": ledger_stress_metrics.get("pre_metrics_chain_verified"),
+                "ledger_verified": ledger_stress_metrics.get("ledger_verified"),
+                "tamper_detection_passed": ledger_stress_metrics.get("tamper_detection_passed"),
             },
         ),
         _item(

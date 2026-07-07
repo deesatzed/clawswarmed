@@ -1,6 +1,14 @@
 {
   "rows": [
     {
+      "artifact_path": "artifacts/ledger_stress_seed_42",
+      "evidence_path": "artifacts/ledger_stress_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "synthetic_receipt_count",
+      "primary_value": 10000,
+      "section": "ledger_stress"
+    },
+    {
       "artifact_path": "artifacts/dsh_seed_42",
       "evidence_path": "artifacts/dsh_seed_42/metrics.json",
       "ledger_verified": true,

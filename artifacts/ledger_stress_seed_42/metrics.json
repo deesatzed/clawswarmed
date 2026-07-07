@@ -1,0 +1,14 @@
+{
+  "ledger_path": "artifacts/ledger_stress_seed_42/ledger.jsonl",
+  "ledger_verified": true,
+  "mixed_kind_count": 8,
+  "pre_metrics_chain_verified": true,
+  "receipt_kind_counts_path": "artifacts/ledger_stress_seed_42/receipt_kind_counts.json",
+  "replay_bundle_path": "artifacts/ledger_stress_seed_42/replay",
+  "result_card_path": "artifacts/ledger_stress_seed_42/result_card.md",
+  "run_id": "ledger_stress_seed_42",
+  "seed": 42,
+  "synthetic_receipt_count": 10000,
+  "tamper_detection_passed": true,
+  "total_receipt_count": 10001
+}

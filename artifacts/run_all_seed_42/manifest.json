@@ -3,6 +3,7 @@
     "dsh": "artifacts/run_all_seed_42/source_artifacts/dsh_seed_42",
     "final_report": "artifacts/run_all_seed_42/final_report",
     "jlens_gate": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42",
+    "ledger_stress": "artifacts/run_all_seed_42/source_artifacts/ledger_stress_seed_42",
     "live_dsh_pilot": "artifacts/run_all_seed_42/source_artifacts/live_dsh_seed_42",
     "live_model_gate": "artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42",
     "live_sequence": "artifacts/run_all_seed_42/source_artifacts/live_sequence_seed_42",
@@ -14,6 +15,7 @@
   "run_id": "run_all_seed_42",
   "run_sequence": [
     "synthetic",
+    "ledger_stress",
     "dsh",
     "rqgm",
     "jlens_gate",

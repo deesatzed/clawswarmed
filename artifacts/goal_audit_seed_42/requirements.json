@@ -54,6 +54,20 @@
       }
     },
     {
+      "evidence": "10,000 mixed synthetic receipts verify and tamper detection passes.",
+      "evidence_path": "artifacts/ledger_stress_seed_42/metrics.json",
+      "id": "ledger_stress_10k",
+      "requirement": "At least 10,000 mixed synthetic receipts verify and a tampered copy fails verification.",
+      "status": "proved",
+      "value": {
+        "ledger_verified": true,
+        "mixed_kind_count": 8,
+        "pre_metrics_chain_verified": true,
+        "synthetic_receipt_count": 10000,
+        "tamper_detection_passed": true
+      }
+    },
+    {
       "evidence": "Seed detectability and adversarial token AUC are both 0.5 with no camouflage failure.",
       "evidence_path": "artifacts/final_report_seed_42/metrics.json",
       "id": "seed_detectability_audit",

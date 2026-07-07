@@ -43,6 +43,93 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(len(ledger.receipts), 10_000)
         self.assertTrue(ledger.verify_chain())
 
+    def test_ledger_stress_creates_mixed_10k_receipt_artifact(self):
+        from broadcast_alpha.ledger import Ledger
+        from broadcast_alpha.ledger_stress import run_ledger_stress
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_ledger_stress(seed=42, receipt_count=10_000, artifact_root=Path(tmp))
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            kind_counts = json.loads((result.artifact_path / "receipt_kind_counts.json").read_text())
+            ledger = Ledger.from_jsonl(result.artifact_path / "ledger.jsonl")
+            replay_context = (result.artifact_path / "replay" / "contexts.json").read_text()
+
+        self.assertEqual(result.run_id, "ledger_stress_seed_42")
+        self.assertEqual(metrics["synthetic_receipt_count"], 10_000)
+        self.assertEqual(metrics["total_receipt_count"], 10_001)
+        self.assertGreaterEqual(metrics["mixed_kind_count"], 6)
+        self.assertTrue(metrics["pre_metrics_chain_verified"])
+        self.assertTrue(metrics["ledger_verified"])
+        self.assertTrue(metrics["tamper_detection_passed"])
+        self.assertEqual(sum(kind_counts.values()), 10_000)
+        self.assertTrue(all(count > 0 for count in kind_counts.values()))
+        self.assertTrue(ledger.verify_chain())
+        self.assertIn("10,000 mixed synthetic receipts", replay_context)
+
+    def test_cli_run_ledger_stress_creates_replayable_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-ledger-stress",
+                    "--seed",
+                    "42",
+                    "--receipt-count",
+                    "10000",
+                    "--artifact-root",
+                    tmp,
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(payload["run_id"], "ledger_stress_seed_42")
+            self.assertEqual(metrics["synthetic_receipt_count"], 10_000)
+            self.assertTrue(metrics["tamper_detection_passed"])
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("tamper check passed", replay.stdout)
+
     def test_ledger_tamper_detection(self):
         from broadcast_alpha.ledger import Ledger
 
@@ -1282,6 +1369,7 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_build_report_summarizes_required_rails(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.ledger_stress import run_ledger_stress
         from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
         from broadcast_alpha.live_sequence import run_live_sequence
@@ -1289,6 +1377,7 @@ class BroadcastAlphaTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             artifact_root = Path(tmp)
+            run_ledger_stress(seed=42, receipt_count=10_000, artifact_root=artifact_root)
             run_synthetic(seed=42, artifact_root=artifact_root)
             run_dsh(
                 prereg_path=APP_ROOT / "prereg" / "PREREG_DSH-01.md",
@@ -1347,11 +1436,16 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["live_sequence_pilot_status"], "not_requested")
         self.assertFalse(metrics["live_sequence_pilot_promoted"])
         self.assertTrue(metrics["live_sequence_all_child_ledgers_verified"])
+        self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
+        self.assertGreaterEqual(metrics["ledger_stress_mixed_kind_count"], 6)
+        self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
+        self.assertTrue(metrics["ledger_stress_ledger_verified"])
         self.assertTrue(metrics["all_source_ledgers_verified"])
         self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
         self.assertEqual(
             {row["section"] for row in result_table["rows"]},
             {
+                "ledger_stress",
                 "macro_dsh",
                 "seed_detectability",
                 "rqgm_epoch",
@@ -1365,7 +1459,9 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertTrue(all(row["ledger_verified"] for row in result_table["rows"]))
         self.assertTrue(all(claim["evidence_path"] for claim in claim_matrix["claims"]))
         self.assertTrue(any("live-provider sequence" in claim["claim"] for claim in claim_matrix["claims"]))
+        self.assertTrue(any("10,000 mixed synthetic receipts" in claim["claim"] for claim in claim_matrix["claims"]))
         self.assertIn("GLASSGATE_LIFT", result_card)
+        self.assertIn("10k ledger stress", result_card)
         self.assertIn("Adversarial token AUC", result_card)
         self.assertIn("J-lens rail frozen", result_card)
         self.assertIn("Live model rail", result_card)
@@ -1374,12 +1470,14 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_cli_build_report_creates_replayable_report_artifact(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.ledger_stress import run_ledger_stress
         from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
         from broadcast_alpha.live_sequence import run_live_sequence
 
         with tempfile.TemporaryDirectory() as tmp:
             artifact_root = Path(tmp)
+            run_ledger_stress(seed=42, receipt_count=10_000, artifact_root=artifact_root)
             run_synthetic(seed=42, artifact_root=artifact_root)
             run_dsh(
                 prereg_path=APP_ROOT / "prereg" / "PREREG_DSH-01.md",
@@ -1439,6 +1537,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
             self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
             self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
+            self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
+            self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
 
             replay = subprocess.run(
                 [
@@ -1513,12 +1613,18 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_sequence_pilot_status"], "not_requested")
             self.assertFalse(metrics["live_sequence_pilot_promoted"])
             self.assertTrue(metrics["live_sequence_all_child_ledgers_verified"])
+            self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
+            self.assertGreaterEqual(metrics["ledger_stress_mixed_kind_count"], 6)
+            self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
+            self.assertTrue(metrics["ledger_stress_ledger_verified"])
             self.assertTrue(metrics["all_child_ledgers_verified"])
             self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(final_metrics["live_sequence_status"], "blocked_before_smoke")
+            self.assertEqual(final_metrics["ledger_stress_synthetic_receipt_count"], 10_000)
             self.assertEqual(
                 set(manifest["child_artifacts"]),
                 {
+                    "ledger_stress",
                     "synthetic",
                     "dsh",
                     "rqgm",
@@ -1535,6 +1641,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_smoke_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_dsh_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_sequence_seed_42" / "manifest.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "ledger_stress_seed_42" / "receipt_kind_counts.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 
     def test_cli_run_all_creates_replayable_unattended_bundle(self):
@@ -1572,6 +1679,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
             self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
+            self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
+            self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
             self.assertTrue((artifact_path / "final_report" / "result_table.md").exists())
 
             replay = subprocess.run(
@@ -1642,6 +1751,9 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertGreaterEqual(metrics["incomplete_count"], 1)
         self.assertEqual(by_id["macro_glassgate_lift"]["status"], "proved")
         self.assertEqual(by_id["macro_d_by_arm"]["status"], "proved")
+        self.assertEqual(by_id["ledger_stress_10k"]["status"], "proved")
+        self.assertEqual(by_id["ledger_stress_10k"]["value"]["synthetic_receipt_count"], 10_000)
+        self.assertTrue(by_id["ledger_stress_10k"]["value"]["tamper_detection_passed"])
         self.assertEqual(by_id["seed_detectability_audit"]["status"], "proved")
         self.assertEqual(by_id["rqgm_epoch_trajectory"]["status"], "proved")
         self.assertEqual(by_id["jlens_or_clean_defer"]["status"], "deferred_with_record")
