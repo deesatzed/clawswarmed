@@ -52,6 +52,8 @@ Seed detectability AUC: {metrics['seed_detectability_auc']}
 Adversarial token AUC: {metrics['seed_adversarial_auc']}
 Ledger stress receipts: {metrics['ledger_stress_synthetic_receipt_count']}
 Ledger stress tamper detection: {metrics['ledger_stress_tamper_detection_passed']}
+Candidate ablation rate: {metrics['candidate_ablation_rate']}
+Token cost per solve: {metrics['token_cost_per_solve']}
 RQGM epochs: {metrics['epoch_count']}
 J-lens rail: {metrics['jlens_rail_status']}
 Live model rail: {metrics['live_model_rail_status']}
@@ -207,6 +209,10 @@ def run_all(
         "ledger_stress_pre_metrics_chain_verified": final_metrics["ledger_stress_pre_metrics_chain_verified"],
         "ledger_stress_ledger_verified": final_metrics["ledger_stress_ledger_verified"],
         "ledger_stress_tamper_detection_passed": final_metrics["ledger_stress_tamper_detection_passed"],
+        "verified_solve_rate": final_metrics["verified_solve_rate"],
+        "panel_correlation_rho": final_metrics["panel_correlation_rho"],
+        "candidate_ablation_rate": final_metrics["candidate_ablation_rate"],
+        "token_cost_per_solve": final_metrics["token_cost_per_solve"],
         "seed_detectability_auc": final_metrics["seed_detectability_auc"],
         "seed_marker_auc": final_metrics["seed_marker_auc"],
         "seed_adversarial_auc": final_metrics["seed_adversarial_auc"],

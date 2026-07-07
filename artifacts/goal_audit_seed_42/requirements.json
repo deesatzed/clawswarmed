@@ -41,6 +41,27 @@
       }
     },
     {
+      "evidence": "Macro diagnostics are present in the consolidated report.",
+      "evidence_path": "artifacts/final_report_seed_42/metrics.json",
+      "id": "macro_diagnostics",
+      "requirement": "Macro report includes verified solve rate, panel correlation rho, candidate ablation rate, and token cost per solve.",
+      "status": "proved",
+      "value": {
+        "candidate_ablation_rate": 0.297222,
+        "panel_correlation_rho": {
+          "correlated_shared_context": 0.82,
+          "partitioned_disjoint_shards": 0.28
+        },
+        "token_cost_per_solve": null,
+        "verified_solve_rate": {
+          "abundant": 0.605556,
+          "random": 0.627778,
+          "scarce_naive_topk": 0.594444,
+          "scarce_protected": 0.761111
+        }
+      }
+    },
+    {
       "evidence": "Final report source ledgers and run-all child ledgers verify.",
       "evidence_path": "artifacts/final_report_seed_42/ledger.jsonl",
       "id": "replayable_tamper_evident_ledgers",

@@ -77,6 +77,13 @@ Synthetic stress receipts: {metrics['ledger_stress_synthetic_receipt_count']}
 Mixed receipt kinds: {metrics['ledger_stress_mixed_kind_count']}
 Tamper detection passed: {metrics['ledger_stress_tamper_detection_passed']}
 
+## Macro diagnostics
+
+Verified solve rate: {metrics['verified_solve_rate']}
+Panel correlation rho: {metrics['panel_correlation_rho']}
+Candidate ablation rate: {metrics['candidate_ablation_rate']}
+Token cost per solve: {metrics['token_cost_per_solve']}
+
 ## Seed detectability audit
 
 Seed detectability AUC: {metrics['seed_detectability_auc']}
@@ -347,6 +354,22 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             },
         },
         {
+            "claim": "macro diagnostics include verified solve rate, panel correlation rho, candidate ablation rate, and token cost per solve.",
+            "status": "proved_for_current_macro_artifact"
+            if isinstance(dsh_metrics.get("verified_solve_rate"), dict)
+            and isinstance(dsh_metrics.get("panel_correlation_rho"), dict)
+            and "candidate_ablation_rate" in dsh_metrics
+            and "token_cost_per_solve" in dsh_metrics
+            else "missing_macro_diagnostics",
+            "evidence_path": str(dsh_path / "metrics.json"),
+            "value": {
+                "verified_solve_rate": dsh_metrics.get("verified_solve_rate"),
+                "panel_correlation_rho": dsh_metrics.get("panel_correlation_rho"),
+                "candidate_ablation_rate": dsh_metrics.get("candidate_ablation_rate"),
+                "token_cost_per_solve": dsh_metrics.get("token_cost_per_solve"),
+            },
+        },
+        {
             "claim": "Seed detectability audit is present and passes the current marker-leak gate.",
             "status": "proved_for_current_macro_artifact",
             "evidence_path": str(dsh_path / "seed_audit.json"),
@@ -482,6 +505,10 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "ledger_stress_pre_metrics_chain_verified": ledger_stress_metrics["pre_metrics_chain_verified"],
         "ledger_stress_ledger_verified": ledger_stress_metrics["ledger_verified"] and ledger_verified["ledger_stress"],
         "ledger_stress_tamper_detection_passed": ledger_stress_metrics["tamper_detection_passed"],
+        "verified_solve_rate": dsh_metrics["verified_solve_rate"],
+        "panel_correlation_rho": dsh_metrics["panel_correlation_rho"],
+        "candidate_ablation_rate": dsh_metrics["candidate_ablation_rate"],
+        "token_cost_per_solve": dsh_metrics["token_cost_per_solve"],
         "seed_detectability_auc": seed_audit["auc"],
         "seed_marker_auc": seed_audit["marker_auc"],
         "seed_adversarial_auc": seed_audit["adversarial_auc"],

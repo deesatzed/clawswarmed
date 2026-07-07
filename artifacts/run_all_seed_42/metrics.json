@@ -10,6 +10,7 @@
     "partitioned_disjoint_shards": 0.325
   },
   "all_child_ledgers_verified": true,
+  "candidate_ablation_rate": 0.297222,
   "child_ledgers_verified": {
     "dsh": true,
     "final_report": true,
@@ -74,6 +75,10 @@
   "live_smoke_model_run_performed": false,
   "live_smoke_run_status": "blocked_no_live_execution",
   "manifest_path": "artifacts/run_all_seed_42/manifest.json",
+  "panel_correlation_rho": {
+    "correlated_shared_context": 0.82,
+    "partitioned_disjoint_shards": 0.28
+  },
   "replacement_count": 3,
   "replay_bundle_path": "artifacts/run_all_seed_42/replay",
   "result_card_path": "artifacts/run_all_seed_42/result_card.md",
@@ -84,5 +89,12 @@
   "seed_camouflage_failed": false,
   "seed_detectability_auc": 0.5,
   "seed_marker_auc": 0.5,
-  "tasks_per_cell": 30
+  "tasks_per_cell": 30,
+  "token_cost_per_solve": null,
+  "verified_solve_rate": {
+    "abundant": 0.605556,
+    "random": 0.627778,
+    "scarce_naive_topk": 0.594444,
+    "scarce_protected": 0.761111
+  }
 }

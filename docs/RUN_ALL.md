@@ -52,6 +52,10 @@ seed_adversarial_auc = 0.5
 ledger_stress_synthetic_receipt_count = 10000
 ledger_stress_mixed_kind_count = 8
 ledger_stress_tamper_detection_passed = true
+verified_solve_rate.scarce_protected = 0.761111
+panel_correlation_rho.correlated_shared_context = 0.82
+candidate_ablation_rate = 0.297222
+token_cost_per_solve = null
 epoch_count = 5
 jlens_rail_status = frozen
 live_model_rail_status = unavailable
@@ -96,6 +100,9 @@ smoke rail, the live DSH pilot rail, and the preferred live-provider sequence,
 but it does not pass credentials, `--authorize-api-spend`, or `--execute-live`.
 These live rails are preregistered under `prereg/PREREG_LIVE-01.md`; blocked
 and fake-transport runs do not produce a live `GLASSGATE_LIFT` claim.
+
+`token_cost_per_solve = null` is expected for the deterministic macro child
+artifact because the checked-in bundle does not use LLM/API tokens.
 
 For future provider-backed execution, use `run-live-sequence` first. Its
 default checked-in artifact is `artifacts/live_sequence_seed_42/`, and it is

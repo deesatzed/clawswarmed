@@ -33,6 +33,13 @@ Synthetic stress receipts: 10000
 Mixed receipt kinds: 8
 Tamper detection passed: True
 
+## Macro diagnostics
+
+Verified solve rate: {'abundant': 0.605556, 'random': 0.627778, 'scarce_naive_topk': 0.594444, 'scarce_protected': 0.761111}
+Panel correlation rho: {'correlated_shared_context': 0.82, 'partitioned_disjoint_shards': 0.28}
+Candidate ablation rate: 0.297222
+Token cost per solve: None
+
 ## Seed detectability audit
 
 Seed detectability AUC: 0.5

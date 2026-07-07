@@ -11,6 +11,8 @@ showpiece needs one entry point that answers:
 - Where are the D estimates?
 - Did the seed audit pass?
 - Did the 10,000-receipt ledger stress proof pass?
+- Are the macro diagnostics surfaced: verified solve rate, panel correlation
+  rho, candidate ablation rate, and token cost per solve?
 - Was the epoch trajectory generated?
 - What happened to the J-lens rail?
 - Was live/model-backed execution configured or run?
@@ -53,6 +55,10 @@ seed_camouflage_failed = false
 ledger_stress_synthetic_receipt_count = 10000
 ledger_stress_mixed_kind_count = 8
 ledger_stress_tamper_detection_passed = true
+verified_solve_rate.scarce_protected = 0.761111
+panel_correlation_rho.correlated_shared_context = 0.82
+candidate_ablation_rate = 0.297222
+token_cost_per_solve = null
 epoch_count = 5
 replacement_count = 3
 jlens_rail_status = frozen
@@ -78,6 +84,9 @@ all_source_ledgers_verified = true
 The report status is `complete_with_deferred_jlens` for the current artifact
 set. That does not mean the broader project goal is complete; live/model-backed
 challenger behavior remains future gated work.
+
+`token_cost_per_solve = null` is intentional for the checked-in deterministic
+macro artifact because no LLM/API tokens are used.
 
 ## Replay
 

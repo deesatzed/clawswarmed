@@ -1440,6 +1440,10 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertGreaterEqual(metrics["ledger_stress_mixed_kind_count"], 6)
         self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
         self.assertTrue(metrics["ledger_stress_ledger_verified"])
+        self.assertEqual(metrics["verified_solve_rate"]["scarce_protected"], 0.761111)
+        self.assertEqual(metrics["panel_correlation_rho"]["correlated_shared_context"], 0.82)
+        self.assertEqual(metrics["candidate_ablation_rate"], 0.297222)
+        self.assertIsNone(metrics["token_cost_per_solve"])
         self.assertTrue(metrics["all_source_ledgers_verified"])
         self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
         self.assertEqual(
@@ -1460,8 +1464,11 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertTrue(all(claim["evidence_path"] for claim in claim_matrix["claims"]))
         self.assertTrue(any("live-provider sequence" in claim["claim"] for claim in claim_matrix["claims"]))
         self.assertTrue(any("10,000 mixed synthetic receipts" in claim["claim"] for claim in claim_matrix["claims"]))
+        self.assertTrue(any("macro diagnostics" in claim["claim"] for claim in claim_matrix["claims"]))
         self.assertIn("GLASSGATE_LIFT", result_card)
         self.assertIn("10k ledger stress", result_card)
+        self.assertIn("Macro diagnostics", result_card)
+        self.assertIn("Candidate ablation rate", result_card)
         self.assertIn("Adversarial token AUC", result_card)
         self.assertIn("J-lens rail frozen", result_card)
         self.assertIn("Live model rail", result_card)
@@ -1539,6 +1546,10 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
             self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
             self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
+            self.assertEqual(metrics["verified_solve_rate"]["scarce_protected"], 0.761111)
+            self.assertEqual(metrics["panel_correlation_rho"]["partitioned_disjoint_shards"], 0.28)
+            self.assertEqual(metrics["candidate_ablation_rate"], 0.297222)
+            self.assertIsNone(metrics["token_cost_per_solve"])
 
             replay = subprocess.run(
                 [
@@ -1617,10 +1628,15 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertGreaterEqual(metrics["ledger_stress_mixed_kind_count"], 6)
             self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
             self.assertTrue(metrics["ledger_stress_ledger_verified"])
+            self.assertEqual(metrics["verified_solve_rate"]["scarce_protected"], 0.761111)
+            self.assertEqual(metrics["panel_correlation_rho"]["correlated_shared_context"], 0.82)
+            self.assertEqual(metrics["candidate_ablation_rate"], 0.297222)
+            self.assertIsNone(metrics["token_cost_per_solve"])
             self.assertTrue(metrics["all_child_ledgers_verified"])
             self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(final_metrics["live_sequence_status"], "blocked_before_smoke")
             self.assertEqual(final_metrics["ledger_stress_synthetic_receipt_count"], 10_000)
+            self.assertEqual(final_metrics["verified_solve_rate"]["scarce_protected"], 0.761111)
             self.assertEqual(
                 set(manifest["child_artifacts"]),
                 {
@@ -1681,6 +1697,9 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
             self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
             self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
+            self.assertEqual(metrics["verified_solve_rate"]["scarce_protected"], 0.761111)
+            self.assertEqual(metrics["candidate_ablation_rate"], 0.297222)
+            self.assertIsNone(metrics["token_cost_per_solve"])
             self.assertTrue((artifact_path / "final_report" / "result_table.md").exists())
 
             replay = subprocess.run(
@@ -1751,6 +1770,11 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertGreaterEqual(metrics["incomplete_count"], 1)
         self.assertEqual(by_id["macro_glassgate_lift"]["status"], "proved")
         self.assertEqual(by_id["macro_d_by_arm"]["status"], "proved")
+        self.assertEqual(by_id["macro_diagnostics"]["status"], "proved")
+        self.assertEqual(by_id["macro_diagnostics"]["value"]["verified_solve_rate"]["scarce_protected"], 0.761111)
+        self.assertEqual(by_id["macro_diagnostics"]["value"]["panel_correlation_rho"]["correlated_shared_context"], 0.82)
+        self.assertEqual(by_id["macro_diagnostics"]["value"]["candidate_ablation_rate"], 0.297222)
+        self.assertIsNone(by_id["macro_diagnostics"]["value"]["token_cost_per_solve"])
         self.assertEqual(by_id["ledger_stress_10k"]["status"], "proved")
         self.assertEqual(by_id["ledger_stress_10k"]["value"]["synthetic_receipt_count"], 10_000)
         self.assertTrue(by_id["ledger_stress_10k"]["value"]["tamper_detection_passed"])

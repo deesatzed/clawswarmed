@@ -11,10 +11,10 @@ Incomplete requirements: live_model_backed_execution
 
 ## Counts
 
-Proved: 9
+Proved: 10
 Deferred with record: 3
 Incomplete: 1
-Total requirements audited: 13
+Total requirements audited: 14
 
 ## Requirement Matrix
 
@@ -23,6 +23,7 @@ Total requirements audited: 13
 | repository_and_preregistration | proved | README, handoff archive, failure ledger, and all required prereg files found. |
 | macro_glassgate_lift | proved | GLASSGATE_LIFT=0.4 CI=[0.15, 0.55] |
 | macro_d_by_arm | proved | D estimates exist for abundant, random, scarce_naive_topk, and scarce_protected. |
+| macro_diagnostics | proved | Macro diagnostics are present in the consolidated report. |
 | replayable_tamper_evident_ledgers | proved | Final report source ledgers and run-all child ledgers verify. |
 | ledger_stress_10k | proved | 10,000 mixed synthetic receipts verify and tamper detection passes. |
 | seed_detectability_audit | proved | Seed detectability and adversarial token AUC are both 0.5 with no camouflage failure. |

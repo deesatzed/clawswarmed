@@ -164,6 +164,12 @@ def audit_goal(
 
     d_by_arm = final_metrics.get("D_by_arm", {})
     ci = final_metrics.get("glassgate_lift_ci95", [])
+    macro_diagnostics_ok = (
+        isinstance(final_metrics.get("verified_solve_rate"), dict)
+        and isinstance(final_metrics.get("panel_correlation_rho"), dict)
+        and "candidate_ablation_rate" in final_metrics
+        and "token_cost_per_solve" in final_metrics
+    )
     source_ledgers_ok = bool(final_metrics.get("all_source_ledgers_verified")) and _ledger_verified(final_report)
     run_all_ok = (
         run_all_metrics.get("run_status") == "complete_with_deferred_jlens"
@@ -228,6 +234,21 @@ def audit_goal(
             if REQUIRED_ARMS.issubset(d_by_arm)
             else "One or more D-by-arm estimates are missing.",
             d_by_arm,
+        ),
+        _item(
+            "macro_diagnostics",
+            "Macro report includes verified solve rate, panel correlation rho, candidate ablation rate, and token cost per solve.",
+            "proved" if macro_diagnostics_ok else "incomplete",
+            final_report / "metrics.json",
+            "Macro diagnostics are present in the consolidated report."
+            if macro_diagnostics_ok
+            else "One or more macro diagnostic fields are missing from the consolidated report.",
+            {
+                "verified_solve_rate": final_metrics.get("verified_solve_rate"),
+                "panel_correlation_rho": final_metrics.get("panel_correlation_rho"),
+                "candidate_ablation_rate": final_metrics.get("candidate_ablation_rate"),
+                "token_cost_per_solve": final_metrics.get("token_cost_per_solve"),
+            },
         ),
         _item(
             "replayable_tamper_evident_ledgers",

@@ -13,6 +13,8 @@ Seed detectability AUC: 0.5
 Adversarial token AUC: 0.5
 Ledger stress receipts: 10000
 Ledger stress tamper detection: True
+Candidate ablation rate: 0.297222
+Token cost per solve: None
 RQGM epochs: 5
 J-lens rail: frozen
 Live model rail: unavailable
