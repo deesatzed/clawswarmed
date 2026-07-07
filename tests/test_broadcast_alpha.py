@@ -558,6 +558,92 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["adapter_call_count"], 0)
         self.assertEqual(transport_calls, [])
 
+    def test_live_smoke_default_blocks_without_adapter_execution(self):
+        from broadcast_alpha.live_dsh import run_live_smoke
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_live_smoke(
+                seed=42,
+                artifact_root=Path(tmp),
+                env={},
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            task_runs = json.loads((result.artifact_path / "task_runs.json").read_text())
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertEqual(result.run_id, "live_smoke_seed_42")
+        self.assertEqual(metrics["run_mode"], "live_smoke")
+        self.assertEqual(metrics["run_status"], "blocked_no_live_execution")
+        self.assertEqual(metrics["available_cell_count"], 24)
+        self.assertEqual(metrics["cell_limit"], 1)
+        self.assertEqual(metrics["cell_count"], 1)
+        self.assertEqual(metrics["planned_task_runs"], 1)
+        self.assertEqual(metrics["task_run_count"], 0)
+        self.assertEqual(metrics["adapter_call_count"], 0)
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertNotIn("glassgate_lift", metrics)
+        self.assertEqual(task_runs["runs"], [])
+        self.assertIn("Live smoke blocked", result_card)
+
+    def test_live_smoke_fake_transport_executes_one_verifier_backed_call(self):
+        from broadcast_alpha.live_dsh import run_live_smoke
+
+        captured_requests = []
+
+        def fake_transport(request):
+            captured_requests.append(request)
+            return {
+                "id": "chatcmpl_fake_smoke",
+                "choices": [{"message": {"content": "{\"patch\": \"x + 2\", \"rationale\": \"repair add\"}"}}],
+                "usage": {"prompt_tokens": 9, "completion_tokens": 3, "total_tokens": 12},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n")
+            result = run_live_smoke(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                transport=fake_transport,
+                transport_label="fake",
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            task_runs = json.loads((result.artifact_path / "task_runs.json").read_text())
+            combined_artifacts = "\n".join(
+                [
+                    (result.artifact_path / "metrics.json").read_text(),
+                    (result.artifact_path / "task_runs.json").read_text(),
+                    (result.artifact_path / "result_card.md").read_text(),
+                    (result.artifact_path / "ledger.jsonl").read_text(),
+                ]
+            )
+
+        self.assertEqual(metrics["run_status"], "adapter_pilot_executed_fake_transport")
+        self.assertEqual(metrics["run_mode"], "live_smoke")
+        self.assertEqual(metrics["cell_count"], 1)
+        self.assertEqual(metrics["planned_task_runs"], 1)
+        self.assertEqual(metrics["task_run_count"], 1)
+        self.assertEqual(metrics["adapter_call_count"], 1)
+        self.assertEqual(metrics["candidate_patch_present_count"], 1)
+        self.assertEqual(metrics["hidden_verifier_pass_count"], 1)
+        self.assertEqual(metrics["hidden_verifier_pass_rate"], 1.0)
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertEqual(len(captured_requests), 1)
+        self.assertEqual(captured_requests[0]["metadata"]["panel_type"], "correlated_shared_context")
+        self.assertEqual(captured_requests[0]["metadata"]["workspace_arm"], "abundant")
+        self.assertEqual(captured_requests[0]["metadata"]["seed_condition"], "correct_minority")
+        self.assertEqual(len(task_runs["runs"]), 1)
+        self.assertEqual(task_runs["runs"][0]["candidate_patch"], "x + 2")
+        self.assertTrue(task_runs["runs"][0]["hidden_verifier_passed"])
+        self.assertNotIn("dummy-secret-value", combined_artifacts)
+
     def test_live_dsh_fake_transport_runs_balanced_pilot_without_secret_values(self):
         from broadcast_alpha.live_dsh import run_live_dsh
 
@@ -723,6 +809,72 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             self.assertIn("Live DSH pilot blocked", replay.stdout)
 
+    def test_cli_run_live_smoke_default_creates_blocked_replayable_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-live-smoke",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    tmp,
+                    "--prereg",
+                    "prereg/PREREG_LIVE-01.md",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(payload["run_id"], "live_smoke_seed_42")
+            self.assertEqual(metrics["run_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["planned_task_runs"], 1)
+            self.assertTrue((artifact_path / "task_runs.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("Live smoke blocked", replay.stdout)
+
     def test_metrics_json_schema(self):
         from broadcast_alpha.experiments import run_synthetic
 
@@ -833,7 +985,7 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_build_report_summarizes_required_rails(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
-        from broadcast_alpha.live_dsh import run_live_dsh
+        from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
         from broadcast_alpha.reporting import build_result_report
 
@@ -854,6 +1006,12 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             run_jlens_gate(seed=42, artifact_root=artifact_root)
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
+            run_live_smoke(
+                seed=42,
+                artifact_root=artifact_root,
+                env={},
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
             run_live_dsh(seed=42, artifact_root=artifact_root, env={})
             result = build_result_report(artifact_root=artifact_root, output_dir=artifact_root / "final_report_seed_42")
             metrics = json.loads((result.artifact_path / "metrics.json").read_text())
@@ -871,6 +1029,9 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["live_model_rail_status"], "unavailable")
         self.assertFalse(metrics["live_adapter_call_performed"])
         self.assertFalse(metrics["live_model_run_performed"])
+        self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
+        self.assertEqual(metrics["live_smoke_adapter_call_count"], 0)
+        self.assertEqual(metrics["live_smoke_hidden_verifier_pass_count"], 0)
         self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
         self.assertEqual(metrics["live_dsh_adapter_call_count"], 0)
         self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
@@ -880,7 +1041,15 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
         self.assertEqual(
             {row["section"] for row in result_table["rows"]},
-            {"macro_dsh", "seed_detectability", "rqgm_epoch", "jlens_gate", "live_model_gate", "live_dsh_pilot"},
+            {
+                "macro_dsh",
+                "seed_detectability",
+                "rqgm_epoch",
+                "jlens_gate",
+                "live_model_gate",
+                "live_smoke",
+                "live_dsh_pilot",
+            },
         )
         self.assertTrue(all(row["ledger_verified"] for row in result_table["rows"]))
         self.assertTrue(all(claim["evidence_path"] for claim in claim_matrix["claims"]))
@@ -892,7 +1061,7 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_cli_build_report_creates_replayable_report_artifact(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
-        from broadcast_alpha.live_dsh import run_live_dsh
+        from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -912,6 +1081,12 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             run_jlens_gate(seed=42, artifact_root=artifact_root)
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
+            run_live_smoke(
+                seed=42,
+                artifact_root=artifact_root,
+                env={},
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
             run_live_dsh(seed=42, artifact_root=artifact_root, env={})
             result = subprocess.run(
                 [
@@ -938,6 +1113,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "claim_matrix.json").exists())
             self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
+            self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
             self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
@@ -1001,6 +1177,9 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertFalse(metrics["live_adapter_call_performed"])
             self.assertFalse(metrics["live_model_run_performed"])
+            self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["live_smoke_adapter_call_count"], 0)
+            self.assertEqual(metrics["live_smoke_hidden_verifier_pass_rate"], 0.0)
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_adapter_call_count"], 0)
             self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
@@ -1010,10 +1189,20 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(
                 set(manifest["child_artifacts"]),
-                {"synthetic", "dsh", "rqgm", "jlens_gate", "live_model_gate", "live_dsh_pilot", "final_report"},
+                {
+                    "synthetic",
+                    "dsh",
+                    "rqgm",
+                    "jlens_gate",
+                    "live_model_gate",
+                    "live_smoke",
+                    "live_dsh_pilot",
+                    "final_report",
+                },
             )
             self.assertTrue((result.artifact_path / "source_artifacts" / "dsh_seed_42" / "seed_audit.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_gate_seed_42" / "provider_status.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "live_smoke_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_dsh_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 
@@ -1048,6 +1237,7 @@ class BroadcastAlphaTests(unittest.TestCase):
 
             self.assertEqual(metrics["run_status"], "complete_with_deferred_jlens")
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
+            self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertTrue((artifact_path / "final_report" / "result_table.md").exists())
 

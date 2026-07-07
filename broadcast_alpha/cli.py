@@ -5,7 +5,7 @@ from pathlib import Path
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .jlens import run_jlens_gate
 from .ledger import Ledger
-from .live_dsh import run_live_dsh
+from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
 from .orchestrator import run_all
 from .reporting import build_result_report
@@ -61,6 +61,16 @@ def build_parser() -> argparse.ArgumentParser:
     live_dsh.add_argument("--network-probe", action="store_true")
     live_dsh.add_argument("--execute-live", action="store_true")
     live_dsh.add_argument("--model")
+
+    live_smoke = sub.add_parser("run-live-smoke", help="Run one gated live DSH smoke task")
+    live_smoke.add_argument("--prereg", default="prereg/PREREG_LIVE-01.md")
+    live_smoke.add_argument("--seed", type=int, default=42)
+    live_smoke.add_argument("--artifact-root", default="artifacts")
+    live_smoke.add_argument("--env-file")
+    live_smoke.add_argument("--authorize-api-spend", action="store_true")
+    live_smoke.add_argument("--network-probe", action="store_true")
+    live_smoke.add_argument("--execute-live", action="store_true")
+    live_smoke.add_argument("--model")
 
     report = sub.add_parser("build-report", help="Build consolidated result table and claim matrix")
     report.add_argument("--artifact-root", default="artifacts")
@@ -143,6 +153,20 @@ def main(argv: list[str] | None = None) -> int:
         result = run_live_dsh(
             seed=args.seed,
             tasks_per_cell=args.tasks_per_cell,
+            artifact_root=Path(args.artifact_root),
+            env_file=Path(args.env_file) if args.env_file else None,
+            api_spend_authorized=args.authorize_api_spend,
+            network_probe=args.network_probe,
+            execute_live=args.execute_live,
+            model=args.model,
+            prereg_path=Path(args.prereg),
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-live-smoke":
+        result = run_live_smoke(
+            seed=args.seed,
             artifact_root=Path(args.artifact_root),
             env_file=Path(args.env_file) if args.env_file else None,
             api_spend_authorized=args.authorize_api_spend,

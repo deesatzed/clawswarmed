@@ -22,6 +22,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 - rqgm_epoch: epoch_count = 5
 - jlens_gate: rail_status = frozen
 - live_model_gate: rail_status = unavailable
+- live_smoke: run_status = blocked_no_live_execution
 - live_dsh_pilot: run_status = blocked_no_live_execution
 
 ## Seed detectability audit
@@ -48,6 +49,13 @@ Adapter call performed: False
 Live model run performed: False
 OpenRouter API key present by name: False
 No secret values recorded: True
+
+## Live smoke
+
+Live smoke status: blocked_no_live_execution
+Live smoke adapter calls: 0
+Live smoke hidden verifier pass count: 0
+Live smoke hidden verifier pass rate: 0.0
 
 ## Live DSH pilot
 

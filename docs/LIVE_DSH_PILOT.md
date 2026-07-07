@@ -9,9 +9,14 @@ uses the same panel types, workspace arms, and seed conditions as the macro DSH
 rail, but it is a pilot rail. It does not produce `GLASSGATE_LIFT` or replace
 the deterministic macro result.
 
+`run-live-smoke` is the safer first provider-backed step. It uses the same
+request, verifier, ledger, replay, and no-secret machinery, but hard-limits the
+run to one DSH cell and one task.
+
 ## Command
 
 ```bash
+python3 -m broadcast_alpha run-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
 ```
 
@@ -26,6 +31,7 @@ Real provider-backed execution requires:
 ## Current Artifact
 
 ```text
+artifacts/live_smoke_seed_42/
 artifacts/live_dsh_seed_42/
 ```
 
@@ -42,6 +48,10 @@ Files:
 The checked-in artifact is blocked by design:
 
 ```text
+live_smoke.run_status = blocked_no_live_execution
+live_smoke.cell_limit = 1
+live_smoke.planned_task_runs = 1
+live_smoke.adapter_call_count = 0
 run_status = blocked_no_live_execution
 prereg_id = PREREG_LIVE-01
 prereg_exists = true
@@ -52,9 +62,10 @@ hidden_verifier_pass_rate = 0.0
 live_model_run_performed = false
 ```
 
-The test suite exercises the 24-cell pilot through fake transport so request
-construction, adapter call accounting, replay, ledger verification, and
-secret-exclusion behavior are covered without external API calls.
+The test suite exercises the one-cell smoke and the 24-cell pilot through fake
+transport so request construction, adapter call accounting, replay, ledger
+verification, hidden verifier outcomes, and secret-exclusion behavior are
+covered without external API calls.
 
 ## Structured Patch Format
 

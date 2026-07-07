@@ -1,6 +1,6 @@
 {
   "agent_1": {
-    "1": "final report: macro DSH, seed audit, RQGM, J-lens source gate, live model gate, and live DSH pilot artifacts loaded",
+    "1": "final report: macro DSH, seed audit, RQGM, J-lens source gate, live model gate, live smoke, and live DSH pilot artifacts loaded",
     "2": "final report: GLASSGATE_LIFT 0.4 with seed AUC 0.5",
     "3": "final report: source ledgers verified, J-lens frozen/deferred, live model run not performed"
   }

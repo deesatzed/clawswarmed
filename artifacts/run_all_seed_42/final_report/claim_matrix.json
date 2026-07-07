@@ -25,6 +25,7 @@
         "jlens_gate": true,
         "live_dsh_pilot": true,
         "live_model_gate": true,
+        "live_smoke": true,
         "macro_dsh": true,
         "rqgm_epoch": true,
         "seed_detectability": true
@@ -73,6 +74,26 @@
           "network_probe_not_requested",
           "live_model_run_not_performed"
         ]
+      }
+    },
+    {
+      "claim": "Live smoke rail has an explicit blocked or one-call pilot record.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/live_smoke_seed_42/metrics.json",
+      "status": "blocked_with_gate_record",
+      "value": {
+        "adapter_call_count": 0,
+        "candidate_patch_present_count": 0,
+        "hidden_verifier_pass_count": 0,
+        "hidden_verifier_pass_rate": 0.0,
+        "live_model_run_performed": false,
+        "reason_codes": [
+          "missing_openrouter_api_key",
+          "api_spend_not_authorized",
+          "execute_live_not_requested",
+          "network_probe_not_requested",
+          "live_model_run_not_performed"
+        ],
+        "run_status": "blocked_no_live_execution"
       }
     },
     {

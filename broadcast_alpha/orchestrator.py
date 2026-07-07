@@ -5,7 +5,7 @@ from pathlib import Path
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .jlens import run_jlens_gate
 from .ledger import Ledger
-from .live_dsh import run_live_dsh
+from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
 from .reporting import build_result_report
 
@@ -53,6 +53,8 @@ J-lens rail: {metrics['jlens_rail_status']}
 Live model rail: {metrics['live_model_rail_status']}
 Adapter call performed: {metrics['live_adapter_call_performed']}
 Live model run performed: {metrics['live_model_run_performed']}
+Live smoke: {metrics['live_smoke_run_status']}
+Live smoke verifier pass rate: {metrics['live_smoke_hidden_verifier_pass_rate']}
 Live DSH pilot: {metrics['live_dsh_run_status']}
 Live DSH prereg: {metrics['live_dsh_prereg_id']}
 Live DSH verifier pass rate: {metrics['live_dsh_hidden_verifier_pass_rate']}
@@ -103,6 +105,13 @@ def run_all(
     )
     jlens_gate = run_jlens_gate(seed=seed, artifact_root=child_root)
     live_gate = run_live_gate(seed=seed, artifact_root=child_root, env_file=live_env_file, env=live_env)
+    live_smoke = run_live_smoke(
+        seed=seed,
+        artifact_root=child_root,
+        env_file=live_env_file,
+        env=live_env,
+        prereg_path=prereg_dir / "PREREG_LIVE-01.md",
+    )
     live_dsh = run_live_dsh(
         seed=seed,
         tasks_per_cell=1,
@@ -119,6 +128,7 @@ def run_all(
         "rqgm": str(rqgm.artifact_path),
         "jlens_gate": str(jlens_gate.artifact_path),
         "live_model_gate": str(live_gate.artifact_path),
+        "live_smoke": str(live_smoke.artifact_path),
         "live_dsh_pilot": str(live_dsh.artifact_path),
         "final_report": str(final_report.artifact_path),
     }
@@ -128,6 +138,7 @@ def run_all(
         "rqgm": rqgm.artifact_path,
         "jlens_gate": jlens_gate.artifact_path,
         "live_model_gate": live_gate.artifact_path,
+        "live_smoke": live_smoke.artifact_path,
         "live_dsh_pilot": live_dsh.artifact_path,
         "final_report": final_report.artifact_path,
     }
@@ -142,11 +153,20 @@ def run_all(
         "tasks_per_cell": tasks_per_cell,
         "epochs": epochs,
         "child_artifacts": child_artifacts,
-        "run_sequence": ["synthetic", "dsh", "rqgm", "jlens_gate", "live_model_gate", "live_dsh_pilot", "final_report"],
+        "run_sequence": [
+            "synthetic",
+            "dsh",
+            "rqgm",
+            "jlens_gate",
+            "live_model_gate",
+            "live_smoke",
+            "live_dsh_pilot",
+            "final_report",
+        ],
     }
     replay_contexts = {
         "agent_1": {
-            "1": "unattended bundle: generated synthetic, DSH, RQGM, J-lens gate, live model gate, live DSH pilot, and final report artifacts",
+            "1": "unattended bundle: generated synthetic, DSH, RQGM, J-lens gate, live model gate, live smoke, live DSH pilot, and final report artifacts",
             "2": f"unattended bundle: GLASSGATE_LIFT {final_metrics['glassgate_lift']} with seed adversarial AUC {final_metrics['seed_adversarial_auc']}",
             "3": "unattended bundle: final report ready, all child ledgers verified, J-lens rail frozen/deferred, live model run not performed",
         }
@@ -175,6 +195,12 @@ def run_all(
         "live_model_run_performed": final_metrics["live_model_run_performed"],
         "live_openrouter_api_key_present": final_metrics["live_openrouter_api_key_present"],
         "live_reason_codes": final_metrics["live_reason_codes"],
+        "live_smoke_run_status": final_metrics["live_smoke_run_status"],
+        "live_smoke_adapter_call_count": final_metrics["live_smoke_adapter_call_count"],
+        "live_smoke_candidate_patch_present_count": final_metrics["live_smoke_candidate_patch_present_count"],
+        "live_smoke_hidden_verifier_pass_count": final_metrics["live_smoke_hidden_verifier_pass_count"],
+        "live_smoke_hidden_verifier_pass_rate": final_metrics["live_smoke_hidden_verifier_pass_rate"],
+        "live_smoke_model_run_performed": final_metrics["live_smoke_model_run_performed"],
         "live_dsh_run_status": final_metrics["live_dsh_run_status"],
         "live_dsh_prereg_id": final_metrics["live_dsh_prereg_id"],
         "live_dsh_prereg_path": final_metrics["live_dsh_prereg_path"],

@@ -41,6 +41,14 @@
       "section": "live_model_gate"
     },
     {
+      "artifact_path": "artifacts/run_all_seed_42/source_artifacts/live_smoke_seed_42",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/live_smoke_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "run_status",
+      "primary_value": "blocked_no_live_execution",
+      "section": "live_smoke"
+    },
+    {
       "artifact_path": "artifacts/run_all_seed_42/source_artifacts/live_dsh_seed_42",
       "evidence_path": "artifacts/run_all_seed_42/source_artifacts/live_dsh_seed_42/metrics.json",
       "ledger_verified": true,

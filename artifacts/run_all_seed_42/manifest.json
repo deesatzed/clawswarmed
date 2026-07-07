@@ -5,6 +5,7 @@
     "jlens_gate": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42",
     "live_dsh_pilot": "artifacts/run_all_seed_42/source_artifacts/live_dsh_seed_42",
     "live_model_gate": "artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42",
+    "live_smoke": "artifacts/run_all_seed_42/source_artifacts/live_smoke_seed_42",
     "rqgm": "artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42",
     "synthetic": "artifacts/run_all_seed_42/source_artifacts/synthetic_seed_42"
   },
@@ -16,6 +17,7 @@
     "rqgm",
     "jlens_gate",
     "live_model_gate",
+    "live_smoke",
     "live_dsh_pilot",
     "final_report"
   ],

@@ -27,6 +27,7 @@ python3 -m broadcast_alpha run-rqgm --prereg prereg/PREREG_EPOCH-01.md --seed 42
 python3 -m broadcast_alpha run-jlens-gate --seed 42
 python3 -m broadcast_alpha run-live-gate --seed 42
 python3 -m broadcast_alpha run-live-gate --seed 42 --env-file /path/to/.env --model openrouter/model-slug --authorize-api-spend --execute-live
+python3 -m broadcast_alpha run-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
 python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42
 python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5 --prereg-dir prereg --artifact-root artifacts
@@ -69,6 +70,12 @@ records that API spend was not authorized, proves no secret values were stored,
 and confirms no live model call was made. The code includes a tested
 OpenRouter adapter path, but real provider execution requires explicit
 `--authorize-api-spend` and `--execute-live` flags plus credentials and a model.
+
+`artifacts/live_smoke_seed_42/` is the current checked-in live smoke artifact.
+It is the bounded one-cell, one-task path for a future provider-backed smoke.
+The checked-in run is blocked with zero adapter calls, and fake-transport tests
+prove that an authorized smoke executes exactly one verifier-backed task. It
+does not produce `GLASSGATE_LIFT`.
 
 `artifacts/live_dsh_seed_42/` is the current checked-in live DSH pilot
 artifact. It plans the same 24 panel/arm/seed-condition cells as the macro DSH

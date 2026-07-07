@@ -35,6 +35,7 @@ Nested artifacts:
 - `source_artifacts/rqgm_seed_42/`
 - `source_artifacts/jlens_gate_seed_42/`
 - `source_artifacts/live_gate_seed_42/`
+- `source_artifacts/live_smoke_seed_42/`
 - `source_artifacts/live_dsh_seed_42/`
 - `final_report/`
 
@@ -51,6 +52,9 @@ jlens_rail_status = frozen
 live_model_rail_status = unavailable
 adapter_call_performed = false
 live_model_run_performed = false
+live_smoke_run_status = blocked_no_live_execution
+live_smoke_adapter_call_count = 0
+live_smoke_hidden_verifier_pass_rate = 0.0
 live_dsh_run_status = blocked_no_live_execution
 live_dsh_prereg_id = PREREG_LIVE-01
 live_dsh_adapter_call_count = 0
@@ -77,7 +81,7 @@ This bundle is unattended and replayable, but it is still deterministic and
 synthetic. It does not claim a live model-backed panel run. The live-provider
 gate is included so the bundle records whether the model rail was configured,
 authorized, and executed instead of leaving that gap implicit. The checked-in
-bundle also includes the live DSH pilot rail, but it does not pass credentials,
-`--authorize-api-spend`, or `--execute-live`. The pilot is preregistered under
-`prereg/PREREG_LIVE-01.md`; blocked and fake-transport runs do not produce a
-live `GLASSGATE_LIFT` claim.
+bundle also includes the one-call live smoke rail and the live DSH pilot rail,
+but it does not pass credentials, `--authorize-api-spend`, or `--execute-live`.
+Both are preregistered under `prereg/PREREG_LIVE-01.md`; blocked and
+fake-transport runs do not produce a live `GLASSGATE_LIFT` claim.

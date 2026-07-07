@@ -1,20 +1,20 @@
-# Result Card: live_dsh_seed_42
+# Result Card: live_smoke_seed_42
 
-Run type: Live DSH pilot
+Run type: Live smoke
 Prereg: PREREG_LIVE-01
 
 ## Decision
 
-Live DSH pilot blocked.
+Live smoke blocked.
 
 Run status: blocked_no_live_execution
 Prereg file: prereg/PREREG_LIVE-01.md
 Prereg exists: True
-Run mode: live_dsh_pilot
+Run mode: live_smoke
 Available cells: 24
-Cell limit: None
-Cell count: 24
-Planned task runs: 24
+Cell limit: 1
+Cell count: 1
+Planned task runs: 1
 Task run count: 0
 Adapter call count: 0
 Candidate patches parsed: 0
@@ -32,6 +32,6 @@ and does not claim GLASSGATE_LIFT for live panels.
 
 ## Replay
 
-Ledger: artifacts/live_dsh_seed_42/ledger.jsonl
-Replay bundle: artifacts/live_dsh_seed_42/replay
+Ledger: artifacts/run_all_seed_42/source_artifacts/live_smoke_seed_42/ledger.jsonl
+Replay bundle: artifacts/run_all_seed_42/source_artifacts/live_smoke_seed_42/replay
 Tamper check: pass

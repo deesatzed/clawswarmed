@@ -101,11 +101,12 @@ def _extract_candidate_patch(response: dict) -> tuple[str | None, str]:
 
 
 def _result_card(run_id: str, metrics: dict) -> str:
+    run_label = "Live smoke" if metrics["run_mode"] == "live_smoke" else "Live DSH pilot"
     if metrics["run_status"] == "blocked_no_live_execution":
-        decision = "Live DSH pilot blocked."
+        decision = f"{run_label} blocked."
         interpretation = "No adapter call was made. No secret values were recorded."
     else:
-        decision = f"Live DSH pilot ran through {metrics['transport_label']} transport."
+        decision = f"{run_label} ran through {metrics['transport_label']} transport."
         interpretation = (
             "Fake transport verifies orchestration without external calls."
             if metrics["transport_label"] == "fake"
@@ -113,7 +114,7 @@ def _result_card(run_id: str, metrics: dict) -> str:
         )
     return f"""# Result Card: {run_id}
 
-Run type: live DSH pilot
+Run type: {run_label}
 Prereg: {metrics['prereg_id']}
 
 ## Decision
@@ -123,6 +124,9 @@ Prereg: {metrics['prereg_id']}
 Run status: {metrics['run_status']}
 Prereg file: {metrics['prereg_path']}
 Prereg exists: {metrics['prereg_exists']}
+Run mode: {metrics['run_mode']}
+Available cells: {metrics['available_cell_count']}
+Cell limit: {metrics['cell_limit']}
 Cell count: {metrics['cell_count']}
 Planned task runs: {metrics['planned_task_runs']}
 Task run count: {metrics['task_run_count']}
@@ -161,12 +165,15 @@ def run_live_dsh(
     transport: Callable[[dict], dict] | None = None,
     transport_label: str = "real",
     prereg_path: Path | None = None,
+    run_id_prefix: str = "live_dsh",
+    run_mode: str = "live_dsh_pilot",
+    cell_limit: int | None = None,
 ) -> LiveDshResult:
     if tasks_per_cell < 1:
         raise ValueError("tasks_per_cell must be at least 1")
 
     artifact_root = artifact_root or Path("artifacts")
-    run_id = f"live_dsh_seed_{seed}"
+    run_id = f"{run_id_prefix}_seed_{seed}"
     artifact_path = artifact_root / run_id
     artifact_path.mkdir(parents=True, exist_ok=True)
     prereg_path = prereg_path or Path("prereg/PREREG_LIVE-01.md")
@@ -180,7 +187,10 @@ def run_live_dsh(
     if rail_status == "ready_to_execute" and not prereg_exists:
         rail_status = "missing_preregistration"
         reason_codes = [*reason_codes, "missing_preregistration_file"]
-    cells = _cells()
+    available_cells = _cells()
+    if cell_limit is not None and (cell_limit < 1 or cell_limit > len(available_cells)):
+        raise ValueError(f"cell_limit must be between 1 and {len(available_cells)}")
+    cells = available_cells[:cell_limit] if cell_limit is not None else available_cells
     planned_task_runs = len(cells) * tasks_per_cell
     task_bank: list[CodebugTask] = load_codebug_tasks()
 
@@ -193,7 +203,9 @@ def run_live_dsh(
             "prereg_id": prereg_id,
             "prereg_path": str(prereg_path),
             "prereg_exists": prereg_exists,
-            "run_type": "live_dsh_pilot",
+            "run_type": run_mode,
+            "available_cell_count": len(available_cells),
+            "cell_limit": cell_limit,
             "cell_count": len(cells),
             "tasks_per_cell": tasks_per_cell,
         },
@@ -301,23 +313,27 @@ def run_live_dsh(
                 "fake_transport_no_external_api" if transport_label == "fake" else "live_provider_transport_executed",
             ]
 
+    run_label = "Live smoke" if run_mode == "live_smoke" else "Live DSH pilot"
     replay_contexts = {
         "agent_1": {
-            "1": "Live DSH pilot: 24 panel/arm/seed-condition cells planned",
-            "2": f"Live DSH pilot: adapter call count {adapter_call_count}",
-            "3": "Live DSH pilot blocked: no live model execution"
+            "1": f"{run_label}: {len(cells)} of {len(available_cells)} panel/arm/seed-condition cells planned",
+            "2": f"{run_label}: adapter call count {adapter_call_count}",
+            "3": f"{run_label} blocked: no live model execution"
             if adapter_call_count == 0
-            else f"Live DSH pilot executed with {transport_label} transport",
+            else f"{run_label} executed with {transport_label} transport",
         }
     }
 
     metrics = {
         "run_id": run_id,
         "run_status": run_status,
+        "run_mode": run_mode,
         "prereg_id": prereg_id,
         "prereg_path": str(prereg_path),
         "prereg_exists": prereg_exists,
         "seed": seed,
+        "available_cell_count": len(available_cells),
+        "cell_limit": cell_limit,
         "cell_count": len(cells),
         "tasks_per_cell": tasks_per_cell,
         "planned_task_runs": planned_task_runs,
@@ -353,3 +369,35 @@ def run_live_dsh(
     (artifact_path / "result_card.md").write_text(_result_card(run_id, metrics))
 
     return LiveDshResult(run_id=run_id, artifact_path=artifact_path, expected_replay=replay_contexts)
+
+
+def run_live_smoke(
+    seed: int = 42,
+    artifact_root: Path | None = None,
+    env_file: Path | None = None,
+    env: dict[str, str] | None = None,
+    api_spend_authorized: bool = False,
+    network_probe: bool = False,
+    execute_live: bool = False,
+    model: str | None = None,
+    transport: Callable[[dict], dict] | None = None,
+    transport_label: str = "real",
+    prereg_path: Path | None = None,
+) -> LiveDshResult:
+    return run_live_dsh(
+        seed=seed,
+        tasks_per_cell=1,
+        artifact_root=artifact_root,
+        env_file=env_file,
+        env=env,
+        api_spend_authorized=api_spend_authorized,
+        network_probe=network_probe,
+        execute_live=execute_live,
+        model=model,
+        transport=transport,
+        transport_label=transport_label,
+        prereg_path=prereg_path,
+        run_id_prefix="live_smoke",
+        run_mode="live_smoke",
+        cell_limit=1,
+    )

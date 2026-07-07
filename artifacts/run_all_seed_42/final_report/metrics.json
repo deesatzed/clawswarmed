@@ -50,6 +50,19 @@
     "live_model_run_not_performed"
   ],
   "live_secret_values_recorded": false,
+  "live_smoke_adapter_call_count": 0,
+  "live_smoke_candidate_patch_present_count": 0,
+  "live_smoke_hidden_verifier_pass_count": 0,
+  "live_smoke_hidden_verifier_pass_rate": 0.0,
+  "live_smoke_model_run_performed": false,
+  "live_smoke_reason_codes": [
+    "missing_openrouter_api_key",
+    "api_spend_not_authorized",
+    "execute_live_not_requested",
+    "network_probe_not_requested",
+    "live_model_run_not_performed"
+  ],
+  "live_smoke_run_status": "blocked_no_live_execution",
   "replacement_count": 3,
   "replay_bundle_path": "artifacts/run_all_seed_42/final_report/replay",
   "report_status": "complete_with_deferred_jlens",
