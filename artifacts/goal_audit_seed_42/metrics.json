@@ -1,0 +1,23 @@
+{
+  "deferred_count": 3,
+  "deferred_requirement_ids": [
+    "jlens_or_clean_defer",
+    "bridge_rail",
+    "mechanistic_admission"
+  ],
+  "incomplete_count": 1,
+  "incomplete_requirement_ids": [
+    "live_model_backed_execution"
+  ],
+  "ledger_path": "artifacts/goal_audit_seed_42/ledger.jsonl",
+  "overall_status": "not_complete",
+  "proved_count": 8,
+  "replay_bundle_path": "artifacts/goal_audit_seed_42/replay",
+  "requirement_count": 12,
+  "requirements_path": "artifacts/goal_audit_seed_42/requirements.json",
+  "result_card_path": "artifacts/goal_audit_seed_42/result_card.md",
+  "run_id": "goal_audit_seed_42",
+  "source_final_report_path": "artifacts/final_report_seed_42",
+  "source_live_sequence_path": "artifacts/live_sequence_seed_42",
+  "source_run_all_path": "artifacts/run_all_seed_42"
+}

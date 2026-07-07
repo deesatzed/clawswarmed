@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from .experiments import run_dsh, run_rqgm, run_synthetic
+from .goal_audit import audit_goal
 from .jlens import run_jlens_gate
 from .ledger import Ledger
 from .live_dsh import run_live_dsh, run_live_smoke
@@ -95,6 +96,11 @@ def build_parser() -> argparse.ArgumentParser:
     all_run.add_argument("--prereg-dir", default="prereg")
     all_run.add_argument("--artifact-root", default="artifacts")
     all_run.add_argument("--live-env-file")
+
+    audit = sub.add_parser("audit-goal", help="Audit current artifacts against the Glass Gate goal")
+    audit.add_argument("--artifact-root", default="artifacts")
+    audit.add_argument("--output", default="artifacts/goal_audit_seed_42")
+    audit.add_argument("--repo-root", default=".")
 
     summarize = sub.add_parser("summarize", help="Print metrics for an artifact")
     summarize.add_argument("artifact")
@@ -218,6 +224,15 @@ def main(argv: list[str] | None = None) -> int:
             prereg_dir=Path(args.prereg_dir),
             artifact_root=Path(args.artifact_root),
             live_env_file=Path(args.live_env_file) if args.live_env_file else None,
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "audit-goal":
+        result = audit_goal(
+            artifact_root=Path(args.artifact_root),
+            output_dir=Path(args.output),
+            repo_root=Path(args.repo_root),
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0

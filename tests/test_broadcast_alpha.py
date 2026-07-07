@@ -1494,6 +1494,122 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             self.assertTrue(json.loads(export.stdout)["verified"])
 
+    def test_goal_audit_records_proved_deferred_and_incomplete_requirements(self):
+        from broadcast_alpha.goal_audit import audit_goal
+        from broadcast_alpha.orchestrator import run_all
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact_root = Path(tmp)
+            run_all(
+                seed=42,
+                tasks_per_cell=30,
+                epochs=5,
+                prereg_dir=APP_ROOT / "prereg",
+                artifact_root=artifact_root,
+                live_env={},
+            )
+            result = audit_goal(
+                artifact_root=artifact_root,
+                output_dir=artifact_root / "goal_audit_seed_42",
+                repo_root=APP_ROOT,
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            requirements = json.loads((result.artifact_path / "requirements.json").read_text())
+            result_card = (result.artifact_path / "result_card.md").read_text()
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+
+        by_id = {item["id"]: item for item in requirements["items"]}
+        self.assertEqual(result.run_id, "goal_audit_seed_42")
+        self.assertEqual(metrics["overall_status"], "not_complete")
+        self.assertGreaterEqual(metrics["proved_count"], 7)
+        self.assertGreaterEqual(metrics["deferred_count"], 3)
+        self.assertGreaterEqual(metrics["incomplete_count"], 1)
+        self.assertEqual(by_id["macro_glassgate_lift"]["status"], "proved")
+        self.assertEqual(by_id["macro_d_by_arm"]["status"], "proved")
+        self.assertEqual(by_id["seed_detectability_audit"]["status"], "proved")
+        self.assertEqual(by_id["rqgm_epoch_trajectory"]["status"], "proved")
+        self.assertEqual(by_id["jlens_or_clean_defer"]["status"], "deferred_with_record")
+        self.assertEqual(by_id["bridge_rail"]["status"], "deferred_with_record")
+        self.assertEqual(by_id["mechanistic_admission"]["status"], "deferred_with_record")
+        self.assertEqual(by_id["live_model_backed_execution"]["status"], "incomplete")
+        self.assertIn("No live model-backed adapter call", by_id["live_model_backed_execution"]["evidence"])
+        self.assertIn("Goal remains incomplete", result_card)
+        self.assertIn('"kind": "goal_audit_metrics"', ledger)
+
+    def test_cli_audit_goal_creates_replayable_audit_artifact(self):
+        from broadcast_alpha.orchestrator import run_all
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact_root = Path(tmp)
+            run_all(
+                seed=42,
+                tasks_per_cell=30,
+                epochs=5,
+                prereg_dir=APP_ROOT / "prereg",
+                artifact_root=artifact_root,
+                live_env={},
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "audit-goal",
+                    "--artifact-root",
+                    tmp,
+                    "--output",
+                    str(artifact_root / "goal_audit_seed_42"),
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(payload["run_id"], "goal_audit_seed_42")
+            self.assertEqual(metrics["overall_status"], "not_complete")
+            self.assertTrue((artifact_path / "requirements.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("goal audit: not_complete", replay.stdout)
+
     def test_codebug_task_bank_hidden_tests_distinguish_seeded_patches(self):
         from broadcast_alpha.task_bank import load_codebug_tasks, verify_patch
 

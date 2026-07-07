@@ -2,27 +2,26 @@
 
 ## Task Being Attempted
 
-Propagate the existing `run-live-sequence` rail into the consolidated
-`build-report` surface and the unattended `run-all` bundle while preserving
-no-spend defaults.
+Add a `audit-goal` evidence rail that reads current repo files and generated
+artifacts, emits a requirement-by-requirement Glass Gate status matrix, and
+records remaining gaps without claiming completion.
 
 ## Actual User Goal
 
-Move `GOAL_GLASSGATE.md` closer to a real unattended showpiece by making the
-safe live-provider path visible in the same top-level artifacts as the macro
-number, seed audit, RQGM trajectory, and J-lens defer record. A user should not
-have to inspect a separate standalone artifact to see whether the live-provider
-sequence is ready, blocked, or promoted.
+Move `GOAL_GLASSGATE.md` closer to a finishable research instrument by making
+the completion gate executable and auditable. The user should be able to run a
+command that says which required claims are proved by current artifacts, which
+rails are cleanly deferred, and which requirements remain incomplete.
 
 ## Files Expected To Change
 
 | File | Expected Change | Risk |
 |---|---|---|
-| `broadcast_alpha/reporting.py` | Add `live_sequence_seed_42` loading, result-table row, claim, metrics, and result-card text. | Report could overclaim a blocked sequence as live evidence. |
-| `broadcast_alpha/orchestrator.py` | Run `run_live_sequence` in `run-all`, include it in child artifacts, run sequence, metrics, and replay text. | Could duplicate live gate/smoke artifacts or accidentally execute provider calls. |
-| `tests/test_broadcast_alpha.py` | Add TDD assertions for report/run-all propagation. | Tests could only check presence, not the no-spend semantics. |
-| `docs/FINAL_REPORT.md`, `docs/RUN_ALL.md`, `README.md` | Document live-sequence propagation and current blocked status. | Docs could imply the current evidence includes a live model call. |
-| `artifacts/` | Regenerate final report and run-all artifacts in blocked no-credential mode. | Generated ledger churn. |
+| `broadcast_alpha/goal_audit.py` | New audit rail with requirement matrix, metrics, replay, result card, and ledger. | Could overstate completion if statuses are too broad. |
+| `broadcast_alpha/cli.py` | Add `audit-goal` command. | CLI could be confused with final completion. |
+| `tests/test_broadcast_alpha.py` | Add TDD coverage for audit artifact, conservative statuses, CLI replay, and ledger verification. | Tests could bake in weak evidence. |
+| `docs/GOAL_AUDIT.md`, `README.md` | Document the audit command and current conservative verdict. | Docs could become stale if the audit output changes. |
+| `artifacts/goal_audit_seed_42/` | Generated current audit artifact. | Generated ledger churn. |
 | Root `DECISIONS.md`, `PROGRESS.md` | Record workflow/progress update. | Root is not Git-backed. |
 
 ## Existing Patterns To Follow
@@ -31,52 +30,49 @@ sequence is ready, blocked, or promoted.
   `expected_replay`.
 - Every rail writes `metrics.json`, `result_card.md`, `ledger.jsonl`, and
   `replay/contexts.json`.
-- `run-live-gate`, `run-live-smoke`, `run-live-dsh`, and
-  `run-live-sequence` already preserve no-secret artifacts and require
-  explicit execution flags before provider calls.
-- `run-all` uses nested source artifacts and child-ledger verification.
+- `build-report` and `run-all` already produce consolidated metrics with
+  macro, seed audit, RQGM, J-lens, and live sequence fields.
+- Ledgers are verified through `Ledger.from_jsonl(...).verify_chain()`.
 - Tests use fake/local transports for network-protected behavior.
 
 ## Assumptions
 
 - No real OpenRouter request is allowed in this pass.
-- `run-all` should call `run_live_sequence` with the same no-spend defaults as
-  the separate live rails.
-- The separate live gate, smoke, and DSH pilot rows should remain for continuity
-  while the sequence becomes the preferred user path.
+- The audit should be conservative and mark the overall goal incomplete while a
+  real live/model-backed run is absent.
+- A frozen J-lens rail with `JLENS-FREEZE-001` is a clean defer record, not a
+  pass for mechanistic claims.
+- The command reads existing artifacts; it does not run experiments.
 
 ## Non-Goals For This Pass
 
 - Do not run a live model-backed call.
 - Do not call OpenRouter or any external API.
 - Do not add non-stdlib dependencies.
-- Do not compute `GLASSGATE_LIFT` from live sequence, smoke, or pilot outputs.
-- Do not remove the existing live gate/smoke/DSH report fields.
+- Do not change macro, RQGM, live, or report outputs except adding the audit.
+- Do not mark `GOAL_GLASSGATE.md` complete.
 - Do not reopen the J-lens rail.
 
 ## Step-by-Step Plan
 
-1. Write failing tests that require `build-report` metrics/result table and
-   `run-all` manifest/metrics to include live-sequence status.
-2. Extend `build_result_report` with optional `live_sequence_seed_42`
-   summarization and a no-run fallback.
-3. Extend `run_all` to generate `live_sequence_seed_42` with no-spend defaults
-   and propagate final-report fields.
-4. Update docs and regenerate no-credential final report/run-all artifacts.
-5. Run full verification and commit/push.
+1. Write failing tests for `audit_goal` and CLI `audit-goal`.
+2. Implement `broadcast_alpha.goal_audit.audit_goal`.
+3. Add CLI command.
+4. Document the audit rail and generate `artifacts/goal_audit_seed_42/`.
+5. Run verification and commit/push.
 
 ## Acceptance Criteria
 
-- `build-report` metrics include live sequence status, adapter call total,
-  smoke status, pilot status, promotion flag, and child-ledger verification.
-- `result_table.json` includes a `live_sequence` row.
-- `claim_matrix.json` includes a claim that the preferred live-provider
-  sequence is blocked or recorded.
-- `run-all` generates `source_artifacts/live_sequence_seed_42/`.
-- `run-all` manifest, metrics, result card, and replay text include live
-  sequence status.
-- Default regenerated artifacts still record zero adapter calls and no live
-  model run.
+- `audit-goal` writes `artifacts/goal_audit_seed_42/`.
+- Audit artifact includes `requirements.json`, `metrics.json`,
+  `result_card.md`, `ledger.jsonl`, and `replay/contexts.json`.
+- Requirements include proved entries for macro `GLASSGATE_LIFT`, D arms,
+  seed audit, run-all bundle, replay/ledger evidence, and RQGM epochs.
+- Requirements include a deferred J-lens/bridge/mechanistic record when the
+  J-lens freeze evidence exists.
+- Requirements include an incomplete live/model-backed execution record while
+  adapter calls remain zero.
+- Overall audit status is not complete until incomplete requirements are gone.
 - Existing tests pass.
 
 ## Verification Plan
@@ -85,31 +81,26 @@ sequence is ready, blocked, or promoted.
 - `python3 -m unittest discover -s tests`
 - `python3 -m compileall -q broadcast_alpha tests`
 - `python3 -m py_compile claswarmed/*.py`
-- `python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42`
-- `python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5 --prereg-dir prereg --artifact-root artifacts`
-- `python3 -m broadcast_alpha export-ledger artifacts/final_report_seed_42 --format jsonl`
-- `python3 -m broadcast_alpha replay artifacts/final_report_seed_42 --agent agent_1 --step 3`
-- `python3 -m broadcast_alpha export-ledger artifacts/run_all_seed_42 --format jsonl`
-- `python3 -m broadcast_alpha replay artifacts/run_all_seed_42 --agent agent_1 --step 3`
-- `python3 -m broadcast_alpha export-ledger artifacts/live_sequence_seed_42 --format jsonl`
-- `python3 -m broadcast_alpha replay artifacts/live_sequence_seed_42 --agent agent_1 --step 3`
+- `python3 -m broadcast_alpha audit-goal --artifact-root artifacts --output artifacts/goal_audit_seed_42`
+- `python3 -m broadcast_alpha summarize artifacts/goal_audit_seed_42`
+- `python3 -m broadcast_alpha export-ledger artifacts/goal_audit_seed_42 --format jsonl`
+- `python3 -m broadcast_alpha replay artifacts/goal_audit_seed_42 --agent agent_1 --step 3`
 - `git diff --check`
 - secret scan for provider key patterns in code/docs/artifacts
 - `git status --short --branch`
 
 ## Rollback Plan
 
-Revert the propagation commit and regenerate the previous final report/run-all
-artifacts from the last pushed commit.
+Revert the audit rail commit and remove `artifacts/goal_audit_seed_42/`.
 
 ## Risks
 
 | Risk | Mitigation |
 |---|---|
-| Accidental network or spend | `run_all` calls the sequence with default no-execution flags and env stripped in regenerated artifacts. |
-| Secret leakage into artifacts | Reuse existing env/status sanitizers and scan artifacts before commit. |
-| Overclaiming live behavior | Metrics, claims, and docs state blocked/fake sequence outputs are not live macro evidence and do not produce `GLASSGATE_LIFT`. |
-| Duplicate live rail records confuse users | Label the sequence as the preferred path and retain separate rails as underlying compatibility evidence. |
+| Overclaiming completion | Use explicit `proved`, `deferred_with_record`, and `incomplete` statuses, and make any incomplete item force non-complete overall status. |
+| Audit drift | Source audit fields directly from current artifacts and docs, not hand-written constants where evidence exists. |
+| Generated artifact mistaken for final signoff | Result card states that the broader goal remains incomplete while live/model-backed execution is absent. |
+| Secret leakage | Audit reads sanitized metrics only and the final verification includes a secret scan. |
 
 ## Proceed / Block Decision
 

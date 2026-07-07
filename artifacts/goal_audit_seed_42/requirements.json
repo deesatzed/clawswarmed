@@ -1,0 +1,146 @@
+{
+  "items": [
+    {
+      "evidence": "README, handoff archive, failure ledger, and all required prereg files found.",
+      "evidence_path": "README.md",
+      "id": "repository_and_preregistration",
+      "requirement": "Repository identifies the instrument and contains the archived handoff, failure ledger, and prereg files.",
+      "status": "proved",
+      "value": {
+        "archive_ok": true,
+        "failure_ledger_ok": true,
+        "preregs_ok": true,
+        "readme_ok": true
+      }
+    },
+    {
+      "evidence": "GLASSGATE_LIFT=0.4 CI=[0.15, 0.55]",
+      "evidence_path": "artifacts/final_report_seed_42/metrics.json",
+      "id": "macro_glassgate_lift",
+      "requirement": "Macro report includes GLASSGATE_LIFT with a 95% confidence interval.",
+      "status": "proved",
+      "value": {
+        "glassgate_lift": 0.4,
+        "glassgate_lift_ci95": [
+          0.15,
+          0.55
+        ]
+      }
+    },
+    {
+      "evidence": "D estimates exist for abundant, random, scarce_naive_topk, and scarce_protected.",
+      "evidence_path": "artifacts/final_report_seed_42/metrics.json",
+      "id": "macro_d_by_arm",
+      "requirement": "Macro report includes D estimates for all four workspace arms.",
+      "status": "proved",
+      "value": {
+        "abundant": 0.15,
+        "random": 0.216667,
+        "scarce_naive_topk": 0.116667,
+        "scarce_protected": 0.616667
+      }
+    },
+    {
+      "evidence": "Final report source ledgers and run-all child ledgers verify.",
+      "evidence_path": "artifacts/final_report_seed_42/ledger.jsonl",
+      "id": "replayable_tamper_evident_ledgers",
+      "requirement": "Final report and run-all ledgers verify and preserve replay paths.",
+      "status": "proved",
+      "value": {
+        "all_child_ledgers_verified": true,
+        "all_source_ledgers_verified": true,
+        "final_report_ledger_verified": true,
+        "run_all_ledger_verified": true
+      }
+    },
+    {
+      "evidence": "Seed detectability and adversarial token AUC are both 0.5 with no camouflage failure.",
+      "evidence_path": "artifacts/final_report_seed_42/metrics.json",
+      "id": "seed_detectability_audit",
+      "requirement": "Seed detectability audit is present and does not fail the current camouflage gate.",
+      "status": "proved",
+      "value": {
+        "seed_adversarial_auc": 0.5,
+        "seed_camouflage_failed": false,
+        "seed_detectability_auc": 0.5
+      }
+    },
+    {
+      "evidence": "Epoch count=5 replacement count=3.",
+      "evidence_path": "artifacts/final_report_seed_42/metrics.json",
+      "id": "rqgm_epoch_trajectory",
+      "requirement": "Controlled evaluator evolution has at least five epochs.",
+      "status": "proved",
+      "value": {
+        "current_evaluator_id": "eval_gate_v5",
+        "epoch_count": 5,
+        "replacement_count": 3
+      }
+    },
+    {
+      "evidence": "run-all status is complete_with_deferred_jlens and all child ledgers verify.",
+      "evidence_path": "artifacts/run_all_seed_42/metrics.json",
+      "id": "unattended_run_all_bundle",
+      "requirement": "The unattended run-all bundle exists and verifies its child ledgers.",
+      "status": "proved",
+      "value": {
+        "all_child_ledgers_verified": true,
+        "run_status": "complete_with_deferred_jlens"
+      }
+    },
+    {
+      "evidence": "Live sequence status=blocked_before_smoke adapter calls=0.",
+      "evidence_path": "artifacts/live_sequence_seed_42/metrics.json",
+      "id": "live_sequence_record",
+      "requirement": "Preferred live-provider sequence is recorded without claiming live macro evidence.",
+      "status": "proved",
+      "value": {
+        "adapter_call_count_total": 0,
+        "all_child_ledgers_verified": true,
+        "sequence_status": "blocked_before_smoke"
+      }
+    },
+    {
+      "evidence": "J-lens rail frozen with JLENS-FREEZE-001 because exact source/model access is unavailable.",
+      "evidence_path": "FAILURE_LEDGER.md",
+      "id": "jlens_or_clean_defer",
+      "requirement": "J-lens rail either produces evidence or has a clean failure/defer record.",
+      "status": "deferred_with_record",
+      "value": {
+        "failure_ledger_entry_id": "JLENS-FREEZE-001",
+        "jlens_rail_status": "frozen"
+      }
+    },
+    {
+      "evidence": "Bridge rail deferred because the J-lens rail is frozen.",
+      "evidence_path": "FAILURE_LEDGER.md",
+      "id": "bridge_rail",
+      "requirement": "Bridge rail is either run after J-lens survival or cleanly deferred.",
+      "status": "deferred_with_record",
+      "value": {
+        "blocked_by": "jlens_or_clean_defer"
+      }
+    },
+    {
+      "evidence": "Mechanistic admission deferred because the J-lens rail is frozen.",
+      "evidence_path": "FAILURE_LEDGER.md",
+      "id": "mechanistic_admission",
+      "requirement": "Mechanistic admission rail is either run after J-lens survival or cleanly deferred.",
+      "status": "deferred_with_record",
+      "value": {
+        "blocked_by": "jlens_or_clean_defer"
+      }
+    },
+    {
+      "evidence": "No live model-backed adapter call has been made; checked-in evidence remains no-spend/no-network.",
+      "evidence_path": "artifacts/live_sequence_seed_42/metrics.json",
+      "id": "live_model_backed_execution",
+      "requirement": "At least one real provider-backed model call has been made and recorded before live evidence is claimed.",
+      "status": "incomplete",
+      "value": {
+        "live_model_run_performed": false,
+        "live_sequence_adapter_call_count_total": 0
+      }
+    }
+  ]
+}
