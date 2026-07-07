@@ -311,6 +311,130 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             self.assertIn("J-lens rail frozen", replay.stdout)
 
+    def test_build_report_summarizes_required_rails(self):
+        from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
+        from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.reporting import build_result_report
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact_root = Path(tmp)
+            run_synthetic(seed=42, artifact_root=artifact_root)
+            run_dsh(
+                prereg_path=APP_ROOT / "prereg" / "PREREG_DSH-01.md",
+                seed=42,
+                tasks_per_cell=30,
+                artifact_root=artifact_root,
+            )
+            run_rqgm(
+                prereg_path=APP_ROOT / "prereg" / "PREREG_EPOCH-01.md",
+                seed=42,
+                epochs=5,
+                artifact_root=artifact_root,
+            )
+            run_jlens_gate(seed=42, artifact_root=artifact_root)
+            result = build_result_report(artifact_root=artifact_root, output_dir=artifact_root / "final_report_seed_42")
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            result_table = json.loads((result.artifact_path / "result_table.json").read_text())
+            claim_matrix = json.loads((result.artifact_path / "claim_matrix.json").read_text())
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertEqual(metrics["run_id"], "final_report_seed_42")
+        self.assertEqual(metrics["glassgate_lift"], 0.4)
+        self.assertEqual(metrics["seed_detectability_auc"], 0.5)
+        self.assertFalse(metrics["seed_camouflage_failed"])
+        self.assertEqual(metrics["epoch_count"], 5)
+        self.assertEqual(metrics["jlens_rail_status"], "frozen")
+        self.assertTrue(metrics["all_source_ledgers_verified"])
+        self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
+        self.assertEqual(
+            {row["section"] for row in result_table["rows"]},
+            {"macro_dsh", "seed_detectability", "rqgm_epoch", "jlens_gate"},
+        )
+        self.assertTrue(all(row["ledger_verified"] for row in result_table["rows"]))
+        self.assertTrue(all(claim["evidence_path"] for claim in claim_matrix["claims"]))
+        self.assertIn("GLASSGATE_LIFT", result_card)
+        self.assertIn("J-lens rail frozen", result_card)
+
+    def test_cli_build_report_creates_replayable_report_artifact(self):
+        from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
+        from broadcast_alpha.jlens import run_jlens_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact_root = Path(tmp)
+            run_synthetic(seed=42, artifact_root=artifact_root)
+            run_dsh(
+                prereg_path=APP_ROOT / "prereg" / "PREREG_DSH-01.md",
+                seed=42,
+                tasks_per_cell=30,
+                artifact_root=artifact_root,
+            )
+            run_rqgm(
+                prereg_path=APP_ROOT / "prereg" / "PREREG_EPOCH-01.md",
+                seed=42,
+                epochs=5,
+                artifact_root=artifact_root,
+            )
+            run_jlens_gate(seed=42, artifact_root=artifact_root)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "build-report",
+                    "--artifact-root",
+                    tmp,
+                    "--output",
+                    str(artifact_root / "final_report_seed_42"),
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertTrue((artifact_path / "result_table.md").exists())
+            self.assertTrue((artifact_path / "claim_matrix.json").exists())
+            self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("final report", replay.stdout)
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
     def test_codebug_task_bank_hidden_tests_distinguish_seeded_patches(self):
         from broadcast_alpha.task_bank import load_codebug_tasks, verify_patch
 

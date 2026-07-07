@@ -1,0 +1,33 @@
+{
+  "D_by_arm": {
+    "abundant": 0.15,
+    "random": 0.216667,
+    "scarce_naive_topk": 0.116667,
+    "scarce_protected": 0.616667
+  },
+  "D_by_panel_type": {
+    "correlated_shared_context": 0.225,
+    "partitioned_disjoint_shards": 0.325
+  },
+  "all_source_ledgers_verified": true,
+  "claim_matrix_path": "artifacts/final_report_seed_42/claim_matrix.json",
+  "current_evaluator_id": "eval_gate_v5",
+  "epoch_count": 5,
+  "glassgate_lift": 0.4,
+  "glassgate_lift_ci95": [
+    0.15,
+    0.55
+  ],
+  "jlens_failure_ledger_entry_id": "JLENS-FREEZE-001",
+  "jlens_rail_status": "frozen",
+  "ledger_path": "artifacts/final_report_seed_42/ledger.jsonl",
+  "ledger_verification_path": "artifacts/final_report_seed_42/ledger_verification.json",
+  "replacement_count": 3,
+  "replay_bundle_path": "artifacts/final_report_seed_42/replay",
+  "report_status": "complete_with_deferred_jlens",
+  "result_card_path": "artifacts/final_report_seed_42/result_card.md",
+  "result_table_path": "artifacts/final_report_seed_42/result_table.json",
+  "run_id": "final_report_seed_42",
+  "seed_camouflage_failed": false,
+  "seed_detectability_auc": 0.5
+}

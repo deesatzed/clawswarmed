@@ -25,6 +25,7 @@ python3 -m broadcast_alpha run-synthetic --seed 42
 python3 -m broadcast_alpha run-dsh --prereg prereg/PREREG_DSH-01.md --seed 42 --tasks-per-cell 30
 python3 -m broadcast_alpha run-rqgm --prereg prereg/PREREG_EPOCH-01.md --seed 42 --epochs 5
 python3 -m broadcast_alpha run-jlens-gate --seed 42
+python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42
 python3 -m broadcast_alpha summarize artifacts/<run_id>
 python3 -m broadcast_alpha replay artifacts/<run_id> --agent agent_1 --step 3
 python3 -m broadcast_alpha export-ledger artifacts/<run_id> --format jsonl
@@ -61,6 +62,11 @@ configured.
 `artifacts/dsh_seed_42/seed_audit.json` is the current seed-camouflage audit.
 It scans public selected-candidate IDs for explicit seed markers and reports
 `seed_detectability_auc = 0.5` with `seed_camouflage_failed = false`.
+
+`artifacts/final_report_seed_42/` is the current consolidated report artifact.
+It reads the macro DSH, seed audit, RQGM, and J-lens gate artifacts, verifies
+their ledgers, and emits a result table, claim matrix, metrics JSON, replay
+bundle, result card, and its own chained ledger.
 
 ## Source Contract
 

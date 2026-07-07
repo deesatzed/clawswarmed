@@ -1,0 +1,8 @@
+# Broadcast-alpha Result Table
+
+| Section | Primary metric | Value | Ledger verified | Artifact |
+|---|---|---:|---:|---|
+| macro_dsh | GLASSGATE_LIFT | 0.4 | True | artifacts/dsh_seed_42 |
+| seed_detectability | seed_detectability_auc | 0.5 | True | artifacts/dsh_seed_42 |
+| rqgm_epoch | epoch_count | 5 | True | artifacts/rqgm_seed_42 |
+| jlens_gate | rail_status | frozen | True | artifacts/jlens_gate_seed_42 |

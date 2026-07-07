@@ -1,0 +1,36 @@
+{
+  "rows": [
+    {
+      "artifact_path": "artifacts/dsh_seed_42",
+      "evidence_path": "artifacts/dsh_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "GLASSGATE_LIFT",
+      "primary_value": 0.4,
+      "section": "macro_dsh"
+    },
+    {
+      "artifact_path": "artifacts/dsh_seed_42",
+      "evidence_path": "artifacts/dsh_seed_42/seed_audit.json",
+      "ledger_verified": true,
+      "primary_metric": "seed_detectability_auc",
+      "primary_value": 0.5,
+      "section": "seed_detectability"
+    },
+    {
+      "artifact_path": "artifacts/rqgm_seed_42",
+      "evidence_path": "artifacts/rqgm_seed_42/trajectory.json",
+      "ledger_verified": true,
+      "primary_metric": "epoch_count",
+      "primary_value": 5,
+      "section": "rqgm_epoch"
+    },
+    {
+      "artifact_path": "artifacts/jlens_gate_seed_42",
+      "evidence_path": "artifacts/jlens_gate_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "rail_status",
+      "primary_value": "frozen",
+      "section": "jlens_gate"
+    }
+  ]
+}
