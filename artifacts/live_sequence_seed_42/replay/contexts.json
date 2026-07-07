@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "live sequence: provider readiness gate and bounded smoke path prepared",
+    "2": "live sequence: smoke status blocked_no_live_execution with 0 adapter call(s)",
+    "3": "live sequence blocked before smoke: ['missing_openrouter_api_key', 'api_spend_not_authorized', 'execute_live_not_requested', 'network_probe_not_requested', 'live_model_run_not_performed']"
+  }
+}

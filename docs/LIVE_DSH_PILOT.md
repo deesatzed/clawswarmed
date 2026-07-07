@@ -13,9 +13,15 @@ the deterministic macro result.
 request, verifier, ledger, replay, and no-secret machinery, but hard-limits the
 run to one DSH cell and one task.
 
+`run-live-sequence` is the intended one-command provider path. It records
+provider readiness, runs smoke only when all live gates are explicitly opened,
+and promotes to the 24-cell pilot only when `--include-dsh-pilot` is supplied
+and smoke has a verifier-backed pass.
+
 ## Command
 
 ```bash
+python3 -m broadcast_alpha run-live-sequence --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
 ```
@@ -31,6 +37,7 @@ Real provider-backed execution requires:
 ## Current Artifact
 
 ```text
+artifacts/live_sequence_seed_42/
 artifacts/live_smoke_seed_42/
 artifacts/live_dsh_seed_42/
 ```
@@ -52,6 +59,8 @@ live_smoke.run_status = blocked_no_live_execution
 live_smoke.cell_limit = 1
 live_smoke.planned_task_runs = 1
 live_smoke.adapter_call_count = 0
+live_sequence.sequence_status = blocked_before_smoke
+live_sequence.adapter_call_count_total = 0
 run_status = blocked_no_live_execution
 prereg_id = PREREG_LIVE-01
 prereg_exists = true

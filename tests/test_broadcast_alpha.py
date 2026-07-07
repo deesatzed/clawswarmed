@@ -875,6 +875,187 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             self.assertIn("Live smoke blocked", replay.stdout)
 
+    def test_live_sequence_default_blocks_before_smoke_without_adapter_calls(self):
+        from broadcast_alpha.live_sequence import run_live_sequence
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_live_sequence(
+                seed=42,
+                artifact_root=Path(tmp),
+                env={},
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            manifest = json.loads((result.artifact_path / "manifest.json").read_text())
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertEqual(result.run_id, "live_sequence_seed_42")
+        self.assertEqual(metrics["sequence_status"], "blocked_before_smoke")
+        self.assertEqual(metrics["adapter_call_count_total"], 0)
+        self.assertEqual(metrics["smoke_run_status"], "blocked_no_live_execution")
+        self.assertEqual(metrics["pilot_run_status"], "not_requested")
+        self.assertFalse(metrics["pilot_promoted"])
+        self.assertNotIn("glassgate_lift", metrics)
+        self.assertIn("live_model_gate", manifest["child_artifacts"])
+        self.assertIn("live_smoke", manifest["child_artifacts"])
+        self.assertNotIn("live_dsh_pilot", manifest["child_artifacts"])
+        self.assertIn("blocked before smoke", result_card)
+
+    def test_live_sequence_fake_transport_runs_smoke_only_by_default(self):
+        from broadcast_alpha.live_sequence import run_live_sequence
+
+        captured_requests = []
+
+        def fake_transport(request):
+            captured_requests.append(request)
+            return {
+                "id": f"chatcmpl_fake_sequence_{len(captured_requests)}",
+                "choices": [{"message": {"content": "{\"patch\": \"x + 2\"}"}}],
+                "usage": {"prompt_tokens": 9, "completion_tokens": 3, "total_tokens": 12},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n")
+            result = run_live_sequence(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                transport=fake_transport,
+                transport_label="fake",
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            manifest = json.loads((result.artifact_path / "manifest.json").read_text())
+            combined_artifacts = "\n".join(
+                [
+                    (result.artifact_path / "metrics.json").read_text(),
+                    (result.artifact_path / "manifest.json").read_text(),
+                    (result.artifact_path / "ledger.jsonl").read_text(),
+                ]
+            )
+
+        self.assertEqual(metrics["sequence_status"], "smoke_passed_pilot_not_requested")
+        self.assertEqual(metrics["adapter_call_count_total"], 1)
+        self.assertEqual(metrics["smoke_run_status"], "adapter_pilot_executed_fake_transport")
+        self.assertEqual(metrics["smoke_hidden_verifier_pass_count"], 1)
+        self.assertEqual(metrics["pilot_run_status"], "not_requested")
+        self.assertFalse(metrics["pilot_promoted"])
+        self.assertEqual(len(captured_requests), 1)
+        self.assertIn("live_smoke", manifest["child_artifacts"])
+        self.assertNotIn("live_dsh_pilot", manifest["child_artifacts"])
+        self.assertNotIn("dummy-secret-value", combined_artifacts)
+
+    def test_live_sequence_promotes_to_pilot_after_fake_smoke_pass(self):
+        from broadcast_alpha.live_sequence import run_live_sequence
+
+        captured_requests = []
+
+        def fake_transport(request):
+            captured_requests.append(request)
+            return {
+                "id": f"chatcmpl_fake_sequence_{len(captured_requests)}",
+                "choices": [{"message": {"content": "{\"patch\": \"x + 2\"}"}}],
+                "usage": {"prompt_tokens": 9, "completion_tokens": 3, "total_tokens": 12},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n")
+            result = run_live_sequence(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                include_dsh_pilot=True,
+                transport=fake_transport,
+                transport_label="fake",
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            manifest = json.loads((result.artifact_path / "manifest.json").read_text())
+
+        self.assertEqual(metrics["sequence_status"], "pilot_executed_after_smoke_pass")
+        self.assertTrue(metrics["pilot_promoted"])
+        self.assertEqual(metrics["smoke_hidden_verifier_pass_count"], 1)
+        self.assertEqual(metrics["pilot_run_status"], "adapter_pilot_executed_fake_transport")
+        self.assertEqual(metrics["pilot_hidden_verifier_pass_count"], 24)
+        self.assertEqual(metrics["adapter_call_count_total"], 25)
+        self.assertEqual(len(captured_requests), 25)
+        self.assertIn("live_dsh_pilot", manifest["child_artifacts"])
+
+    def test_cli_run_live_sequence_default_creates_blocked_replayable_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-live-sequence",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    tmp,
+                    "--prereg",
+                    "prereg/PREREG_LIVE-01.md",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(payload["run_id"], "live_sequence_seed_42")
+            self.assertEqual(metrics["sequence_status"], "blocked_before_smoke")
+            self.assertTrue((artifact_path / "manifest.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("live sequence blocked before smoke", replay.stdout)
+
     def test_metrics_json_schema(self):
         from broadcast_alpha.experiments import run_synthetic
 

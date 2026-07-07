@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "live gate: provider configuration inspected by presence only",
+    "2": "live gate: OpenRouter API key present = False",
+    "3": "No live model run was performed; no API call was made and no secret value was recorded"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "adapter_call_count_total": 0,
+  "all_child_ledgers_verified": true,
+  "child_ledgers_verified": {
+    "live_model_gate": true,
+    "live_smoke": true
+  },
+  "include_dsh_pilot": false,
+  "ledger_path": "artifacts/live_sequence_seed_42/ledger.jsonl",
+  "live_model_gate_adapter_call_performed": false,
+  "live_model_gate_status": "unavailable",
+  "manifest_path": "artifacts/live_sequence_seed_42/manifest.json",
+  "pilot_adapter_call_count": 0,
+  "pilot_hidden_verifier_pass_count": 0,
+  "pilot_promoted": false,
+  "pilot_run_status": "not_requested",
+  "prereg_exists": true,
+  "prereg_path": "prereg/PREREG_LIVE-01.md",
+  "replay_bundle_path": "artifacts/live_sequence_seed_42/replay",
+  "result_card_path": "artifacts/live_sequence_seed_42/result_card.md",
+  "run_id": "live_sequence_seed_42",
+  "seed": 42,
+  "sequence_status": "blocked_before_smoke",
+  "smoke_adapter_call_count": 0,
+  "smoke_candidate_patch_present_count": 0,
+  "smoke_hidden_verifier_pass_count": 0,
+  "smoke_hidden_verifier_pass_rate": 0.0,
+  "smoke_model_run_performed": false,
+  "smoke_run_status": "blocked_no_live_execution"
+}

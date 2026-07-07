@@ -85,3 +85,8 @@ bundle also includes the one-call live smoke rail and the live DSH pilot rail,
 but it does not pass credentials, `--authorize-api-spend`, or `--execute-live`.
 Both are preregistered under `prereg/PREREG_LIVE-01.md`; blocked and
 fake-transport runs do not produce a live `GLASSGATE_LIFT` claim.
+
+For future provider-backed execution, use `run-live-sequence` first. Its
+default checked-in artifact is `artifacts/live_sequence_seed_42/`, and it is
+blocked before smoke unless credentials, model, `--authorize-api-spend`, and
+`--execute-live` are explicitly supplied.

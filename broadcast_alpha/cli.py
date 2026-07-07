@@ -7,6 +7,7 @@ from .jlens import run_jlens_gate
 from .ledger import Ledger
 from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
+from .live_sequence import run_live_sequence
 from .orchestrator import run_all
 from .reporting import build_result_report
 from .replay import replay_context
@@ -71,6 +72,17 @@ def build_parser() -> argparse.ArgumentParser:
     live_smoke.add_argument("--network-probe", action="store_true")
     live_smoke.add_argument("--execute-live", action="store_true")
     live_smoke.add_argument("--model")
+
+    live_sequence = sub.add_parser("run-live-sequence", help="Run the gated live provider sequence")
+    live_sequence.add_argument("--prereg", default="prereg/PREREG_LIVE-01.md")
+    live_sequence.add_argument("--seed", type=int, default=42)
+    live_sequence.add_argument("--artifact-root", default="artifacts")
+    live_sequence.add_argument("--env-file")
+    live_sequence.add_argument("--authorize-api-spend", action="store_true")
+    live_sequence.add_argument("--network-probe", action="store_true")
+    live_sequence.add_argument("--execute-live", action="store_true")
+    live_sequence.add_argument("--model")
+    live_sequence.add_argument("--include-dsh-pilot", action="store_true")
 
     report = sub.add_parser("build-report", help="Build consolidated result table and claim matrix")
     report.add_argument("--artifact-root", default="artifacts")
@@ -173,6 +185,21 @@ def main(argv: list[str] | None = None) -> int:
             network_probe=args.network_probe,
             execute_live=args.execute_live,
             model=args.model,
+            prereg_path=Path(args.prereg),
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-live-sequence":
+        result = run_live_sequence(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            env_file=Path(args.env_file) if args.env_file else None,
+            api_spend_authorized=args.authorize_api_spend,
+            network_probe=args.network_probe,
+            execute_live=args.execute_live,
+            model=args.model,
+            include_dsh_pilot=args.include_dsh_pilot,
             prereg_path=Path(args.prereg),
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})

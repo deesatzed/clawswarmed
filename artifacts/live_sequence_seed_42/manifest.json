@@ -1,0 +1,14 @@
+{
+  "child_artifacts": {
+    "live_model_gate": "artifacts/live_sequence_seed_42/source_artifacts/live_gate_seed_42",
+    "live_smoke": "artifacts/live_sequence_seed_42/source_artifacts/live_smoke_seed_42"
+  },
+  "include_dsh_pilot": false,
+  "prereg_path": "prereg/PREREG_LIVE-01.md",
+  "run_id": "live_sequence_seed_42",
+  "run_sequence": [
+    "live_model_gate",
+    "live_smoke"
+  ],
+  "seed": 42
+}
