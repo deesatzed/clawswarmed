@@ -2,7 +2,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .experiments import run_dsh, run_synthetic
+from .experiments import run_dsh, run_rqgm, run_synthetic
 from .ledger import Ledger
 from .replay import replay_context
 
@@ -26,6 +26,12 @@ def build_parser() -> argparse.ArgumentParser:
     dsh.add_argument("--seed", type=int, default=42)
     dsh.add_argument("--tasks-per-cell", type=int, default=30)
     dsh.add_argument("--artifact-root", default="artifacts")
+
+    rqgm = sub.add_parser("run-rqgm", help="Run controlled RQGM evaluator evolution")
+    rqgm.add_argument("--prereg", default="prereg/PREREG_EPOCH-01.md")
+    rqgm.add_argument("--seed", type=int, default=42)
+    rqgm.add_argument("--epochs", type=int, default=5)
+    rqgm.add_argument("--artifact-root", default="artifacts")
 
     summarize = sub.add_parser("summarize", help="Print metrics for an artifact")
     summarize.add_argument("artifact")
@@ -59,6 +65,16 @@ def main(argv: list[str] | None = None) -> int:
             prereg_path=Path(args.prereg),
             seed=args.seed,
             tasks_per_cell=args.tasks_per_cell,
+            artifact_root=Path(args.artifact_root),
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-rqgm":
+        result = run_rqgm(
+            prereg_path=Path(args.prereg),
+            seed=args.seed,
+            epochs=args.epochs,
             artifact_root=Path(args.artifact_root),
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})

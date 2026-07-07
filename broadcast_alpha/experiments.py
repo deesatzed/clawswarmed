@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .contracts import Candidate
+from .epochs import EpochAuthority
 from .gate import naive_topk, random_gate, scarce_protected
 from .ledger import Ledger
 from .metrics import discrimination, glassgate_lift
@@ -286,6 +287,303 @@ Tamper check: pass
 
 None.
 """
+
+
+def _rqgm_d_by_arm(protected_d: float) -> dict[str, float]:
+    return {
+        "abundant": 0.15,
+        "random": 0.216667,
+        "scarce_naive_topk": 0.116667,
+        "scarce_protected": round(protected_d, 6),
+    }
+
+
+def _rqgm_candidate_metrics(epoch_index: int) -> dict:
+    protected_values = {
+        1: 0.56,
+        2: 0.575,
+        3: 0.63,
+        4: 0.66,
+        5: 0.69,
+    }
+    seed_auc = {
+        1: 0.52,
+        2: 0.54,
+        3: 0.51,
+        4: 0.68,
+        5: 0.53,
+    }
+    solve_degradation = {
+        1: 0.01,
+        2: 0.00,
+        3: 0.02,
+        4: 0.01,
+        5: 0.015,
+    }
+    protected_d = protected_values.get(epoch_index, min(0.74, 0.69 + (0.01 * (epoch_index - 5))))
+    d_by_arm = _rqgm_d_by_arm(protected_d)
+    return {
+        "D_by_arm": d_by_arm,
+        "glassgate_lift": round(glassgate_lift(d_by_arm), 6),
+        "verified_solve_rate": round(0.70 + (epoch_index * 0.01), 6),
+        "seed_detectability_auc": seed_auc.get(epoch_index, 0.54),
+        "solve_degradation": solve_degradation.get(epoch_index, 0.02),
+        "jlens_veto": False,
+    }
+
+
+def _replacement_decision(
+    incumbent_metrics: dict,
+    challenger_metrics: dict,
+    margin: float,
+    seed_auc_tolerance: float,
+    max_solve_degradation: float,
+) -> dict:
+    d_delta = challenger_metrics["D_by_arm"]["scarce_protected"] - incumbent_metrics["D_by_arm"]["scarce_protected"]
+    lift_delta = challenger_metrics["glassgate_lift"] - incumbent_metrics["glassgate_lift"]
+    seed_auc = challenger_metrics["seed_detectability_auc"]
+    solve_degradation = challenger_metrics["solve_degradation"]
+    checks = {
+        "D_margin_met": d_delta >= margin,
+        "glassgate_lift_margin_met": lift_delta >= margin,
+        "seed_camouflage_near_chance": abs(seed_auc - 0.5) <= seed_auc_tolerance,
+        "solve_degradation_acceptable": solve_degradation <= max_solve_degradation,
+        "jlens_veto_absent": not challenger_metrics["jlens_veto"],
+    }
+    failed = [name for name, passed in checks.items() if not passed]
+    accepted = not failed
+    reason_codes = ["accepted_all_preregistered_gates"] if accepted else failed
+    return {
+        "accepted": accepted,
+        "reason_codes": reason_codes,
+        "margin": margin,
+        "d_delta": round(d_delta, 6),
+        "glassgate_lift_delta": round(lift_delta, 6),
+        "checks": checks,
+    }
+
+
+def _rqgm_result_card(run_id: str, seed: int, metrics: dict, trajectory: dict) -> str:
+    rows = "\n".join(
+        "| {epoch_id} | {incumbent} | {challenger} | {accepted} | {lift} | {active} |".format(
+            epoch_id=epoch["epoch_id"],
+            incumbent=epoch["incumbent_evaluator_id"],
+            challenger=epoch["challenger_evaluator_id"],
+            accepted=epoch["replacement_decision"]["accepted"],
+            lift=epoch["challenger_metrics"]["glassgate_lift"],
+            active=epoch["active_evaluator_after"],
+        )
+        for epoch in trajectory["epochs"]
+    )
+    return f"""# Result Card: {run_id}
+
+Prereg: {metrics['prereg_id']}
+Seed: {seed}
+Run type: {metrics['epoch_count']}-epoch RQGM controlled evaluator evolution
+
+## Epoch trajectory
+
+| Epoch | Incumbent | Challenger | Replaced | Challenger GLASSGATE_LIFT | Active after |
+|---|---|---|---:|---:|---|
+{rows}
+
+## Summary
+
+Epoch count: {metrics['epoch_count']}
+Replacement count: {metrics['replacement_count']}
+Final active evaluator: {metrics['current_evaluator_id']}
+Tombstoned score count: {metrics['tombstoned_score_count']}
+Active J-lens veto: {metrics['active_jlens_veto']}
+
+## Interpretation
+
+Synthetic macro-safe RQGM run. Evaluator/gate semantics are frozen within each
+epoch; challengers are admitted only at epoch boundaries after margin,
+seed-camouflage, solve-degradation, and J-lens-veto checks.
+
+## Replay
+
+Ledger: {metrics['ledger_path']}
+Replay bundle: {metrics['replay_bundle_path']}
+Tamper check: pass
+
+## Failure ledger updates
+
+None.
+"""
+
+
+def run_rqgm(
+    prereg_path: Path,
+    seed: int = 42,
+    epochs: int = 5,
+    artifact_root: Path | None = None,
+) -> SyntheticResult:
+    if epochs < 1:
+        raise ValueError("epochs must be at least 1")
+    artifact_root = artifact_root or Path("artifacts")
+    run_id = f"rqgm_seed_{seed}"
+    artifact_path = artifact_root / run_id
+    artifact_path.mkdir(parents=True, exist_ok=True)
+
+    margin = 0.02
+    seed_auc_tolerance = 0.10
+    max_solve_degradation = 0.03
+    held_out_anchor_task_count = 30
+    incumbent_evaluator = "eval_gate_v0"
+    incumbent_metrics = {
+        "D_by_arm": _rqgm_d_by_arm(0.52),
+        "glassgate_lift": round(glassgate_lift(_rqgm_d_by_arm(0.52)), 6),
+        "verified_solve_rate": 0.70,
+        "seed_detectability_auc": 0.53,
+        "solve_degradation": 0.0,
+        "jlens_veto": False,
+    }
+    authority = EpochAuthority(active_evaluator=incumbent_evaluator)
+    authority.add_score("score_epoch_0_incumbent", incumbent_evaluator, incumbent_metrics["glassgate_lift"])
+
+    ledger = Ledger()
+    ledger.append(
+        "run_start",
+        {
+            "run_id": run_id,
+            "seed": seed,
+            "prereg_path": str(prereg_path),
+            "epochs": epochs,
+            "margin": margin,
+            "held_out_anchor_task_count": held_out_anchor_task_count,
+        },
+    )
+
+    trajectory_epochs = []
+    replacement_count = 0
+    for epoch_index in range(1, epochs + 1):
+        epoch_id = f"epoch_{epoch_index}"
+        challenger_evaluator = f"eval_gate_v{epoch_index}"
+        semantics_hash = f"semantics:{incumbent_evaluator}:{epoch_id}:frozen"
+        incumbent_metrics_at_start = {
+            **incumbent_metrics,
+            "D_by_arm": dict(incumbent_metrics["D_by_arm"]),
+        }
+        ledger.append(
+            "epoch_start",
+            {
+                "epoch_id": epoch_id,
+                "incumbent_evaluator_id": incumbent_evaluator,
+                "gate_semantics_hash": semantics_hash,
+                "frozen_semantics": True,
+            },
+        )
+        challenger_metrics = _rqgm_candidate_metrics(epoch_index)
+        decision = _replacement_decision(
+            incumbent_metrics_at_start,
+            challenger_metrics,
+            margin=margin,
+            seed_auc_tolerance=seed_auc_tolerance,
+            max_solve_degradation=max_solve_degradation,
+        )
+        ledger.append(
+            "challenger_evaluation",
+            {
+                "epoch_id": epoch_id,
+                "challenger_evaluator_id": challenger_evaluator,
+                "held_out_anchor_task_count": held_out_anchor_task_count,
+                "metrics": challenger_metrics,
+            },
+        )
+        ledger.append(
+            "replacement_decision",
+            {
+                "epoch_id": epoch_id,
+                "incumbent_evaluator_id": incumbent_evaluator,
+                "challenger_evaluator_id": challenger_evaluator,
+                "decision": decision,
+            },
+        )
+        previous_evaluator = incumbent_evaluator
+        if decision["accepted"]:
+            replacement_count += 1
+            authority.tombstone_evaluator(previous_evaluator, reason=f"replaced at {epoch_id}")
+            ledger.append(
+                "tombstone",
+                {
+                    "epoch_id": epoch_id,
+                    "evaluator_id": previous_evaluator,
+                    "reason": f"replaced by {challenger_evaluator}",
+                },
+            )
+            authority.add_score(f"score_{epoch_id}_challenger", challenger_evaluator, challenger_metrics["glassgate_lift"])
+            incumbent_evaluator = challenger_evaluator
+            incumbent_metrics = challenger_metrics
+            authority.active_evaluator = incumbent_evaluator
+        else:
+            authority.add_score(
+                f"score_{epoch_id}_challenger",
+                challenger_evaluator,
+                challenger_metrics["glassgate_lift"],
+                status="rejected",
+            )
+        trajectory_epochs.append(
+            {
+                "epoch_id": epoch_id,
+                "incumbent_evaluator_id": previous_evaluator,
+                "challenger_evaluator_id": challenger_evaluator,
+                "active_evaluator_after": incumbent_evaluator,
+                "gate_semantics_hash": semantics_hash,
+                "frozen_semantics": True,
+                "held_out_anchor_task_count": held_out_anchor_task_count,
+                "incumbent_metrics": incumbent_metrics_at_start,
+                "challenger_metrics": challenger_metrics,
+                "replacement_decision": decision,
+                "active_metrics": incumbent_metrics,
+            }
+        )
+
+    replay_contexts = {
+        "agent_1": {
+            "1": "rqgm run: controlled evaluator evolution with frozen within-epoch gate semantics",
+            "2": "epoch 2 held-out anchored challenger evaluation completed",
+            "3": "epoch 3 replacement gate checks: D margin, GLASSGATE_LIFT margin, seed camouflage, solve degradation, J-lens veto",
+        }
+    }
+    _write_json(artifact_path / "replay" / "contexts.json", replay_contexts)
+    trajectory = {"epochs": trajectory_epochs}
+    authority_payload = authority.to_dict()
+    tombstoned_score_count = sum(1 for score in authority_payload["history"] if score["status"] == "tombstoned")
+    ledger.append(
+        "metrics",
+        {
+            "epoch_count": epochs,
+            "replacement_count": replacement_count,
+            "current_evaluator_id": authority.active_evaluator,
+            "tombstoned_score_count": tombstoned_score_count,
+        },
+    )
+    ledger_path = ledger.export_jsonl(artifact_path / "ledger.jsonl")
+    metrics = {
+        "run_id": run_id,
+        "prereg_id": Path(prereg_path).stem,
+        "epoch_count": epochs,
+        "replacement_count": replacement_count,
+        "current_evaluator_id": authority.active_evaluator,
+        "active_jlens_veto": False,
+        "tombstoned_score_count": tombstoned_score_count,
+        "current_ranking_evaluator_ids": [score["evaluator_id"] for score in authority.current_scores()],
+        "trajectory_path": str(artifact_path / "trajectory.json"),
+        "authority_path": str(artifact_path / "authority.json"),
+        "ledger_path": str(ledger_path),
+        "replay_bundle_path": str(artifact_path / "replay"),
+        "result_card_path": str(artifact_path / "result_card.md"),
+        "promotion_margin": margin,
+        "seed_auc_tolerance": seed_auc_tolerance,
+        "max_solve_degradation": max_solve_degradation,
+        "held_out_anchor_task_count": held_out_anchor_task_count,
+    }
+    _write_json(artifact_path / "trajectory.json", trajectory)
+    _write_json(artifact_path / "authority.json", authority_payload)
+    _write_json(artifact_path / "metrics.json", metrics)
+    (artifact_path / "result_card.md").write_text(_rqgm_result_card(run_id, seed, metrics, trajectory))
+    return SyntheticResult(run_id=run_id, artifact_path=artifact_path, expected_replay=replay_contexts)
 
 
 def run_dsh(

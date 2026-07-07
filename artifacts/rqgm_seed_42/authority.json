@@ -1,0 +1,52 @@
+{
+  "active_evaluator": "eval_gate_v5",
+  "current_scores": [
+    {
+      "evaluator_id": "eval_gate_v5",
+      "id": "score_epoch_5_challenger",
+      "status": "active",
+      "value": 0.473333
+    }
+  ],
+  "history": [
+    {
+      "evaluator_id": "eval_gate_v0",
+      "id": "score_epoch_0_incumbent",
+      "status": "tombstoned",
+      "tombstone_reason": "replaced at epoch_1",
+      "value": 0.303333
+    },
+    {
+      "evaluator_id": "eval_gate_v1",
+      "id": "score_epoch_1_challenger",
+      "status": "tombstoned",
+      "tombstone_reason": "replaced at epoch_3",
+      "value": 0.343333
+    },
+    {
+      "evaluator_id": "eval_gate_v2",
+      "id": "score_epoch_2_challenger",
+      "status": "rejected",
+      "value": 0.358333
+    },
+    {
+      "evaluator_id": "eval_gate_v3",
+      "id": "score_epoch_3_challenger",
+      "status": "tombstoned",
+      "tombstone_reason": "replaced at epoch_5",
+      "value": 0.413333
+    },
+    {
+      "evaluator_id": "eval_gate_v4",
+      "id": "score_epoch_4_challenger",
+      "status": "rejected",
+      "value": 0.443333
+    },
+    {
+      "evaluator_id": "eval_gate_v5",
+      "id": "score_epoch_5_challenger",
+      "status": "active",
+      "value": 0.473333
+    }
+  ]
+}

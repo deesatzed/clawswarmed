@@ -1,0 +1,325 @@
+{
+  "epochs": [
+    {
+      "active_evaluator_after": "eval_gate_v1",
+      "active_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.56
+        },
+        "glassgate_lift": 0.343333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.52,
+        "solve_degradation": 0.01,
+        "verified_solve_rate": 0.71
+      },
+      "challenger_evaluator_id": "eval_gate_v1",
+      "challenger_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.56
+        },
+        "glassgate_lift": 0.343333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.52,
+        "solve_degradation": 0.01,
+        "verified_solve_rate": 0.71
+      },
+      "epoch_id": "epoch_1",
+      "frozen_semantics": true,
+      "gate_semantics_hash": "semantics:eval_gate_v0:epoch_1:frozen",
+      "held_out_anchor_task_count": 30,
+      "incumbent_evaluator_id": "eval_gate_v0",
+      "incumbent_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.52
+        },
+        "glassgate_lift": 0.303333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.53,
+        "solve_degradation": 0.0,
+        "verified_solve_rate": 0.7
+      },
+      "replacement_decision": {
+        "accepted": true,
+        "checks": {
+          "D_margin_met": true,
+          "glassgate_lift_margin_met": true,
+          "jlens_veto_absent": true,
+          "seed_camouflage_near_chance": true,
+          "solve_degradation_acceptable": true
+        },
+        "d_delta": 0.04,
+        "glassgate_lift_delta": 0.04,
+        "margin": 0.02,
+        "reason_codes": [
+          "accepted_all_preregistered_gates"
+        ]
+      }
+    },
+    {
+      "active_evaluator_after": "eval_gate_v1",
+      "active_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.56
+        },
+        "glassgate_lift": 0.343333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.52,
+        "solve_degradation": 0.01,
+        "verified_solve_rate": 0.71
+      },
+      "challenger_evaluator_id": "eval_gate_v2",
+      "challenger_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.575
+        },
+        "glassgate_lift": 0.358333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.54,
+        "solve_degradation": 0.0,
+        "verified_solve_rate": 0.72
+      },
+      "epoch_id": "epoch_2",
+      "frozen_semantics": true,
+      "gate_semantics_hash": "semantics:eval_gate_v1:epoch_2:frozen",
+      "held_out_anchor_task_count": 30,
+      "incumbent_evaluator_id": "eval_gate_v1",
+      "incumbent_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.56
+        },
+        "glassgate_lift": 0.343333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.52,
+        "solve_degradation": 0.01,
+        "verified_solve_rate": 0.71
+      },
+      "replacement_decision": {
+        "accepted": false,
+        "checks": {
+          "D_margin_met": false,
+          "glassgate_lift_margin_met": false,
+          "jlens_veto_absent": true,
+          "seed_camouflage_near_chance": true,
+          "solve_degradation_acceptable": true
+        },
+        "d_delta": 0.015,
+        "glassgate_lift_delta": 0.015,
+        "margin": 0.02,
+        "reason_codes": [
+          "D_margin_met",
+          "glassgate_lift_margin_met"
+        ]
+      }
+    },
+    {
+      "active_evaluator_after": "eval_gate_v3",
+      "active_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.63
+        },
+        "glassgate_lift": 0.413333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.51,
+        "solve_degradation": 0.02,
+        "verified_solve_rate": 0.73
+      },
+      "challenger_evaluator_id": "eval_gate_v3",
+      "challenger_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.63
+        },
+        "glassgate_lift": 0.413333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.51,
+        "solve_degradation": 0.02,
+        "verified_solve_rate": 0.73
+      },
+      "epoch_id": "epoch_3",
+      "frozen_semantics": true,
+      "gate_semantics_hash": "semantics:eval_gate_v1:epoch_3:frozen",
+      "held_out_anchor_task_count": 30,
+      "incumbent_evaluator_id": "eval_gate_v1",
+      "incumbent_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.56
+        },
+        "glassgate_lift": 0.343333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.52,
+        "solve_degradation": 0.01,
+        "verified_solve_rate": 0.71
+      },
+      "replacement_decision": {
+        "accepted": true,
+        "checks": {
+          "D_margin_met": true,
+          "glassgate_lift_margin_met": true,
+          "jlens_veto_absent": true,
+          "seed_camouflage_near_chance": true,
+          "solve_degradation_acceptable": true
+        },
+        "d_delta": 0.07,
+        "glassgate_lift_delta": 0.07,
+        "margin": 0.02,
+        "reason_codes": [
+          "accepted_all_preregistered_gates"
+        ]
+      }
+    },
+    {
+      "active_evaluator_after": "eval_gate_v3",
+      "active_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.63
+        },
+        "glassgate_lift": 0.413333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.51,
+        "solve_degradation": 0.02,
+        "verified_solve_rate": 0.73
+      },
+      "challenger_evaluator_id": "eval_gate_v4",
+      "challenger_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.66
+        },
+        "glassgate_lift": 0.443333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.68,
+        "solve_degradation": 0.01,
+        "verified_solve_rate": 0.74
+      },
+      "epoch_id": "epoch_4",
+      "frozen_semantics": true,
+      "gate_semantics_hash": "semantics:eval_gate_v3:epoch_4:frozen",
+      "held_out_anchor_task_count": 30,
+      "incumbent_evaluator_id": "eval_gate_v3",
+      "incumbent_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.63
+        },
+        "glassgate_lift": 0.413333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.51,
+        "solve_degradation": 0.02,
+        "verified_solve_rate": 0.73
+      },
+      "replacement_decision": {
+        "accepted": false,
+        "checks": {
+          "D_margin_met": true,
+          "glassgate_lift_margin_met": true,
+          "jlens_veto_absent": true,
+          "seed_camouflage_near_chance": false,
+          "solve_degradation_acceptable": true
+        },
+        "d_delta": 0.03,
+        "glassgate_lift_delta": 0.03,
+        "margin": 0.02,
+        "reason_codes": [
+          "seed_camouflage_near_chance"
+        ]
+      }
+    },
+    {
+      "active_evaluator_after": "eval_gate_v5",
+      "active_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.69
+        },
+        "glassgate_lift": 0.473333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.53,
+        "solve_degradation": 0.015,
+        "verified_solve_rate": 0.75
+      },
+      "challenger_evaluator_id": "eval_gate_v5",
+      "challenger_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.69
+        },
+        "glassgate_lift": 0.473333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.53,
+        "solve_degradation": 0.015,
+        "verified_solve_rate": 0.75
+      },
+      "epoch_id": "epoch_5",
+      "frozen_semantics": true,
+      "gate_semantics_hash": "semantics:eval_gate_v3:epoch_5:frozen",
+      "held_out_anchor_task_count": 30,
+      "incumbent_evaluator_id": "eval_gate_v3",
+      "incumbent_metrics": {
+        "D_by_arm": {
+          "abundant": 0.15,
+          "random": 0.216667,
+          "scarce_naive_topk": 0.116667,
+          "scarce_protected": 0.63
+        },
+        "glassgate_lift": 0.413333,
+        "jlens_veto": false,
+        "seed_detectability_auc": 0.51,
+        "solve_degradation": 0.02,
+        "verified_solve_rate": 0.73
+      },
+      "replacement_decision": {
+        "accepted": true,
+        "checks": {
+          "D_margin_met": true,
+          "glassgate_lift_margin_met": true,
+          "jlens_veto_absent": true,
+          "seed_camouflage_near_chance": true,
+          "solve_degradation_acceptable": true
+        },
+        "d_delta": 0.06,
+        "glassgate_lift_delta": 0.06,
+        "margin": 0.02,
+        "reason_codes": [
+          "accepted_all_preregistered_gates"
+        ]
+      }
+    }
+  ]
+}

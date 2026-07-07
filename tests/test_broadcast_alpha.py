@@ -310,6 +310,90 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "grid.json").exists())
             self.assertIn("24-cell DSH grid", result_card)
 
+    def test_run_rqgm_builds_5_epoch_controlled_trajectory(self):
+        from broadcast_alpha.experiments import run_rqgm
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_rqgm(
+                prereg_path=APP_ROOT / "prereg" / "PREREG_EPOCH-01.md",
+                seed=42,
+                epochs=5,
+                artifact_root=Path(tmp),
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            trajectory = json.loads((result.artifact_path / "trajectory.json").read_text())
+            authority = json.loads((result.artifact_path / "authority.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertEqual(metrics["epoch_count"], 5)
+        self.assertEqual(len(trajectory["epochs"]), 5)
+        self.assertGreaterEqual(metrics["replacement_count"], 1)
+        self.assertEqual(metrics["active_jlens_veto"], False)
+        self.assertIn("5-epoch RQGM", result_card)
+        self.assertTrue(all(epoch["frozen_semantics"] for epoch in trajectory["epochs"]))
+        self.assertTrue(all(epoch["held_out_anchor_task_count"] >= 30 for epoch in trajectory["epochs"]))
+        self.assertTrue(all(epoch["replacement_decision"]["reason_codes"] for epoch in trajectory["epochs"]))
+        self.assertTrue(any(epoch["replacement_decision"]["accepted"] for epoch in trajectory["epochs"]))
+        tombstoned_ids = {
+            score["evaluator_id"]
+            for score in authority["history"]
+            if score["status"] == "tombstoned"
+        }
+        current_ids = {score["evaluator_id"] for score in authority["current_scores"]}
+        self.assertTrue(tombstoned_ids)
+        self.assertTrue(tombstoned_ids.isdisjoint(current_ids))
+        self.assertIn('"kind": "replacement_decision"', ledger)
+        self.assertIn('"kind": "tombstone"', ledger)
+
+    def test_cli_run_rqgm_creates_epoch_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-rqgm",
+                    "--prereg",
+                    "prereg/PREREG_EPOCH-01.md",
+                    "--seed",
+                    "42",
+                    "--epochs",
+                    "5",
+                    "--artifact-root",
+                    tmp,
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertTrue((artifact_path / "trajectory.json").exists())
+            self.assertTrue((artifact_path / "authority.json").exists())
+            self.assertEqual(metrics["epoch_count"], 5)
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("epoch 3", replay.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

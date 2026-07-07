@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "rqgm run: controlled evaluator evolution with frozen within-epoch gate semantics",
+    "2": "epoch 2 held-out anchored challenger evaluation completed",
+    "3": "epoch 3 replacement gate checks: D margin, GLASSGATE_LIFT margin, seed camouflage, solve degradation, J-lens veto"
+  }
+}

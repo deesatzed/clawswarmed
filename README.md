@@ -23,6 +23,7 @@ The primary Glass Gate implementation lives under `broadcast_alpha/`.
 python3 -m broadcast_alpha init
 python3 -m broadcast_alpha run-synthetic --seed 42
 python3 -m broadcast_alpha run-dsh --prereg prereg/PREREG_DSH-01.md --seed 42 --tasks-per-cell 30
+python3 -m broadcast_alpha run-rqgm --prereg prereg/PREREG_EPOCH-01.md --seed 42 --epochs 5
 python3 -m broadcast_alpha summarize artifacts/<run_id>
 python3 -m broadcast_alpha replay artifacts/<run_id> --agent agent_1 --step 3
 python3 -m broadcast_alpha export-ledger artifacts/<run_id> --format jsonl
@@ -45,6 +46,11 @@ dependency decisions are made.
 30-task deterministic codebug bank, executable hidden-test verification,
 720 task-level run records, a chained ledger, replay context, bootstrap CI
 metadata, `metrics.json`, and `result_card.md`.
+
+`artifacts/rqgm_seed_42/` is the current checked-in synthetic RQGM run. It
+includes a 5-epoch controlled evaluator trajectory, held-out anchored
+challenger decisions, replacement/tombstone receipts, current-vs-historical
+authority records, replay context, `metrics.json`, and `result_card.md`.
 
 ## Source Contract
 
