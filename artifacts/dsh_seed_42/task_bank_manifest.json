@@ -1,0 +1,334 @@
+{
+  "tasks": [
+    {
+      "function_name": "repair_add",
+      "hidden_test_count": 3,
+      "id": "codebug_add_01",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_multiply",
+      "hidden_test_count": 3,
+      "id": "codebug_multiply_01",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_multiple",
+      "hidden_test_count": 3,
+      "id": "codebug_multiple_01",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_floor",
+      "hidden_test_count": 3,
+      "id": "codebug_floor_01",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_bounds",
+      "hidden_test_count": 3,
+      "id": "codebug_bounds_01",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_reverse",
+      "hidden_test_count": 3,
+      "id": "codebug_reverse_01",
+      "parameters": [
+        "text"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_last_digit",
+      "hidden_test_count": 3,
+      "id": "codebug_last_digit_01",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_abs_shift",
+      "hidden_test_count": 3,
+      "id": "codebug_abs_shift_01",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_parity",
+      "hidden_test_count": 3,
+      "id": "codebug_parity_01",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_clip_upper",
+      "hidden_test_count": 3,
+      "id": "codebug_clip_upper_01",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_add",
+      "hidden_test_count": 3,
+      "id": "codebug_add_02",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_multiply",
+      "hidden_test_count": 3,
+      "id": "codebug_multiply_02",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_multiple",
+      "hidden_test_count": 3,
+      "id": "codebug_multiple_02",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_floor",
+      "hidden_test_count": 3,
+      "id": "codebug_floor_02",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_bounds",
+      "hidden_test_count": 3,
+      "id": "codebug_bounds_02",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_reverse",
+      "hidden_test_count": 3,
+      "id": "codebug_reverse_02",
+      "parameters": [
+        "text"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_last_digit",
+      "hidden_test_count": 3,
+      "id": "codebug_last_digit_02",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_abs_shift",
+      "hidden_test_count": 3,
+      "id": "codebug_abs_shift_02",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_parity",
+      "hidden_test_count": 3,
+      "id": "codebug_parity_02",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_clip_upper",
+      "hidden_test_count": 3,
+      "id": "codebug_clip_upper_02",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_add",
+      "hidden_test_count": 3,
+      "id": "codebug_add_03",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_multiply",
+      "hidden_test_count": 3,
+      "id": "codebug_multiply_03",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_multiple",
+      "hidden_test_count": 3,
+      "id": "codebug_multiple_03",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_floor",
+      "hidden_test_count": 3,
+      "id": "codebug_floor_03",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_bounds",
+      "hidden_test_count": 3,
+      "id": "codebug_bounds_03",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_reverse",
+      "hidden_test_count": 3,
+      "id": "codebug_reverse_03",
+      "parameters": [
+        "text"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_last_digit",
+      "hidden_test_count": 3,
+      "id": "codebug_last_digit_03",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_abs_shift",
+      "hidden_test_count": 3,
+      "id": "codebug_abs_shift_03",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_parity",
+      "hidden_test_count": 3,
+      "id": "codebug_parity_03",
+      "parameters": [
+        "n"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    },
+    {
+      "function_name": "repair_clip_upper",
+      "hidden_test_count": 3,
+      "id": "codebug_clip_upper_03",
+      "parameters": [
+        "x"
+      ],
+      "public_prompt": "Repair the helper so it satisfies withheld verifier cases. No examples reveal the hidden outputs.",
+      "suite": "codebug",
+      "verifier": "hidden_tests"
+    }
+  ]
+}

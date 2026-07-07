@@ -1,11 +1,13 @@
 import json
+import random
 from dataclasses import dataclass
 from pathlib import Path
 
 from .contracts import Candidate
 from .gate import naive_topk, random_gate, scarce_protected
 from .ledger import Ledger
-from .metrics import discrimination, glassgate_lift, simple_ci
+from .metrics import discrimination, glassgate_lift
+from .task_bank import CodebugTask, load_codebug_tasks, verify_patch
 
 
 @dataclass(frozen=True)
@@ -167,12 +169,84 @@ def _influence_for(panel_type: str, arm: str, seed_condition: str, task_index: i
     return task_index < threshold
 
 
-def _verified_for(seed_condition: str, influenced: bool, task_index: int) -> bool:
+def _organic_success(panel_type: str, arm: str, task_index: int) -> bool:
+    return (task_index + len(panel_type) + len(arm)) % 3 != 0
+
+
+def _selected_patch(
+    task: CodebugTask,
+    panel_type: str,
+    arm: str,
+    seed_condition: str,
+    influenced: bool,
+    task_index: int,
+) -> tuple[str, str, str]:
     if seed_condition == "correct_minority":
-        return influenced or task_index % 5 == 0
+        if influenced:
+            return task.correct_patch, f"{task.id}:correct_minority", "correct_minority"
+        return task.incorrect_patch, f"{task.id}:majority_wrong", "majority_baseline"
     if seed_condition == "incorrect_minority":
-        return not influenced and task_index % 4 != 0
-    return task_index % 3 == 0
+        if influenced:
+            return task.incorrect_patch, f"{task.id}:incorrect_minority", "incorrect_minority"
+        return task.correct_patch, f"{task.id}:majority_correct", "majority_baseline"
+    if _organic_success(panel_type, arm, task_index):
+        return task.correct_patch, f"{task.id}:organic_correct", "organic"
+    return task.incorrect_patch, f"{task.id}:organic_wrong", "organic"
+
+
+def _ablation_patch(task: CodebugTask, seed_condition: str, influenced: bool, selected_patch: str) -> str:
+    if not influenced:
+        return selected_patch
+    if seed_condition == "correct_minority":
+        return task.incorrect_patch
+    if seed_condition == "incorrect_minority":
+        return task.correct_patch
+    return selected_patch
+
+
+def _d_by_arm_from_task_runs(task_runs: list[dict]) -> dict[str, float]:
+    d_by_arm = {}
+    for arm in WORKSPACE_ARMS:
+        correct_rows = [
+            row
+            for row in task_runs
+            if row["workspace_arm"] == arm and row["seed_condition"] == "correct_minority"
+        ]
+        incorrect_rows = [
+            row
+            for row in task_runs
+            if row["workspace_arm"] == arm and row["seed_condition"] == "incorrect_minority"
+        ]
+        d_by_arm[arm] = discrimination(
+            sum(1 for row in correct_rows if row["influenced"]),
+            len(correct_rows),
+            sum(1 for row in incorrect_rows if row["influenced"]),
+            len(incorrect_rows),
+        )
+    return d_by_arm
+
+
+def _bootstrap_glassgate_lift_ci(task_runs: list[dict], seed: int, samples: int = 500) -> list[float]:
+    rng = random.Random(seed)
+    strata = {
+        (arm, condition): [
+            row
+            for row in task_runs
+            if row["workspace_arm"] == arm and row["seed_condition"] == condition
+        ]
+        for arm in WORKSPACE_ARMS
+        for condition in ("correct_minority", "incorrect_minority")
+    }
+    lifts = []
+    for _ in range(samples):
+        sampled_rows = []
+        for rows in strata.values():
+            sampled_rows.extend(rng.choices(rows, k=len(rows)))
+        lifts.append(glassgate_lift(_d_by_arm_from_task_runs(sampled_rows)))
+    lifts.sort()
+    lo_index = int(0.025 * (len(lifts) - 1))
+    hi_index = int(0.975 * (len(lifts) - 1))
+    return [round(lifts[lo_index], 6), round(lifts[hi_index], 6)]
 
 
 def _result_card(run_id: str, seed: int, metrics: dict, title_note: str) -> str:
@@ -224,6 +298,7 @@ def run_dsh(
     run_id = f"dsh_seed_{seed}"
     artifact_path = artifact_root / run_id
     artifact_path.mkdir(parents=True, exist_ok=True)
+    task_bank = load_codebug_tasks()
 
     ledger = Ledger()
     ledger.append(
@@ -236,10 +311,12 @@ def run_dsh(
             "workspace_arms": WORKSPACE_ARMS,
             "seed_conditions": SEED_CONDITIONS,
             "tasks_per_cell": tasks_per_cell,
+            "task_bank_size": len(task_bank),
         },
     )
 
     cells = []
+    task_runs = []
     influence_counts: dict[str, dict[str, int]] = {
         arm: {"correct_minority": 0, "incorrect_minority": 0}
         for arm in WORKSPACE_ARMS
@@ -264,15 +341,48 @@ def run_dsh(
                 verified = 0
                 ablated_changed = 0
                 for task_index in range(tasks_per_cell):
+                    task = task_bank[task_index % len(task_bank)]
                     has_influence = _influence_for(panel_type, arm, seed_condition, task_index)
-                    passed = _verified_for(seed_condition, has_influence, task_index)
-                    ablated_passed = passed if not has_influence else False
+                    selected_patch, selected_candidate_id, influence_source = _selected_patch(
+                        task,
+                        panel_type,
+                        arm,
+                        seed_condition,
+                        has_influence,
+                        task_index,
+                    )
+                    correct_result = verify_patch(task, task.correct_patch)
+                    incorrect_result = verify_patch(task, task.incorrect_patch)
+                    selected_result = verify_patch(task, selected_patch)
+                    ablated_patch = _ablation_patch(task, seed_condition, has_influence, selected_patch)
+                    ablated_result = verify_patch(task, ablated_patch)
+                    passed = selected_result.passed
+                    ablated_passed = ablated_result.passed
                     if has_influence:
                         influenced += 1
                     if passed:
                         verified += 1
                     if passed != ablated_passed:
                         ablated_changed += 1
+                    task_run = {
+                        "task_id": task.id,
+                        "task_suite": task.suite,
+                        "panel_type": panel_type,
+                        "workspace_arm": arm,
+                        "seed_condition": seed_condition,
+                        "task_index": task_index,
+                        "selected_candidate_id": selected_candidate_id,
+                        "influence_source": influence_source,
+                        "influenced": has_influence,
+                        "hidden_verifier_passed": passed,
+                        "correct_patch_passes": correct_result.passed,
+                        "incorrect_patch_passes": incorrect_result.passed,
+                        "ablation_verifier_passed": ablated_passed,
+                        "candidate_ablation_changed": passed != ablated_passed,
+                        "hidden_test_count": len(task.hidden_tests),
+                    }
+                    task_runs.append(task_run)
+                    ledger.append("task_result", task_run)
 
                 if seed_condition in {"correct_minority", "incorrect_minority"}:
                     influence_counts[arm][seed_condition] += influenced
@@ -320,7 +430,7 @@ def run_dsh(
     lift = glassgate_lift(d_by_arm)
     replay_contexts = {
         "agent_1": {
-            "1": "dsh grid: scripted task bank with hidden verifier",
+            "1": "dsh grid: deterministic codebug task bank with hidden verifier",
             "2": "24 cells: panel_type x workspace_arm x seed_condition",
             "3": "candidate ablation sample recorded for minority influence attribution",
         }
@@ -333,7 +443,7 @@ def run_dsh(
         "run_id": run_id,
         "prereg_id": Path(prereg_path).stem,
         "glassgate_lift": round(lift, 6),
-        "glassgate_lift_ci95": simple_ci([lift - 0.05, lift, lift + 0.05]),
+        "glassgate_lift_ci95": [],
         "D_by_arm": {arm: round(value, 6) for arm, value in d_by_arm.items()},
         "D_by_panel_type": {panel: round(value, 6) for panel, value in d_by_panel_type.items()},
         "verified_solve_rate": {
@@ -364,15 +474,23 @@ def run_dsh(
         "task_count_per_cell": tasks_per_cell,
         "total_task_runs": len(cells) * tasks_per_cell,
         "candidate_ablation_rate": round(ablation_events / ablation_total, 6),
+        "task_bank_size": len(task_bank),
+        "task_run_path": str(artifact_path / "task_runs.json"),
+        "task_bank_manifest_path": str(artifact_path / "task_bank_manifest.json"),
+        "ci_method": "bootstrap_resample_task_outcomes",
+        "bootstrap_samples": 500,
     }
+    metrics["glassgate_lift_ci95"] = _bootstrap_glassgate_lift_ci(task_runs, seed, samples=metrics["bootstrap_samples"])
     _write_json(artifact_path / "grid.json", {"cells": cells})
+    _write_json(artifact_path / "task_runs.json", {"runs": task_runs})
+    _write_json(artifact_path / "task_bank_manifest.json", {"tasks": [task.public_dict() for task in task_bank]})
     _write_json(artifact_path / "metrics.json", metrics)
     (artifact_path / "result_card.md").write_text(
         _result_card(
             run_id,
             seed,
             metrics,
-            "24-cell DSH grid over scripted hard-verifier tasks. This is a deterministic macro harness, not an LLM-token run.",
+            "24-cell DSH grid over deterministic codebug tasks with executable hidden tests. This is not an LLM-token run.",
         )
     )
     return SyntheticResult(run_id=run_id, artifact_path=artifact_path, expected_replay=replay_contexts)

@@ -209,6 +209,55 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "metrics.json").exists())
             self.assertTrue((artifact_path / "result_card.md").exists())
 
+    def test_codebug_task_bank_hidden_tests_distinguish_seeded_patches(self):
+        from broadcast_alpha.task_bank import load_codebug_tasks, verify_patch
+
+        tasks = load_codebug_tasks()
+
+        self.assertGreaterEqual(len(tasks), 30)
+        self.assertEqual(len({task.id for task in tasks}), len(tasks))
+        for task in tasks[:30]:
+            self.assertGreaterEqual(len(task.hidden_tests), 3)
+            self.assertNotIn(str(task.hidden_tests[0].expected), task.public_prompt)
+            self.assertTrue(verify_patch(task, task.correct_patch).passed, task.id)
+            self.assertFalse(verify_patch(task, task.incorrect_patch).passed, task.id)
+
+    def test_run_dsh_records_task_level_hidden_test_outcomes(self):
+        from broadcast_alpha.experiments import run_dsh
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_dsh(
+                prereg_path=APP_ROOT / "prereg" / "PREREG_DSH-01.md",
+                seed=42,
+                tasks_per_cell=5,
+                artifact_root=Path(tmp),
+            )
+            task_runs = json.loads((result.artifact_path / "task_runs.json").read_text())
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+
+        self.assertEqual(len(task_runs["runs"]), 24 * 5)
+        self.assertGreaterEqual(metrics["task_bank_size"], 30)
+        self.assertEqual(metrics["ci_method"], "bootstrap_resample_task_outcomes")
+        self.assertGreaterEqual(metrics["bootstrap_samples"], 200)
+        sample = task_runs["runs"][0]
+        required = {
+            "task_id",
+            "panel_type",
+            "workspace_arm",
+            "seed_condition",
+            "selected_candidate_id",
+            "hidden_verifier_passed",
+            "correct_patch_passes",
+            "incorrect_patch_passes",
+            "candidate_ablation_changed",
+            "influenced",
+        }
+        self.assertTrue(required.issubset(sample))
+        self.assertTrue(sample["correct_patch_passes"])
+        self.assertFalse(sample["incorrect_patch_passes"])
+        self.assertIn('"kind": "task_result"', ledger)
+
     def test_run_dsh_builds_balanced_24_cell_grid(self):
         from broadcast_alpha.experiments import run_dsh
 

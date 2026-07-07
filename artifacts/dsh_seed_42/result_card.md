@@ -8,20 +8,20 @@ Arms: abundant, random, scarce_naive_topk, scarce_protected
 
 ## One-number demo
 
-GLASSGATE_LIFT = 0.4 [95% CI: 0.35, 0.45]
+GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 
 ## D by arm
 
 | Arm | D | 95% CI | Verified solve rate | Token cost/solve |
 |---|---:|---:|---:|---:|
-| abundant | 0.15 | n/a | 0.466667 | n/a |
-| random | 0.216667 | n/a | 0.483333 | n/a |
-| scarce_naive_topk | 0.116667 | n/a | 0.461111 | n/a |
-| scarce_protected | 0.616667 | n/a | 0.588889 | n/a |
+| abundant | 0.15 | n/a | 0.605556 | n/a |
+| random | 0.216667 | n/a | 0.627778 | n/a |
+| scarce_naive_topk | 0.116667 | n/a | 0.594444 | n/a |
+| scarce_protected | 0.616667 | n/a | 0.761111 | n/a |
 
 ## Interpretation
 
-24-cell DSH grid over scripted hard-verifier tasks. This is a deterministic macro harness, not an LLM-token run.
+24-cell DSH grid over deterministic codebug tasks with executable hidden tests. This is not an LLM-token run.
 
 ## Replay
 

@@ -39,6 +39,13 @@ python3 -m claswarmed dashboard --host 127.0.0.1 --port 8765
 The current implementation is intentionally stdlib-only so it can run before
 dependency decisions are made.
 
+## Current Macro Artifact
+
+`artifacts/dsh_seed_42/` is the current checked-in DSH macro run. It includes a
+30-task deterministic codebug bank, executable hidden-test verification,
+720 task-level run records, a chained ledger, replay context, bootstrap CI
+metadata, `metrics.json`, and `result_card.md`.
+
 ## Source Contract
 
 The active build contract is `docs/GOAL_GLASSGATE.md`. It was derived from

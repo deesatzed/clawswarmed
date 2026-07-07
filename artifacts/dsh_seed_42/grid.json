@@ -6,16 +6,16 @@
       "panel_type": "correlated_shared_context",
       "seed_condition": "correct_minority",
       "task_count": 30,
-      "verified_count": 18,
+      "verified_count": 16,
       "workspace_arm": "abundant"
     },
     {
-      "candidate_ablation_changed": 0,
+      "candidate_ablation_changed": 13,
       "influence_count": 13,
       "panel_type": "correlated_shared_context",
       "seed_condition": "incorrect_minority",
       "task_count": 30,
-      "verified_count": 13,
+      "verified_count": 17,
       "workspace_arm": "abundant"
     },
     {
@@ -24,7 +24,7 @@
       "panel_type": "correlated_shared_context",
       "seed_condition": "none",
       "task_count": 30,
-      "verified_count": 10,
+      "verified_count": 20,
       "workspace_arm": "abundant"
     },
     {
@@ -33,16 +33,16 @@
       "panel_type": "correlated_shared_context",
       "seed_condition": "correct_minority",
       "task_count": 30,
-      "verified_count": 17,
+      "verified_count": 14,
       "workspace_arm": "random"
     },
     {
-      "candidate_ablation_changed": 0,
+      "candidate_ablation_changed": 9,
       "influence_count": 9,
       "panel_type": "correlated_shared_context",
       "seed_condition": "incorrect_minority",
       "task_count": 30,
-      "verified_count": 16,
+      "verified_count": 21,
       "workspace_arm": "random"
     },
     {
@@ -51,7 +51,7 @@
       "panel_type": "correlated_shared_context",
       "seed_condition": "none",
       "task_count": 30,
-      "verified_count": 10,
+      "verified_count": 20,
       "workspace_arm": "random"
     },
     {
@@ -60,16 +60,16 @@
       "panel_type": "correlated_shared_context",
       "seed_condition": "correct_minority",
       "task_count": 30,
-      "verified_count": 15,
+      "verified_count": 12,
       "workspace_arm": "scarce_naive_topk"
     },
     {
-      "candidate_ablation_changed": 0,
+      "candidate_ablation_changed": 10,
       "influence_count": 10,
       "panel_type": "correlated_shared_context",
       "seed_condition": "incorrect_minority",
       "task_count": 30,
-      "verified_count": 15,
+      "verified_count": 20,
       "workspace_arm": "scarce_naive_topk"
     },
     {
@@ -78,7 +78,7 @@
       "panel_type": "correlated_shared_context",
       "seed_condition": "none",
       "task_count": 30,
-      "verified_count": 10,
+      "verified_count": 20,
       "workspace_arm": "scarce_naive_topk"
     },
     {
@@ -87,16 +87,16 @@
       "panel_type": "correlated_shared_context",
       "seed_condition": "correct_minority",
       "task_count": 30,
-      "verified_count": 25,
+      "verified_count": 24,
       "workspace_arm": "scarce_protected"
     },
     {
-      "candidate_ablation_changed": 0,
+      "candidate_ablation_changed": 7,
       "influence_count": 7,
       "panel_type": "correlated_shared_context",
       "seed_condition": "incorrect_minority",
       "task_count": 30,
-      "verified_count": 17,
+      "verified_count": 23,
       "workspace_arm": "scarce_protected"
     },
     {
@@ -105,7 +105,7 @@
       "panel_type": "correlated_shared_context",
       "seed_condition": "none",
       "task_count": 30,
-      "verified_count": 10,
+      "verified_count": 20,
       "workspace_arm": "scarce_protected"
     },
     {
@@ -114,16 +114,16 @@
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "correct_minority",
       "task_count": 30,
-      "verified_count": 20,
+      "verified_count": 18,
       "workspace_arm": "abundant"
     },
     {
-      "candidate_ablation_changed": 0,
+      "candidate_ablation_changed": 12,
       "influence_count": 12,
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "incorrect_minority",
       "task_count": 30,
-      "verified_count": 13,
+      "verified_count": 18,
       "workspace_arm": "abundant"
     },
     {
@@ -132,7 +132,7 @@
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "none",
       "task_count": 30,
-      "verified_count": 10,
+      "verified_count": 20,
       "workspace_arm": "abundant"
     },
     {
@@ -141,16 +141,16 @@
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "correct_minority",
       "task_count": 30,
-      "verified_count": 18,
+      "verified_count": 16,
       "workspace_arm": "random"
     },
     {
-      "candidate_ablation_changed": 0,
+      "candidate_ablation_changed": 8,
       "influence_count": 8,
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "incorrect_minority",
       "task_count": 30,
-      "verified_count": 16,
+      "verified_count": 22,
       "workspace_arm": "random"
     },
     {
@@ -159,7 +159,7 @@
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "none",
       "task_count": 30,
-      "verified_count": 10,
+      "verified_count": 20,
       "workspace_arm": "random"
     },
     {
@@ -168,16 +168,16 @@
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "correct_minority",
       "task_count": 30,
-      "verified_count": 17,
+      "verified_count": 14,
       "workspace_arm": "scarce_naive_topk"
     },
     {
-      "candidate_ablation_changed": 0,
+      "candidate_ablation_changed": 9,
       "influence_count": 9,
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "incorrect_minority",
       "task_count": 30,
-      "verified_count": 16,
+      "verified_count": 21,
       "workspace_arm": "scarce_naive_topk"
     },
     {
@@ -186,7 +186,7 @@
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "none",
       "task_count": 30,
-      "verified_count": 10,
+      "verified_count": 20,
       "workspace_arm": "scarce_naive_topk"
     },
     {
@@ -199,12 +199,12 @@
       "workspace_arm": "scarce_protected"
     },
     {
-      "candidate_ablation_changed": 0,
+      "candidate_ablation_changed": 6,
       "influence_count": 6,
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "incorrect_minority",
       "task_count": 30,
-      "verified_count": 18,
+      "verified_count": 24,
       "workspace_arm": "scarce_protected"
     },
     {
@@ -213,7 +213,7 @@
       "panel_type": "partitioned_disjoint_shards",
       "seed_condition": "none",
       "task_count": 30,
-      "verified_count": 10,
+      "verified_count": 20,
       "workspace_arm": "scarce_protected"
     }
   ]
