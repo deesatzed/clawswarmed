@@ -54,6 +54,7 @@ Live model rail: {metrics['live_model_rail_status']}
 Adapter call performed: {metrics['live_adapter_call_performed']}
 Live model run performed: {metrics['live_model_run_performed']}
 Live DSH pilot: {metrics['live_dsh_run_status']}
+Live DSH verifier pass rate: {metrics['live_dsh_hidden_verifier_pass_rate']}
 
 ## Child artifacts
 
@@ -168,6 +169,9 @@ def run_all(
         "live_reason_codes": final_metrics["live_reason_codes"],
         "live_dsh_run_status": final_metrics["live_dsh_run_status"],
         "live_dsh_adapter_call_count": final_metrics["live_dsh_adapter_call_count"],
+        "live_dsh_candidate_patch_present_count": final_metrics["live_dsh_candidate_patch_present_count"],
+        "live_dsh_hidden_verifier_pass_count": final_metrics["live_dsh_hidden_verifier_pass_count"],
+        "live_dsh_hidden_verifier_pass_rate": final_metrics["live_dsh_hidden_verifier_pass_rate"],
         "live_dsh_model_run_performed": final_metrics["live_dsh_model_run_performed"],
         "child_ledgers_verified": child_ledgers_verified,
         "all_child_ledgers_verified": all(child_ledgers_verified.values()),

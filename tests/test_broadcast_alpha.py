@@ -501,7 +501,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             captured_requests.append(request)
             return {
                 "id": f"chatcmpl_fake_{len(captured_requests)}",
-                "choices": [{"message": {"content": "pilot candidate response"}}],
+                "choices": [{"message": {"content": "{\"patch\": \"x + 2\", \"rationale\": \"repair add\"}"}}],
                 "usage": {"prompt_tokens": 9, "completion_tokens": 3, "total_tokens": 12},
             }
 
@@ -536,6 +536,9 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["cell_count"], 24)
         self.assertEqual(metrics["task_run_count"], 24)
         self.assertEqual(metrics["adapter_call_count"], 24)
+        self.assertEqual(metrics["candidate_patch_present_count"], 24)
+        self.assertEqual(metrics["hidden_verifier_pass_count"], 24)
+        self.assertEqual(metrics["hidden_verifier_pass_rate"], 1.0)
         self.assertFalse(metrics["live_model_run_performed"])
         self.assertEqual(metrics["transport_label"], "fake")
         self.assertEqual(metrics["adapter_usage_total_tokens"], 24 * 12)
@@ -545,10 +548,49 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual({row["panel_type"] for row in task_runs["runs"]}, {"correlated_shared_context", "partitioned_disjoint_shards"})
         self.assertEqual({row["workspace_arm"] for row in task_runs["runs"]}, {"abundant", "random", "scarce_naive_topk", "scarce_protected"})
         self.assertEqual({row["seed_condition"] for row in task_runs["runs"]}, {"correct_minority", "incorrect_minority", "none"})
-        self.assertTrue(all(row["adapter_response"]["content_preview"] == "pilot candidate response" for row in task_runs["runs"]))
+        self.assertTrue(all(row["candidate_patch"] == "x + 2" for row in task_runs["runs"]))
+        self.assertTrue(all(row["candidate_patch_parse_status"] == "parsed" for row in task_runs["runs"]))
+        self.assertTrue(all(row["hidden_verifier_passed"] for row in task_runs["runs"]))
+        self.assertTrue(all(row["hidden_verifier_total"] == 3 for row in task_runs["runs"]))
         self.assertNotIn("dummy-secret-value", combined_artifacts)
         self.assertIn('"kind": "live_dsh_task_result"', combined_artifacts)
+        self.assertIn('"kind": "live_dsh_verification"', combined_artifacts)
         self.assertIn("fake transport", combined_artifacts)
+
+    def test_live_dsh_fake_transport_records_patch_parse_failures(self):
+        from broadcast_alpha.live_dsh import run_live_dsh
+
+        def fake_transport(_request):
+            return {
+                "id": "chatcmpl_fake_bad_patch",
+                "choices": [{"message": {"content": "plain text without json patch"}}],
+                "usage": {"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n")
+            result = run_live_dsh(
+                seed=42,
+                tasks_per_cell=1,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                transport=fake_transport,
+                transport_label="fake",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            task_runs = json.loads((result.artifact_path / "task_runs.json").read_text())
+
+        self.assertEqual(metrics["candidate_patch_present_count"], 0)
+        self.assertEqual(metrics["candidate_patch_parse_failure_count"], 24)
+        self.assertEqual(metrics["hidden_verifier_pass_count"], 0)
+        self.assertEqual(metrics["hidden_verifier_pass_rate"], 0.0)
+        self.assertTrue(all(row["candidate_patch_parse_status"] == "missing_patch" for row in task_runs["runs"]))
+        self.assertTrue(all(row["hidden_verifier_passed"] is False for row in task_runs["runs"]))
 
     def test_cli_run_live_dsh_default_creates_blocked_replayable_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -764,6 +806,8 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertFalse(metrics["live_model_run_performed"])
         self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
         self.assertEqual(metrics["live_dsh_adapter_call_count"], 0)
+        self.assertEqual(metrics["live_dsh_hidden_verifier_pass_count"], 0)
+        self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
         self.assertTrue(metrics["all_source_ledgers_verified"])
         self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
         self.assertEqual(
@@ -827,6 +871,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
 
             replay = subprocess.run(
                 [
@@ -889,6 +934,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertFalse(metrics["live_model_run_performed"])
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_adapter_call_count"], 0)
+            self.assertEqual(metrics["live_dsh_hidden_verifier_pass_count"], 0)
+            self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
             self.assertTrue(metrics["all_child_ledgers_verified"])
             self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(

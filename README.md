@@ -74,7 +74,8 @@ OpenRouter adapter path, but real provider execution requires explicit
 artifact. It plans the same 24 panel/arm/seed-condition cells as the macro DSH
 rail but is blocked in the checked-in run because no provider key, spend
 authorization, or `--execute-live` flag was supplied. Fake-transport tests
-exercise the pilot path without external calls.
+exercise the pilot path without external calls, including structured patch
+parsing and hidden-test verification.
 
 `artifacts/dsh_seed_42/seed_audit.json` is the current seed-camouflage audit.
 It scans public selected-candidate IDs for explicit seed markers, runs a simple

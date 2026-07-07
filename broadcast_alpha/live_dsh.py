@@ -14,7 +14,7 @@ from .live_gate import (
     _sanitize_adapter_response,
     openrouter_chat_completion,
 )
-from .task_bank import load_codebug_tasks
+from .task_bank import CodebugTask, load_codebug_tasks, verify_patch
 
 
 @dataclass(frozen=True)
@@ -74,6 +74,32 @@ def _task_request(
     return request
 
 
+def _response_content(response: dict) -> str:
+    choices = response.get("choices") or []
+    if not choices:
+        return ""
+    first = choices[0]
+    if not isinstance(first, dict):
+        return ""
+    message = first.get("message")
+    if not isinstance(message, dict):
+        return ""
+    return str(message.get("content") or "")
+
+
+def _extract_candidate_patch(response: dict) -> tuple[str | None, str]:
+    content = _response_content(response).strip()
+    if not content:
+        return None, "empty_response"
+    try:
+        payload = json.loads(content)
+    except json.JSONDecodeError:
+        return None, "missing_patch"
+    if not isinstance(payload, dict) or not isinstance(payload.get("patch"), str) or not payload["patch"].strip():
+        return None, "missing_patch"
+    return payload["patch"].strip(), "parsed"
+
+
 def _result_card(run_id: str, metrics: dict) -> str:
     if metrics["run_status"] == "blocked_no_live_execution":
         decision = "Live DSH pilot blocked."
@@ -98,6 +124,9 @@ Cell count: {metrics['cell_count']}
 Planned task runs: {metrics['planned_task_runs']}
 Task run count: {metrics['task_run_count']}
 Adapter call count: {metrics['adapter_call_count']}
+Candidate patches parsed: {metrics['candidate_patch_present_count']}
+Hidden verifier pass count: {metrics['hidden_verifier_pass_count']}
+Hidden verifier pass rate: {metrics['hidden_verifier_pass_rate']}
 Live model run performed: {metrics['live_model_run_performed']}
 Transport: {metrics['transport_label']}
 
@@ -143,7 +172,7 @@ def run_live_dsh(
     rail_status, reason_codes = _decision(provider_status)
     cells = _cells()
     planned_task_runs = len(cells) * tasks_per_cell
-    task_bank = [task.public_dict() for task in load_codebug_tasks()]
+    task_bank: list[CodebugTask] = load_codebug_tasks()
 
     ledger = Ledger()
     ledger.append(
@@ -162,6 +191,9 @@ def run_live_dsh(
     usage_total = 0
     adapter_errors: list[dict] = []
     live_model_run_performed = False
+    candidate_patch_present_count = 0
+    candidate_patch_parse_failure_count = 0
+    hidden_verifier_pass_count = 0
     api_key = effective_env.get("OPENROUTER_API_KEY", "")
 
     if rail_status != "ready_to_execute":
@@ -179,34 +211,69 @@ def run_live_dsh(
         for cell in cells:
             for task_index in range(tasks_per_cell):
                 task = task_bank[task_index % len(task_bank)]
-                request = _task_request(api_key, model or "", seed, task, cell, task_index)
+                request = _task_request(api_key, model or "", seed, task.public_dict(), cell, task_index)
                 try:
                     raw_response = (transport or openrouter_chat_completion)(request)
                     adapter_call_count += 1
                     live_model_run_performed = live_model_run_performed or transport_label != "fake"
                     adapter_response = _sanitize_adapter_response(raw_response)
                     usage_total += int(adapter_response.get("usage_total_tokens") or 0)
+                    candidate_patch, parse_status = _extract_candidate_patch(raw_response)
+                    if candidate_patch is None:
+                        candidate_patch_parse_failure_count += 1
+                        verification_payload = {
+                            "passed": False,
+                            "total": len(task.hidden_tests),
+                            "failures": ({"parse_error": parse_status},),
+                        }
+                    else:
+                        candidate_patch_present_count += 1
+                        verification = verify_patch(task, candidate_patch)
+                        verification_payload = verification.to_dict()
+                        if verification.passed:
+                            hidden_verifier_pass_count += 1
                     task_run = {
-                        "task_id": task["id"],
+                        "task_id": task.id,
                         "task_index": task_index,
                         "panel_type": cell["panel_type"],
                         "workspace_arm": cell["workspace_arm"],
                         "seed_condition": cell["seed_condition"],
                         "adapter_response": adapter_response,
+                        "candidate_patch": candidate_patch,
+                        "candidate_patch_parse_status": parse_status,
+                        "hidden_verifier_passed": verification_payload["passed"],
+                        "hidden_verifier_total": verification_payload["total"],
+                        "hidden_verifier_failures": verification_payload["failures"],
                         "transport_label": transport_label,
                     }
                     task_runs.append(task_run)
                     ledger.append("live_dsh_task_result", task_run)
+                    ledger.append(
+                        "live_dsh_verification",
+                        {
+                            "task_id": task.id,
+                            "panel_type": cell["panel_type"],
+                            "workspace_arm": cell["workspace_arm"],
+                            "seed_condition": cell["seed_condition"],
+                            "candidate_patch_parse_status": parse_status,
+                            "hidden_verifier_passed": verification_payload["passed"],
+                        },
+                    )
                 except Exception as exc:
                     adapter_call_count += 1
                     adapter_error = _sanitize_adapter_error(exc)
                     adapter_errors.append(adapter_error)
                     task_run = {
-                        "task_id": task["id"],
+                        "task_id": task.id,
                         "task_index": task_index,
                         "panel_type": cell["panel_type"],
                         "workspace_arm": cell["workspace_arm"],
                         "seed_condition": cell["seed_condition"],
+                        "candidate_patch": None,
+                        "candidate_patch_parse_status": "adapter_error",
+                        "hidden_verifier_passed": False,
+                        "hidden_verifier_total": len(task.hidden_tests),
+                        "hidden_verifier_failures": ({"adapter_error": adapter_error["error_type"]},),
                         "adapter_error": adapter_error,
                         "transport_label": transport_label,
                     }
@@ -241,6 +308,10 @@ def run_live_dsh(
         "task_run_count": len(task_runs),
         "adapter_call_count": adapter_call_count,
         "adapter_usage_total_tokens": usage_total,
+        "candidate_patch_present_count": candidate_patch_present_count,
+        "candidate_patch_parse_failure_count": candidate_patch_parse_failure_count,
+        "hidden_verifier_pass_count": hidden_verifier_pass_count,
+        "hidden_verifier_pass_rate": round(hidden_verifier_pass_count / len(task_runs), 6) if task_runs else 0.0,
         "provider": "openrouter",
         "openrouter_api_key_present": provider_status["required_env"]["OPENROUTER_API_KEY"]["present"],
         "model_configured": provider_status["model_configured"],

@@ -100,6 +100,8 @@ No secret values recorded: {not metrics['live_secret_values_recorded']}
 
 Live DSH pilot status: {metrics['live_dsh_run_status']}
 Live DSH adapter calls: {metrics['live_dsh_adapter_call_count']}
+Live DSH hidden verifier pass count: {metrics['live_dsh_hidden_verifier_pass_count']}
+Live DSH hidden verifier pass rate: {metrics['live_dsh_hidden_verifier_pass_rate']}
 
 ## Replay
 
@@ -145,6 +147,9 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         live_dsh_metrics = {
             "run_status": "not_run",
             "adapter_call_count": 0,
+            "candidate_patch_present_count": 0,
+            "hidden_verifier_pass_count": 0,
+            "hidden_verifier_pass_rate": 0.0,
             "live_model_run_performed": False,
             "reason_codes": ["live_dsh_artifact_missing"],
         }
@@ -279,6 +284,9 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "value": {
                 "run_status": live_dsh_metrics["run_status"],
                 "adapter_call_count": live_dsh_metrics["adapter_call_count"],
+                "candidate_patch_present_count": live_dsh_metrics["candidate_patch_present_count"],
+                "hidden_verifier_pass_count": live_dsh_metrics["hidden_verifier_pass_count"],
+                "hidden_verifier_pass_rate": live_dsh_metrics["hidden_verifier_pass_rate"],
                 "live_model_run_performed": live_dsh_metrics["live_model_run_performed"],
                 "reason_codes": live_dsh_metrics["reason_codes"],
             },
@@ -318,6 +326,9 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_reason_codes": live_metrics["reason_codes"],
         "live_dsh_run_status": live_dsh_metrics["run_status"],
         "live_dsh_adapter_call_count": live_dsh_metrics["adapter_call_count"],
+        "live_dsh_candidate_patch_present_count": live_dsh_metrics["candidate_patch_present_count"],
+        "live_dsh_hidden_verifier_pass_count": live_dsh_metrics["hidden_verifier_pass_count"],
+        "live_dsh_hidden_verifier_pass_rate": live_dsh_metrics["hidden_verifier_pass_rate"],
         "live_dsh_model_run_performed": live_dsh_metrics["live_model_run_performed"],
         "live_dsh_reason_codes": live_dsh_metrics["reason_codes"],
         "all_source_ledgers_verified": all_ledgers_verified,

@@ -11,6 +11,9 @@ Cell count: 24
 Planned task runs: 24
 Task run count: 0
 Adapter call count: 0
+Candidate patches parsed: 0
+Hidden verifier pass count: 0
+Hidden verifier pass rate: 0.0
 Live model run performed: False
 Transport: real
 
