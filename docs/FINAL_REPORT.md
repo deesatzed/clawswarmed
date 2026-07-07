@@ -55,6 +55,7 @@ live_model_rail_status = unavailable
 adapter_call_performed = false
 live_model_run_performed = false
 live_dsh_run_status = blocked_no_live_execution
+live_dsh_prereg_id = PREREG_LIVE-01
 live_dsh_adapter_call_count = 0
 live_dsh_hidden_verifier_pass_count = 0
 live_dsh_hidden_verifier_pass_rate = 0.0

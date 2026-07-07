@@ -1,12 +1,15 @@
 # Result Card: live_dsh_seed_42
 
 Run type: live DSH pilot
+Prereg: PREREG_LIVE-01
 
 ## Decision
 
 Live DSH pilot blocked.
 
 Run status: blocked_no_live_execution
+Prereg file: prereg/PREREG_LIVE-01.md
+Prereg exists: True
 Cell count: 24
 Planned task runs: 24
 Task run count: 0

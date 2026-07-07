@@ -17,6 +17,7 @@ Live model rail: unavailable
 Adapter call performed: False
 Live model run performed: False
 Live DSH pilot: blocked_no_live_execution
+Live DSH prereg: PREREG_LIVE-01
 Live DSH verifier pass rate: 0.0
 
 ## Child artifacts

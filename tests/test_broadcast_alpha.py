@@ -492,6 +492,72 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn('"kind": "live_dsh_blocked"', ledger)
         self.assertIn("Live DSH pilot blocked", result_card)
 
+    def test_live_dsh_prereg_file_declares_no_default_spend_and_no_lift_claim(self):
+        prereg = (APP_ROOT / "prereg" / "PREREG_LIVE-01.md").read_text()
+
+        self.assertIn("run-live-dsh", prereg)
+        self.assertIn("blocked_no_live_execution", prereg)
+        self.assertIn("--execute-live", prereg)
+        self.assertIn("--authorize-api-spend", prereg)
+        self.assertIn("No GLASSGATE_LIFT claim", prereg)
+
+    def test_live_dsh_records_preregistration_metadata(self):
+        from broadcast_alpha.live_dsh import run_live_dsh
+
+        prereg_path = APP_ROOT / "prereg" / "PREREG_LIVE-01.md"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_live_dsh(
+                seed=42,
+                tasks_per_cell=1,
+                artifact_root=Path(tmp),
+                env={},
+                prereg_path=prereg_path,
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertEqual(metrics["prereg_id"], "PREREG_LIVE-01")
+        self.assertEqual(metrics["prereg_path"], str(prereg_path))
+        self.assertTrue(metrics["prereg_exists"])
+        self.assertIn('"prereg_id": "PREREG_LIVE-01"', ledger)
+        self.assertIn("PREREG_LIVE-01", result_card)
+
+    def test_live_dsh_blocks_ready_transport_when_prereg_is_missing(self):
+        from broadcast_alpha.live_dsh import run_live_dsh
+
+        transport_calls = []
+
+        def fake_transport(request):
+            transport_calls.append(request)
+            return {"choices": [{"message": {"content": "{\"patch\": \"x + 2\"}"}}]}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            missing_prereg = tmp_path / "missing" / "PREREG_LIVE-01.md"
+            env_file.write_text("OPENROUTER_API_KEY=dummy-secret-value\nOPENROUTER_MODEL=test/model\n")
+            result = run_live_dsh(
+                seed=42,
+                tasks_per_cell=1,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                transport=fake_transport,
+                transport_label="fake",
+                prereg_path=missing_prereg,
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+
+        self.assertEqual(metrics["run_status"], "blocked_no_live_execution")
+        self.assertFalse(metrics["prereg_exists"])
+        self.assertIn("missing_preregistration_file", metrics["reason_codes"])
+        self.assertEqual(metrics["adapter_call_count"], 0)
+        self.assertEqual(transport_calls, [])
+
     def test_live_dsh_fake_transport_runs_balanced_pilot_without_secret_values(self):
         from broadcast_alpha.live_dsh import run_live_dsh
 
@@ -618,6 +684,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             metrics = json.loads((artifact_path / "metrics.json").read_text())
 
             self.assertEqual(metrics["run_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["prereg_id"], "PREREG_LIVE-01")
             self.assertTrue((artifact_path / "task_runs.json").exists())
 
             export = subprocess.run(
@@ -806,6 +873,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertFalse(metrics["live_model_run_performed"])
         self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
         self.assertEqual(metrics["live_dsh_adapter_call_count"], 0)
+        self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
         self.assertEqual(metrics["live_dsh_hidden_verifier_pass_count"], 0)
         self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
         self.assertTrue(metrics["all_source_ledgers_verified"])
@@ -871,6 +939,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
             self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
 
             replay = subprocess.run(
@@ -934,6 +1003,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertFalse(metrics["live_model_run_performed"])
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_adapter_call_count"], 0)
+            self.assertEqual(metrics["live_dsh_prereg_id"], "PREREG_LIVE-01")
             self.assertEqual(metrics["live_dsh_hidden_verifier_pass_count"], 0)
             self.assertEqual(metrics["live_dsh_hidden_verifier_pass_rate"], 0.0)
             self.assertTrue(metrics["all_child_ledgers_verified"])

@@ -54,6 +54,7 @@ Live model rail: {metrics['live_model_rail_status']}
 Adapter call performed: {metrics['live_adapter_call_performed']}
 Live model run performed: {metrics['live_model_run_performed']}
 Live DSH pilot: {metrics['live_dsh_run_status']}
+Live DSH prereg: {metrics['live_dsh_prereg_id']}
 Live DSH verifier pass rate: {metrics['live_dsh_hidden_verifier_pass_rate']}
 
 ## Child artifacts
@@ -102,7 +103,14 @@ def run_all(
     )
     jlens_gate = run_jlens_gate(seed=seed, artifact_root=child_root)
     live_gate = run_live_gate(seed=seed, artifact_root=child_root, env_file=live_env_file, env=live_env)
-    live_dsh = run_live_dsh(seed=seed, tasks_per_cell=1, artifact_root=child_root, env_file=live_env_file, env=live_env)
+    live_dsh = run_live_dsh(
+        seed=seed,
+        tasks_per_cell=1,
+        artifact_root=child_root,
+        env_file=live_env_file,
+        env=live_env,
+        prereg_path=prereg_dir / "PREREG_LIVE-01.md",
+    )
     final_report = build_result_report(artifact_root=child_root, output_dir=final_report_path)
 
     child_artifacts = {
@@ -168,6 +176,9 @@ def run_all(
         "live_openrouter_api_key_present": final_metrics["live_openrouter_api_key_present"],
         "live_reason_codes": final_metrics["live_reason_codes"],
         "live_dsh_run_status": final_metrics["live_dsh_run_status"],
+        "live_dsh_prereg_id": final_metrics["live_dsh_prereg_id"],
+        "live_dsh_prereg_path": final_metrics["live_dsh_prereg_path"],
+        "live_dsh_prereg_exists": final_metrics["live_dsh_prereg_exists"],
         "live_dsh_adapter_call_count": final_metrics["live_dsh_adapter_call_count"],
         "live_dsh_candidate_patch_present_count": final_metrics["live_dsh_candidate_patch_present_count"],
         "live_dsh_hidden_verifier_pass_count": final_metrics["live_dsh_hidden_verifier_pass_count"],

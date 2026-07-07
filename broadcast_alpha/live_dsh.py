@@ -114,12 +114,15 @@ def _result_card(run_id: str, metrics: dict) -> str:
     return f"""# Result Card: {run_id}
 
 Run type: live DSH pilot
+Prereg: {metrics['prereg_id']}
 
 ## Decision
 
 {decision}
 
 Run status: {metrics['run_status']}
+Prereg file: {metrics['prereg_path']}
+Prereg exists: {metrics['prereg_exists']}
 Cell count: {metrics['cell_count']}
 Planned task runs: {metrics['planned_task_runs']}
 Task run count: {metrics['task_run_count']}
@@ -157,6 +160,7 @@ def run_live_dsh(
     model: str | None = None,
     transport: Callable[[dict], dict] | None = None,
     transport_label: str = "real",
+    prereg_path: Path | None = None,
 ) -> LiveDshResult:
     if tasks_per_cell < 1:
         raise ValueError("tasks_per_cell must be at least 1")
@@ -165,11 +169,17 @@ def run_live_dsh(
     run_id = f"live_dsh_seed_{seed}"
     artifact_path = artifact_root / run_id
     artifact_path.mkdir(parents=True, exist_ok=True)
+    prereg_path = prereg_path or Path("prereg/PREREG_LIVE-01.md")
+    prereg_id = Path(prereg_path).stem
+    prereg_exists = Path(prereg_path).exists()
 
     effective_env = _effective_env(env, env_file)
     model = model or effective_env.get("OPENROUTER_MODEL")
     provider_status = _provider_status(effective_env, api_spend_authorized, network_probe, execute_live, model)
     rail_status, reason_codes = _decision(provider_status)
+    if rail_status == "ready_to_execute" and not prereg_exists:
+        rail_status = "missing_preregistration"
+        reason_codes = [*reason_codes, "missing_preregistration_file"]
     cells = _cells()
     planned_task_runs = len(cells) * tasks_per_cell
     task_bank: list[CodebugTask] = load_codebug_tasks()
@@ -180,6 +190,9 @@ def run_live_dsh(
         {
             "run_id": run_id,
             "seed": seed,
+            "prereg_id": prereg_id,
+            "prereg_path": str(prereg_path),
+            "prereg_exists": prereg_exists,
             "run_type": "live_dsh_pilot",
             "cell_count": len(cells),
             "tasks_per_cell": tasks_per_cell,
@@ -301,6 +314,9 @@ def run_live_dsh(
     metrics = {
         "run_id": run_id,
         "run_status": run_status,
+        "prereg_id": prereg_id,
+        "prereg_path": str(prereg_path),
+        "prereg_exists": prereg_exists,
         "seed": seed,
         "cell_count": len(cells),
         "tasks_per_cell": tasks_per_cell,

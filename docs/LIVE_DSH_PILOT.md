@@ -12,11 +12,12 @@ the deterministic macro result.
 ## Command
 
 ```bash
-python3 -m broadcast_alpha run-live-dsh --seed 42 --tasks-per-cell 1
+python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
 ```
 
 Real provider-backed execution requires:
 
+- committed preregistration at `prereg/PREREG_LIVE-01.md`;
 - `OPENROUTER_API_KEY`;
 - `OPENROUTER_MODEL` or `--model`;
 - `--authorize-api-spend`;
@@ -42,6 +43,8 @@ The checked-in artifact is blocked by design:
 
 ```text
 run_status = blocked_no_live_execution
+prereg_id = PREREG_LIVE-01
+prereg_exists = true
 adapter_call_count = 0
 candidate_patch_present_count = 0
 hidden_verifier_pass_count = 0
@@ -72,3 +75,9 @@ by the deterministic codebug task bank and records:
 
 These verifier-backed outcomes make the live rail ready for a bounded provider
 pilot, but fake-transport outcomes are not live model evidence.
+
+## Evidence Boundary
+
+Blocked and fake-transport runs do not produce a live `GLASSGATE_LIFT` claim.
+The prereg file is recorded in metrics and the run-start receipt so later
+provider-backed pilots can be audited against the committed run contract.

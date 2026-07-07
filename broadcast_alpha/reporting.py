@@ -99,6 +99,7 @@ No secret values recorded: {not metrics['live_secret_values_recorded']}
 ## Live DSH pilot
 
 Live DSH pilot status: {metrics['live_dsh_run_status']}
+Live DSH prereg: {metrics['live_dsh_prereg_id']}
 Live DSH adapter calls: {metrics['live_dsh_adapter_call_count']}
 Live DSH hidden verifier pass count: {metrics['live_dsh_hidden_verifier_pass_count']}
 Live DSH hidden verifier pass rate: {metrics['live_dsh_hidden_verifier_pass_rate']}
@@ -147,6 +148,9 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         live_dsh_metrics = {
             "run_status": "not_run",
             "adapter_call_count": 0,
+            "prereg_id": "missing",
+            "prereg_path": str(live_dsh_path / "missing_prereg.md"),
+            "prereg_exists": False,
             "candidate_patch_present_count": 0,
             "hidden_verifier_pass_count": 0,
             "hidden_verifier_pass_rate": 0.0,
@@ -283,6 +287,8 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "evidence_path": str(live_dsh_path / "metrics.json"),
             "value": {
                 "run_status": live_dsh_metrics["run_status"],
+                "prereg_id": live_dsh_metrics["prereg_id"],
+                "prereg_exists": live_dsh_metrics["prereg_exists"],
                 "adapter_call_count": live_dsh_metrics["adapter_call_count"],
                 "candidate_patch_present_count": live_dsh_metrics["candidate_patch_present_count"],
                 "hidden_verifier_pass_count": live_dsh_metrics["hidden_verifier_pass_count"],
@@ -325,6 +331,9 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_secret_values_recorded": live_metrics["secret_values_recorded"],
         "live_reason_codes": live_metrics["reason_codes"],
         "live_dsh_run_status": live_dsh_metrics["run_status"],
+        "live_dsh_prereg_id": live_dsh_metrics["prereg_id"],
+        "live_dsh_prereg_path": live_dsh_metrics["prereg_path"],
+        "live_dsh_prereg_exists": live_dsh_metrics["prereg_exists"],
         "live_dsh_adapter_call_count": live_dsh_metrics["adapter_call_count"],
         "live_dsh_candidate_patch_present_count": live_dsh_metrics["candidate_patch_present_count"],
         "live_dsh_hidden_verifier_pass_count": live_dsh_metrics["hidden_verifier_pass_count"],

@@ -14,6 +14,9 @@
   "model_ref": null,
   "openrouter_api_key_present": false,
   "planned_task_runs": 24,
+  "prereg_exists": true,
+  "prereg_id": "PREREG_LIVE-01",
+  "prereg_path": "prereg/PREREG_LIVE-01.md",
   "provider": "openrouter",
   "reason_codes": [
     "missing_openrouter_api_key",

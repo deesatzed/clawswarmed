@@ -52,6 +52,7 @@ No secret values recorded: True
 ## Live DSH pilot
 
 Live DSH pilot status: blocked_no_live_execution
+Live DSH prereg: PREREG_LIVE-01
 Live DSH adapter calls: 0
 Live DSH hidden verifier pass count: 0
 Live DSH hidden verifier pass rate: 0.0

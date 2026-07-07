@@ -27,7 +27,7 @@ python3 -m broadcast_alpha run-rqgm --prereg prereg/PREREG_EPOCH-01.md --seed 42
 python3 -m broadcast_alpha run-jlens-gate --seed 42
 python3 -m broadcast_alpha run-live-gate --seed 42
 python3 -m broadcast_alpha run-live-gate --seed 42 --env-file /path/to/.env --model openrouter/model-slug --authorize-api-spend --execute-live
-python3 -m broadcast_alpha run-live-dsh --seed 42 --tasks-per-cell 1
+python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
 python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42
 python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5 --prereg-dir prereg --artifact-root artifacts
 python3 -m broadcast_alpha summarize artifacts/<run_id>
@@ -75,7 +75,9 @@ artifact. It plans the same 24 panel/arm/seed-condition cells as the macro DSH
 rail but is blocked in the checked-in run because no provider key, spend
 authorization, or `--execute-live` flag was supplied. Fake-transport tests
 exercise the pilot path without external calls, including structured patch
-parsing and hidden-test verification.
+parsing and hidden-test verification. The pilot records
+`prereg_id = PREREG_LIVE-01`; blocked and fake-transport runs do not produce a
+live `GLASSGATE_LIFT` claim.
 
 `artifacts/dsh_seed_42/seed_audit.json` is the current seed-camouflage audit.
 It scans public selected-candidate IDs for explicit seed markers, runs a simple

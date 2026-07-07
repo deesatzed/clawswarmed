@@ -67,7 +67,8 @@ PROOF OF DONE:
    - `prereg/` contains at least:
      `PREREG_DSH-01.md`, `PREREG_PART-01.md`, `PREREG_LEAK-01.md`,
      `PREREG_CAUSAL-01.md`, `PREREG_EPOCH-01.md`,
-     `PREREG_BRIDGE-01.md`, and `PREREG_MECHADMIT-01.md`.
+     `PREREG_BRIDGE-01.md`, `PREREG_MECHADMIT-01.md`, and
+     `PREREG_LIVE-01.md`.
 
 2. Contracts and ledger:
    - Implement `broadcast_alpha/` as the primary instrument package.
@@ -317,4 +318,3 @@ PROOF OF DONE:
 STOP: Do not use LLM/API tokens, do not implement real J-lens, and do not start
 the live 24-cell macro grid in this smaller goal.
 ```
-

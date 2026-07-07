@@ -52,6 +52,7 @@ def build_parser() -> argparse.ArgumentParser:
     live.add_argument("--model")
 
     live_dsh = sub.add_parser("run-live-dsh", help="Run the gated live DSH pilot harness")
+    live_dsh.add_argument("--prereg", default="prereg/PREREG_LIVE-01.md")
     live_dsh.add_argument("--seed", type=int, default=42)
     live_dsh.add_argument("--tasks-per-cell", type=int, default=1)
     live_dsh.add_argument("--artifact-root", default="artifacts")
@@ -148,6 +149,7 @@ def main(argv: list[str] | None = None) -> int:
             network_probe=args.network_probe,
             execute_live=args.execute_live,
             model=args.model,
+            prereg_path=Path(args.prereg),
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0
