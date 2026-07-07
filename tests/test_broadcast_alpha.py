@@ -455,6 +455,101 @@ class BroadcastAlphaTests(unittest.TestCase):
             )
             self.assertTrue(json.loads(export.stdout)["verified"])
 
+    def test_run_all_builds_self_contained_unattended_bundle(self):
+        from broadcast_alpha.orchestrator import run_all
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_all(
+                seed=42,
+                tasks_per_cell=30,
+                epochs=5,
+                prereg_dir=APP_ROOT / "prereg",
+                artifact_root=Path(tmp),
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            manifest = json.loads((result.artifact_path / "manifest.json").read_text())
+            final_metrics = json.loads((result.artifact_path / "final_report" / "metrics.json").read_text())
+            self.assertEqual(result.run_id, "run_all_seed_42")
+            self.assertEqual(metrics["run_status"], "complete_with_deferred_jlens")
+            self.assertEqual(metrics["glassgate_lift"], 0.4)
+            self.assertEqual(metrics["seed_adversarial_auc"], 0.5)
+            self.assertEqual(metrics["jlens_rail_status"], "frozen")
+            self.assertTrue(metrics["all_child_ledgers_verified"])
+            self.assertEqual(final_metrics["report_status"], "complete_with_deferred_jlens")
+            self.assertEqual(
+                set(manifest["child_artifacts"]),
+                {"synthetic", "dsh", "rqgm", "jlens_gate", "final_report"},
+            )
+            self.assertTrue((result.artifact_path / "source_artifacts" / "dsh_seed_42" / "seed_audit.json").exists())
+            self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
+
+    def test_cli_run_all_creates_replayable_unattended_bundle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-all",
+                    "--seed",
+                    "42",
+                    "--tasks-per-cell",
+                    "30",
+                    "--epochs",
+                    "5",
+                    "--prereg-dir",
+                    "prereg",
+                    "--artifact-root",
+                    tmp,
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(metrics["run_status"], "complete_with_deferred_jlens")
+            self.assertTrue((artifact_path / "final_report" / "result_table.md").exists())
+
+            replay = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "replay",
+                    str(artifact_path),
+                    "--agent",
+                    "agent_1",
+                    "--step",
+                    "3",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertIn("unattended bundle", replay.stdout)
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
     def test_codebug_task_bank_hidden_tests_distinguish_seeded_patches(self):
         from broadcast_alpha.task_bank import load_codebug_tasks, verify_patch
 

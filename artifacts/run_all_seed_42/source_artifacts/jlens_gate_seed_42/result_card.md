@@ -1,0 +1,36 @@
+# Result Card: jlens_gate_seed_42
+
+Seed: 42
+Run type: J-lens source/model gate
+
+## Decision
+
+J-lens rail frozen.
+
+The exact named J-lens source was not verified, and this runtime has no
+configured white-box gatekeeper model with gradient/layer access. No real
+J-lens probe was implemented or run.
+
+## Gate checks
+
+| Check | Result |
+|---|---|
+| Exact source found | False |
+| White-box model available | False |
+| Real probe runnable | False |
+| Single-token labels verified | 6 labels |
+
+## Outcome
+
+Rail status: frozen
+Failure ledger entry: JLENS-FREEZE-001
+
+## Replay
+
+Ledger: artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42/ledger.jsonl
+Replay bundle: artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42/replay
+Tamper check: pass
+
+## Failure ledger updates
+
+Record `JLENS-FREEZE-001` in `FAILURE_LEDGER.md`.

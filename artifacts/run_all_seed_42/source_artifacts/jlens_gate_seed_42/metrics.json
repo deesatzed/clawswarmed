@@ -1,0 +1,32 @@
+{
+  "failure_ledger_entry_id": "JLENS-FREEZE-001",
+  "ledger_path": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42/ledger.jsonl",
+  "next_required_unblockers": [
+    "Identify and cite the exact J-lens paper, repository, or implementation.",
+    "Configure a white-box gatekeeper model with gradient/layer access.",
+    "Add causal intervention controls before making mechanistic claims."
+  ],
+  "rail_status": "frozen",
+  "real_probe_runnable": false,
+  "reason_codes": [
+    "exact_jlens_source_not_verified",
+    "white_box_model_access_not_configured",
+    "real_probe_not_run"
+  ],
+  "replay_bundle_path": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42/replay",
+  "required_exact_source": "Verbalizable Representations Form a Global Workspace in Language Models / Anthropic jacobian-lens implementation",
+  "required_exact_source_found": false,
+  "result_card_path": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42/result_card.md",
+  "run_id": "jlens_gate_seed_42",
+  "single_token_label_count": 6,
+  "single_token_labels_verified": {
+    "admit": true,
+    "fail": true,
+    "no": true,
+    "pass": true,
+    "reject": true,
+    "yes": true
+  },
+  "source_manifest_path": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42/sources.json",
+  "white_box_model_available": false
+}

@@ -5,6 +5,7 @@ from pathlib import Path
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .jlens import run_jlens_gate
 from .ledger import Ledger
+from .orchestrator import run_all
 from .reporting import build_result_report
 from .replay import replay_context
 
@@ -42,6 +43,13 @@ def build_parser() -> argparse.ArgumentParser:
     report = sub.add_parser("build-report", help="Build consolidated result table and claim matrix")
     report.add_argument("--artifact-root", default="artifacts")
     report.add_argument("--output", default="artifacts/final_report_seed_42")
+
+    all_run = sub.add_parser("run-all", help="Run all current Broadcast-alpha rails and build a self-contained bundle")
+    all_run.add_argument("--seed", type=int, default=42)
+    all_run.add_argument("--tasks-per-cell", type=int, default=30)
+    all_run.add_argument("--epochs", type=int, default=5)
+    all_run.add_argument("--prereg-dir", default="prereg")
+    all_run.add_argument("--artifact-root", default="artifacts")
 
     summarize = sub.add_parser("summarize", help="Print metrics for an artifact")
     summarize.add_argument("artifact")
@@ -97,6 +105,17 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "build-report":
         result = build_result_report(artifact_root=Path(args.artifact_root), output_dir=Path(args.output))
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-all":
+        result = run_all(
+            seed=args.seed,
+            tasks_per_cell=args.tasks_per_cell,
+            epochs=args.epochs,
+            prereg_dir=Path(args.prereg_dir),
+            artifact_root=Path(args.artifact_root),
+        )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0
 

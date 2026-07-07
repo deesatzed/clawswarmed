@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "J-lens source/model gate: exact source lookup completed before implementation",
+    "2": "single-token verdict labels verified for yes, no, admit, reject, pass, fail",
+    "3": "J-lens rail frozen: exact source/model unavailable; macro and RQGM rails continue"
+  }
+}

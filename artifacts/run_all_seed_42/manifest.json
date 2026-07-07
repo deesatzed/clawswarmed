@@ -1,0 +1,20 @@
+{
+  "child_artifacts": {
+    "dsh": "artifacts/run_all_seed_42/source_artifacts/dsh_seed_42",
+    "final_report": "artifacts/run_all_seed_42/final_report",
+    "jlens_gate": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42",
+    "rqgm": "artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42",
+    "synthetic": "artifacts/run_all_seed_42/source_artifacts/synthetic_seed_42"
+  },
+  "epochs": 5,
+  "run_id": "run_all_seed_42",
+  "run_sequence": [
+    "synthetic",
+    "dsh",
+    "rqgm",
+    "jlens_gate",
+    "final_report"
+  ],
+  "seed": 42,
+  "tasks_per_cell": 30
+}

@@ -1,0 +1,220 @@
+{
+  "cells": [
+    {
+      "candidate_ablation_changed": 16,
+      "influence_count": 16,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "correct_minority",
+      "task_count": 30,
+      "verified_count": 16,
+      "workspace_arm": "abundant"
+    },
+    {
+      "candidate_ablation_changed": 13,
+      "influence_count": 13,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "incorrect_minority",
+      "task_count": 30,
+      "verified_count": 17,
+      "workspace_arm": "abundant"
+    },
+    {
+      "candidate_ablation_changed": 0,
+      "influence_count": 0,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "none",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "abundant"
+    },
+    {
+      "candidate_ablation_changed": 14,
+      "influence_count": 14,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "correct_minority",
+      "task_count": 30,
+      "verified_count": 14,
+      "workspace_arm": "random"
+    },
+    {
+      "candidate_ablation_changed": 9,
+      "influence_count": 9,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "incorrect_minority",
+      "task_count": 30,
+      "verified_count": 21,
+      "workspace_arm": "random"
+    },
+    {
+      "candidate_ablation_changed": 0,
+      "influence_count": 0,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "none",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "random"
+    },
+    {
+      "candidate_ablation_changed": 12,
+      "influence_count": 12,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "correct_minority",
+      "task_count": 30,
+      "verified_count": 12,
+      "workspace_arm": "scarce_naive_topk"
+    },
+    {
+      "candidate_ablation_changed": 10,
+      "influence_count": 10,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "incorrect_minority",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "scarce_naive_topk"
+    },
+    {
+      "candidate_ablation_changed": 0,
+      "influence_count": 0,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "none",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "scarce_naive_topk"
+    },
+    {
+      "candidate_ablation_changed": 24,
+      "influence_count": 24,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "correct_minority",
+      "task_count": 30,
+      "verified_count": 24,
+      "workspace_arm": "scarce_protected"
+    },
+    {
+      "candidate_ablation_changed": 7,
+      "influence_count": 7,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "incorrect_minority",
+      "task_count": 30,
+      "verified_count": 23,
+      "workspace_arm": "scarce_protected"
+    },
+    {
+      "candidate_ablation_changed": 0,
+      "influence_count": 0,
+      "panel_type": "correlated_shared_context",
+      "seed_condition": "none",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "scarce_protected"
+    },
+    {
+      "candidate_ablation_changed": 18,
+      "influence_count": 18,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "correct_minority",
+      "task_count": 30,
+      "verified_count": 18,
+      "workspace_arm": "abundant"
+    },
+    {
+      "candidate_ablation_changed": 12,
+      "influence_count": 12,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "incorrect_minority",
+      "task_count": 30,
+      "verified_count": 18,
+      "workspace_arm": "abundant"
+    },
+    {
+      "candidate_ablation_changed": 0,
+      "influence_count": 0,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "none",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "abundant"
+    },
+    {
+      "candidate_ablation_changed": 16,
+      "influence_count": 16,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "correct_minority",
+      "task_count": 30,
+      "verified_count": 16,
+      "workspace_arm": "random"
+    },
+    {
+      "candidate_ablation_changed": 8,
+      "influence_count": 8,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "incorrect_minority",
+      "task_count": 30,
+      "verified_count": 22,
+      "workspace_arm": "random"
+    },
+    {
+      "candidate_ablation_changed": 0,
+      "influence_count": 0,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "none",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "random"
+    },
+    {
+      "candidate_ablation_changed": 14,
+      "influence_count": 14,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "correct_minority",
+      "task_count": 30,
+      "verified_count": 14,
+      "workspace_arm": "scarce_naive_topk"
+    },
+    {
+      "candidate_ablation_changed": 9,
+      "influence_count": 9,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "incorrect_minority",
+      "task_count": 30,
+      "verified_count": 21,
+      "workspace_arm": "scarce_naive_topk"
+    },
+    {
+      "candidate_ablation_changed": 0,
+      "influence_count": 0,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "none",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "scarce_naive_topk"
+    },
+    {
+      "candidate_ablation_changed": 26,
+      "influence_count": 26,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "correct_minority",
+      "task_count": 30,
+      "verified_count": 26,
+      "workspace_arm": "scarce_protected"
+    },
+    {
+      "candidate_ablation_changed": 6,
+      "influence_count": 6,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "incorrect_minority",
+      "task_count": 30,
+      "verified_count": 24,
+      "workspace_arm": "scarce_protected"
+    },
+    {
+      "candidate_ablation_changed": 0,
+      "influence_count": 0,
+      "panel_type": "partitioned_disjoint_shards",
+      "seed_condition": "none",
+      "task_count": 30,
+      "verified_count": 20,
+      "workspace_arm": "scarce_protected"
+    }
+  ]
+}

@@ -1,0 +1,329 @@
+{
+  "abundant": [
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_a",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.92,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_b",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.88,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_c",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.83,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_d",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.79,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_minority_correct",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.35,
+      "seed_status": "correct_minority",
+      "slot_type": "minority_report",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_risk",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.4,
+      "seed_status": "organic",
+      "slot_type": "risk_if_suppressed",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_disagree",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.42,
+      "seed_status": "organic",
+      "slot_type": "highest_disagreement",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_verify",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.5,
+      "seed_status": "organic",
+      "slot_type": "verifier_action",
+      "task_id": "task_0"
+    }
+  ],
+  "random": [
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_d",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.79,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_minority_correct",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.35,
+      "seed_status": "correct_minority",
+      "slot_type": "minority_report",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_disagree",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.42,
+      "seed_status": "organic",
+      "slot_type": "highest_disagreement",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_verify",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.5,
+      "seed_status": "organic",
+      "slot_type": "verifier_action",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_c",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.83,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_risk",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.4,
+      "seed_status": "organic",
+      "slot_type": "risk_if_suppressed",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_a",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.92,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    }
+  ],
+  "scarce_naive_topk": [
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_a",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.92,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_b",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.88,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_c",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.83,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_d",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.79,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_verify",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.5,
+      "seed_status": "organic",
+      "slot_type": "verifier_action",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_disagree",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.42,
+      "seed_status": "organic",
+      "slot_type": "highest_disagreement",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_risk",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.4,
+      "seed_status": "organic",
+      "slot_type": "risk_if_suppressed",
+      "task_id": "task_0"
+    }
+  ],
+  "scarce_protected": [
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_a",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.92,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_b",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.88,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_conf_c",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.83,
+      "seed_status": "organic",
+      "slot_type": "high_confidence",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_disagree",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.42,
+      "seed_status": "organic",
+      "slot_type": "highest_disagreement",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_minority_correct",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.35,
+      "seed_status": "correct_minority",
+      "slot_type": "minority_report",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_risk",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.4,
+      "seed_status": "organic",
+      "slot_type": "risk_if_suppressed",
+      "task_id": "task_0"
+    },
+    {
+      "agent_id": "agent_0",
+      "evidence_refs": [],
+      "id": "cand_verify",
+      "payload_text": "",
+      "run_id": "synthetic_seed_42",
+      "score": 0.5,
+      "seed_status": "organic",
+      "slot_type": "verifier_action",
+      "task_id": "task_0"
+    }
+  ]
+}

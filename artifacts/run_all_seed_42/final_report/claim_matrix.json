@@ -1,0 +1,59 @@
+{
+  "claims": [
+    {
+      "claim": "GLASSGATE_LIFT with 95% CI is available for the macro grid.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/dsh_seed_42/metrics.json",
+      "status": "proved_for_current_macro_artifact",
+      "value": 0.4
+    },
+    {
+      "claim": "D estimates exist for all macro grid arms.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/dsh_seed_42/metrics.json",
+      "status": "proved_for_current_macro_artifact",
+      "value": {
+        "abundant": 0.15,
+        "random": 0.216667,
+        "scarce_naive_topk": 0.116667,
+        "scarce_protected": 0.616667
+      }
+    },
+    {
+      "claim": "Source ledgers verify for macro, epoch, and J-lens gate artifacts.",
+      "evidence_path": "artifacts/run_all_seed_42/final_report/ledger_verification.json",
+      "status": "proved_for_current_artifacts",
+      "value": {
+        "jlens_gate": true,
+        "macro_dsh": true,
+        "rqgm_epoch": true,
+        "seed_detectability": true
+      }
+    },
+    {
+      "claim": "Seed detectability audit is present and passes the current marker-leak gate.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/dsh_seed_42/seed_audit.json",
+      "status": "proved_for_current_macro_artifact",
+      "value": {
+        "auc": 0.5,
+        "seed_camouflage_failed": false
+      }
+    },
+    {
+      "claim": "Controlled RQGM epoch trajectory is present.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42/trajectory.json",
+      "status": "proved_for_current_epoch_artifact",
+      "value": {
+        "epoch_count": 5,
+        "replacement_count": 3
+      }
+    },
+    {
+      "claim": "J-lens rail has a clean failure/defer record.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42/metrics.json",
+      "status": "deferred_with_failure_record",
+      "value": {
+        "failure_ledger_entry_id": "JLENS-FREEZE-001",
+        "rail_status": "frozen"
+      }
+    }
+  ]
+}

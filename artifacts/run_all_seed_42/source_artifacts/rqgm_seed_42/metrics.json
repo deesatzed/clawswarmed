@@ -1,0 +1,21 @@
+{
+  "active_jlens_veto": false,
+  "authority_path": "artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42/authority.json",
+  "current_evaluator_id": "eval_gate_v5",
+  "current_ranking_evaluator_ids": [
+    "eval_gate_v5"
+  ],
+  "epoch_count": 5,
+  "held_out_anchor_task_count": 30,
+  "ledger_path": "artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42/ledger.jsonl",
+  "max_solve_degradation": 0.03,
+  "prereg_id": "PREREG_EPOCH-01",
+  "promotion_margin": 0.02,
+  "replacement_count": 3,
+  "replay_bundle_path": "artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42/replay",
+  "result_card_path": "artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42/result_card.md",
+  "run_id": "rqgm_seed_42",
+  "seed_auc_tolerance": 0.1,
+  "tombstoned_score_count": 3,
+  "trajectory_path": "artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42/trajectory.json"
+}

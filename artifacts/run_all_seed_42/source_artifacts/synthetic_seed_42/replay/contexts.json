@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "task: repair function with hidden tests",
+    "2": "visible candidates: high confidence majority reports",
+    "3": "visible board includes minority_report candidate cand_minority_correct"
+  }
+}
