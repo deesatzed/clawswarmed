@@ -43,8 +43,13 @@ Reason:
   `artifacts/jlens_leak_probe_seed_42/`; PC was
   `0.07183928849796455` against threshold `1.0`, so no differential activation
   was detected for this pilot.
+- 2026-07-08 amendment: the causal intervention gate ran at
+  `artifacts/jlens_intervention_seed_42/` and returned
+  `blocked_no_differential_signal`; by preregistered kill criterion, no causal
+  intervention was run.
 - Timing or readout alone is insufficient for the Glass Gate causal claim.
-- No causal intervention or causal sham-control artifact exists yet.
+- No causal intervention or causal sham-control execution exists yet because
+  the required pre-intervention signal was absent.
 
 Decision: do not claim a prejudgment detector, causal mechanism, bridge rail,
 or mechanistic admission result. Continue macro DSH and RQGM rails. Optional
@@ -61,4 +66,7 @@ Evidence:
 - `artifacts/jlens_leak_probe_seed_42/metrics.json` records
   `outcome_leak_probe_performed = true`,
   `differential_activation_present = false`, and
+  `causal_intervention_performed = false`.
+- `artifacts/jlens_intervention_seed_42/metrics.json` records
+  `intervention_status = blocked_no_differential_signal` and
   `causal_intervention_performed = false`.

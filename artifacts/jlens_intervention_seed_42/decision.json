@@ -1,0 +1,10 @@
+{
+  "decision": "do_not_run_causal_intervention",
+  "intervention_status": "blocked_no_differential_signal",
+  "leak_probe_path": "artifacts/jlens_leak_probe_seed_42",
+  "next_allowed_step": "Run a stronger white-box leak probe before attempting causal intervention.",
+  "reason_codes": [
+    "pc_below_threshold",
+    "intervention_not_run_by_prereg_kill_criterion"
+  ]
+}

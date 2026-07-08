@@ -12,8 +12,9 @@ fit/apply smoke artifacts:
   checks.
 
 The J-lens execution rail remains frozen because the first preregistered
-outcome-leak readout probe was null on the tiny HF model and no causal
-intervention/sham-control run has been executed.
+outcome-leak readout probe was null on the tiny HF model. The causal
+intervention gate therefore produced a clean `blocked_no_differential_signal`
+defer artifact rather than running an intervention on noise.
 
 ## Verified Exact Sources
 
@@ -172,6 +173,28 @@ null as evidence:
 This keeps `JLENS-FREEZE-001` active. The next possible progress step is a
 larger/better white-box model or a causal intervention command only if a later
 probe produces a meaningful signal. The current tiny-model probe does not.
+
+## Causal Intervention Gate
+
+Run:
+
+```bash
+python3 -m broadcast_alpha run-jlens-intervention --seed 42
+```
+
+This writes:
+
+- `artifacts/jlens_intervention_seed_42/metrics.json`
+- `artifacts/jlens_intervention_seed_42/prereg_manifest.json`
+- `artifacts/jlens_intervention_seed_42/decision.json`
+- `artifacts/jlens_intervention_seed_42/result_card.md`
+- `artifacts/jlens_intervention_seed_42/ledger.jsonl`
+- `artifacts/jlens_intervention_seed_42/replay/contexts.json`
+
+Current checked-in intervention status is
+`blocked_no_differential_signal`. It used the current leak probe PC
+`0.07183928849796455` against threshold `1.0` and did not run a causal or sham
+intervention.
 
 ## Still Frozen Records
 

@@ -6,6 +6,7 @@ from .experiments import run_dsh, run_rqgm, run_synthetic
 from .goal_audit import audit_goal
 from .jlens import run_jlens_gate
 from .jlens_hf_smoke import run_jlens_hf_smoke
+from .jlens_intervention import run_jlens_intervention
 from .jlens_leak_probe import run_jlens_leak_probe
 from .jlens_runtime import prepare_jlens_probe
 from .jlens_smoke import run_jlens_smoke
@@ -90,6 +91,12 @@ def build_parser() -> argparse.ArgumentParser:
     jlens_leak.add_argument("--vignette-packet", default="prereg/jlens_vignette_packet_01.json")
     jlens_leak.add_argument("--pc-threshold", type=float, default=1.0)
     jlens_leak.add_argument("--timeout-seconds", type=int, default=240)
+
+    jlens_intervention = sub.add_parser("run-jlens-intervention", help="Run or block the preregistered J-lens causal intervention gate")
+    jlens_intervention.add_argument("--seed", type=int, default=42)
+    jlens_intervention.add_argument("--artifact-root", default="artifacts")
+    jlens_intervention.add_argument("--leak-probe-path")
+    jlens_intervention.add_argument("--pc-threshold", type=float)
 
     live = sub.add_parser("run-live-gate", help="Inspect live model provider readiness without API calls")
     live.add_argument("--seed", type=int, default=42)
@@ -276,6 +283,16 @@ def main(argv: list[str] | None = None) -> int:
             vignette_packet=Path(args.vignette_packet),
             pc_threshold=args.pc_threshold,
             timeout_seconds=args.timeout_seconds,
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-jlens-intervention":
+        result = run_jlens_intervention(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            leak_probe_path=Path(args.leak_probe_path) if args.leak_probe_path else None,
+            pc_threshold=args.pc_threshold,
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0

@@ -745,6 +745,59 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn("runtime_python_missing", metrics["reason_codes"])
         self.assertIn("vignette_packet_missing", metrics["reason_codes"])
 
+    def test_jlens_intervention_blocks_after_null_leak_probe(self):
+        from broadcast_alpha.jlens_intervention import run_jlens_intervention
+        from broadcast_alpha.jlens_leak_probe import run_jlens_leak_probe
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            source_repo = tmp_path / "jacobian-lens"
+            runtime_python = tmp_path / "python"
+            vignette_packet = tmp_path / "vignettes.json"
+            source_repo.mkdir()
+            runtime_python.write_text("# fake runtime\n")
+            vignette_packet.write_text(Path("prereg/jlens_vignette_packet_01.json").read_text())
+            leak = run_jlens_leak_probe(
+                seed=42,
+                artifact_root=tmp_path,
+                runtime_python=runtime_python,
+                source_repo=source_repo,
+                model_id="hf-internal-testing/tiny-random-gpt2",
+                vignette_packet=vignette_packet,
+                pc_threshold=1.0,
+                runner=_fake_jlens_leak_probe_runner,
+            )
+            result = run_jlens_intervention(seed=42, artifact_root=tmp_path, leak_probe_path=leak.artifact_path)
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            decision = json.loads((result.artifact_path / "decision.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+
+        self.assertEqual(metrics["intervention_status"], "blocked_no_differential_signal")
+        self.assertEqual(metrics["pc_metric"], 0.4)
+        self.assertFalse(metrics["differential_activation_present"])
+        self.assertFalse(metrics["causal_intervention_performed"])
+        self.assertFalse(metrics["sham_intervention_control_performed"])
+        self.assertTrue(metrics["freeze_recommended"])
+        self.assertTrue(metrics["not_sufficient_for_JLENS_PROVED"])
+        self.assertIn("intervention_not_run_by_prereg_kill_criterion", metrics["reason_codes"])
+        self.assertEqual(decision["decision"], "do_not_run_causal_intervention")
+        self.assertIn('"kind": "jlens_intervention_result"', ledger)
+
+    def test_jlens_intervention_blocks_missing_leak_probe(self):
+        from broadcast_alpha.jlens_intervention import run_jlens_intervention
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_jlens_intervention(
+                seed=42,
+                artifact_root=Path(tmp),
+                leak_probe_path=Path(tmp) / "missing-leak",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+
+        self.assertEqual(metrics["intervention_status"], "blocked_missing_leak_probe")
+        self.assertFalse(metrics["causal_intervention_performed"])
+        self.assertIn("leak_probe_metrics_missing", metrics["reason_codes"])
+
     def test_live_gate_records_provider_presence_without_secret_values(self):
         from broadcast_alpha.live_gate import run_live_gate
 
@@ -1960,6 +2013,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
         from broadcast_alpha.jlens_hf_smoke import run_jlens_hf_smoke
+        from broadcast_alpha.jlens_intervention import run_jlens_intervention
         from broadcast_alpha.jlens_leak_probe import run_jlens_leak_probe
         from broadcast_alpha.jlens_runtime import prepare_jlens_probe
         from broadcast_alpha.jlens_smoke import run_jlens_smoke
@@ -2006,7 +2060,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 model_id="hf-internal-testing/tiny-random-gpt2",
                 runner=_fake_jlens_hf_smoke_runner,
             )
-            run_jlens_leak_probe(
+            leak = run_jlens_leak_probe(
                 seed=42,
                 artifact_root=artifact_root,
                 runtime_python=smoke_python,
@@ -2015,6 +2069,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 vignette_packet=APP_ROOT / "prereg" / "jlens_vignette_packet_01.json",
                 runner=_fake_jlens_leak_probe_runner,
             )
+            run_jlens_intervention(seed=42, artifact_root=artifact_root, leak_probe_path=leak.artifact_path)
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
             run_live_smoke(
                 seed=42,
@@ -2061,6 +2116,10 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertFalse(metrics["jlens_leak_differential_activation_present"])
         self.assertFalse(metrics["jlens_leak_causal_intervention_performed"])
         self.assertTrue(metrics["jlens_leak_not_sufficient_for_JLENS_PROVED"])
+        self.assertEqual(metrics["jlens_intervention_status"], "blocked_no_differential_signal")
+        self.assertFalse(metrics["jlens_intervention_performed"])
+        self.assertFalse(metrics["jlens_intervention_sham_control_performed"])
+        self.assertTrue(metrics["jlens_intervention_not_sufficient_for_JLENS_PROVED"])
         self.assertEqual(metrics["live_model_rail_status"], "unavailable")
         self.assertFalse(metrics["live_adapter_call_performed"])
         self.assertFalse(metrics["live_model_run_performed"])
@@ -2100,6 +2159,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 "jlens_smoke",
                 "jlens_hf_smoke",
                 "jlens_leak_probe",
+                "jlens_intervention",
                 "live_model_gate",
                 "live_smoke",
                 "live_dsh_pilot",
@@ -2121,6 +2181,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn("Fit/apply smoke", result_card)
         self.assertIn("HF smoke", result_card)
         self.assertIn("Leak probe", result_card)
+        self.assertIn("Intervention gate", result_card)
         self.assertIn("Live model rail", result_card)
         self.assertIn("Live sequence", result_card)
 
@@ -2128,6 +2189,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
         from broadcast_alpha.jlens_hf_smoke import run_jlens_hf_smoke
+        from broadcast_alpha.jlens_intervention import run_jlens_intervention
         from broadcast_alpha.jlens_leak_probe import run_jlens_leak_probe
         from broadcast_alpha.jlens_runtime import prepare_jlens_probe
         from broadcast_alpha.jlens_smoke import run_jlens_smoke
@@ -2173,7 +2235,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 model_id="hf-internal-testing/tiny-random-gpt2",
                 runner=_fake_jlens_hf_smoke_runner,
             )
-            run_jlens_leak_probe(
+            leak = run_jlens_leak_probe(
                 seed=42,
                 artifact_root=artifact_root,
                 runtime_python=smoke_python,
@@ -2182,6 +2244,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 vignette_packet=APP_ROOT / "prereg" / "jlens_vignette_packet_01.json",
                 runner=_fake_jlens_leak_probe_runner,
             )
+            run_jlens_intervention(seed=42, artifact_root=artifact_root, leak_probe_path=leak.artifact_path)
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
             run_live_smoke(
                 seed=42,
@@ -2229,6 +2292,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["jlens_leak_probe_status"], "passed")
             self.assertTrue(metrics["jlens_leak_probe_performed"])
             self.assertFalse(metrics["jlens_leak_causal_intervention_performed"])
+            self.assertEqual(metrics["jlens_intervention_status"], "blocked_no_differential_signal")
+            self.assertFalse(metrics["jlens_intervention_performed"])
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
@@ -2304,6 +2369,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertIn(metrics["jlens_smoke_status"], {"passed", "blocked_missing_runtime"})
             self.assertIn(metrics["jlens_hf_smoke_status"], {"passed", "blocked_missing_runtime", "failed"})
             self.assertIn(metrics["jlens_leak_probe_status"], {"passed", "blocked_missing_runtime", "failed"})
+            self.assertIn(metrics["jlens_intervention_status"], {"blocked_no_differential_signal", "blocked_missing_leak_probe", "blocked_intervention_not_implemented"})
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertFalse(metrics["live_adapter_call_performed"])
             self.assertFalse(metrics["live_model_run_performed"])
@@ -2346,6 +2412,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                     "jlens_smoke",
                     "jlens_hf_smoke",
                     "jlens_leak_probe",
+                    "jlens_intervention",
                     "live_model_gate",
                     "live_smoke",
                     "live_dsh_pilot",
@@ -2362,6 +2429,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_smoke_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_hf_smoke_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_leak_probe_seed_42" / "metrics.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_intervention_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "ledger_stress_seed_42" / "receipt_kind_counts.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 
@@ -2401,6 +2469,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
             self.assertIn(metrics["jlens_hf_smoke_status"], {"passed", "blocked_missing_runtime", "failed"})
             self.assertIn(metrics["jlens_leak_probe_status"], {"passed", "blocked_missing_runtime", "failed"})
+            self.assertIn(metrics["jlens_intervention_status"], {"blocked_no_differential_signal", "blocked_missing_leak_probe", "blocked_intervention_not_implemented"})
             self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
             self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
             self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])

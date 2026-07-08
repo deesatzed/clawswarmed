@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "J-lens intervention gate: loaded leak probe from artifacts/jlens_leak_probe_seed_42",
+    "2": "J-lens intervention gate: status blocked_no_differential_signal; PC 0.07183928849796455 threshold 1.0",
+    "3": "J-lens intervention gate: no causal intervention performed; proof remains deferred"
+  }
+}

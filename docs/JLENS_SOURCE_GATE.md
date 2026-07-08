@@ -12,9 +12,10 @@ repository is the reference implementation for the linked Transformer Circuits
 paper. The app now has local external-runtime smoke artifacts proving that the
 reference implementation can fit/apply a Jacobian lens on both the reference
 tiny decoder and a tiny Hugging Face decoder. It also has a preregistered
-tiny-HF outcome-leak readout probe. That probe was null and no causal
-intervention control exists. Because of that, `broadcast_alpha` must not claim
-a prejudgment detector or causal mechanistic result.
+tiny-HF outcome-leak readout probe. That probe was null, and the causal
+intervention gate is blocked by the preregistered no-signal kill criterion.
+Because of that, `broadcast_alpha` must not claim a prejudgment detector or
+causal mechanistic result.
 
 The rail can reopen only when all conditions are true:
 
@@ -85,6 +86,15 @@ python3 -m broadcast_alpha run-jlens-leak-probe --seed 42 --model-id hf-internal
 Current artifact status is `passed` for execution, with PC
 `0.07183928849796455` against threshold `1.0`. This is a null/non-causal
 readout result and keeps the J-lens rail frozen.
+
+The causal intervention gate is:
+
+```bash
+python3 -m broadcast_alpha run-jlens-intervention --seed 42
+```
+
+Current artifact status is `blocked_no_differential_signal`; no causal or sham
+intervention was run because the prerequisite leak signal was absent.
 
 ## Exact Sources Verified
 

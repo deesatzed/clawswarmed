@@ -386,6 +386,11 @@ def audit_goal(
                 "leak_causal_intervention_performed": final_metrics.get(
                     "jlens_leak_causal_intervention_performed"
                 ),
+                "intervention_status": final_metrics.get("jlens_intervention_status"),
+                "intervention_performed": final_metrics.get("jlens_intervention_performed"),
+                "intervention_sham_control_performed": final_metrics.get(
+                    "jlens_intervention_sham_control_performed"
+                ),
             },
         ),
         _item(

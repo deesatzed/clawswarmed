@@ -1,0 +1,7 @@
+{
+  "causal_claim_allowed": false,
+  "input_leak_probe_path": "artifacts/jlens_leak_probe_seed_42",
+  "kill_criterion": "If the leak probe shows no differential activation, keep the J-lens rail frozen and do not run bridge/mechanistic rails.",
+  "prereg_id": "PREREG_CAUSAL-01",
+  "prereg_path": "prereg/PREREG_CAUSAL-01.md"
+}

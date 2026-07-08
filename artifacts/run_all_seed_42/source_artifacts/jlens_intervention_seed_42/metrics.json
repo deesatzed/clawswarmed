@@ -1,0 +1,27 @@
+{
+  "causal_intervention_performed": false,
+  "decision_path": "artifacts/run_all_seed_42/source_artifacts/jlens_intervention_seed_42/decision.json",
+  "differential_activation_present": false,
+  "freeze_recommended": true,
+  "intervention_delta": null,
+  "intervention_status": "blocked_no_differential_signal",
+  "leak_probe_performed": true,
+  "leak_probe_status": "passed",
+  "ledger_path": "artifacts/run_all_seed_42/source_artifacts/jlens_intervention_seed_42/ledger.jsonl",
+  "not_causal": true,
+  "not_sufficient_for_JLENS_PROVED": true,
+  "pc_metric": 0.07183928849796455,
+  "pc_threshold": 1.0,
+  "prereg_manifest_path": "artifacts/run_all_seed_42/source_artifacts/jlens_intervention_seed_42/prereg_manifest.json",
+  "reason_codes": [
+    "pc_below_threshold",
+    "intervention_not_run_by_prereg_kill_criterion"
+  ],
+  "replay_bundle_path": "artifacts/run_all_seed_42/source_artifacts/jlens_intervention_seed_42/replay",
+  "result_card_path": "artifacts/run_all_seed_42/source_artifacts/jlens_intervention_seed_42/result_card.md",
+  "run_id": "jlens_intervention_seed_42",
+  "seed": 42,
+  "sham_intervention_control_performed": false,
+  "source_leak_metrics_path": "artifacts/run_all_seed_42/source_artifacts/jlens_leak_probe_seed_42/metrics.json",
+  "verdict_flip_observed": false
+}

@@ -11,6 +11,7 @@
 | jlens_smoke | smoke_status | passed | True | artifacts/jlens_smoke_seed_42 |
 | jlens_hf_smoke | smoke_status | passed | True | artifacts/jlens_hf_smoke_seed_42 |
 | jlens_leak_probe | leak_probe_status | passed | True | artifacts/jlens_leak_probe_seed_42 |
+| jlens_intervention | intervention_status | blocked_no_differential_signal | True | artifacts/jlens_intervention_seed_42 |
 | live_model_gate | rail_status | unavailable | True | artifacts/live_gate_seed_42 |
 | live_smoke | run_status | blocked_no_live_execution | True | artifacts/live_smoke_seed_42 |
 | live_dsh_pilot | run_status | blocked_no_live_execution | True | artifacts/live_dsh_seed_42 |

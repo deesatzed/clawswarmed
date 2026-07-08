@@ -24,6 +24,7 @@
       "value": {
         "jlens_gate": true,
         "jlens_hf_smoke": true,
+        "jlens_intervention": true,
         "jlens_leak_probe": true,
         "jlens_runtime_readiness": true,
         "jlens_smoke": true,
@@ -92,6 +93,7 @@
       "value": {
         "causal_intervention_performed": false,
         "failure_ledger_entry_id": "JLENS-FREEZE-001",
+        "intervention_status": "blocked_no_differential_signal",
         "leak_probe_performed": true,
         "leak_probe_status": "passed",
         "rail_status": "frozen"

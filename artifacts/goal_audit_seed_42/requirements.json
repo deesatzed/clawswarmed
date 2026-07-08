@@ -143,6 +143,9 @@
       "status": "deferred_with_record",
       "value": {
         "failure_ledger_entry_id": "JLENS-FREEZE-001",
+        "intervention_performed": false,
+        "intervention_sham_control_performed": false,
+        "intervention_status": "blocked_no_differential_signal",
         "jlens_rail_status": "frozen",
         "leak_causal_intervention_performed": false,
         "leak_differential_activation_present": false,
