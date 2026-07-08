@@ -25,6 +25,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 - jlens_runtime_readiness: readiness_status = blocked_missing_dependencies
 - jlens_smoke: smoke_status = passed
 - jlens_hf_smoke: smoke_status = passed
+- jlens_leak_probe: leak_probe_status = passed
 - live_model_gate: rail_status = unavailable
 - live_smoke: run_status = blocked_no_live_execution
 - live_dsh_pilot: run_status = blocked_no_live_execution
@@ -70,6 +71,11 @@ HF smoke: passed
 HF smoke real: True
 HF selected labels single-token: True
 HF critical labels single-token: False
+Leak probe: passed
+Leak probe performed: True
+Leak PC metric: 0.07183928849796455
+Leak differential activation: False
+Leak causal intervention: False
 
 ## Live model rail
 

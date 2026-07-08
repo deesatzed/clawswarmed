@@ -40,6 +40,7 @@ Live sequence adapter calls: 0
 | jlens_runtime_readiness | artifacts/run_all_seed_42/source_artifacts/jlens_runtime_readiness_seed_42 | True |
 | jlens_smoke | artifacts/run_all_seed_42/source_artifacts/jlens_smoke_seed_42 | True |
 | jlens_hf_smoke | artifacts/run_all_seed_42/source_artifacts/jlens_hf_smoke_seed_42 | True |
+| jlens_leak_probe | artifacts/run_all_seed_42/source_artifacts/jlens_leak_probe_seed_42 | True |
 | live_model_gate | artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42 | True |
 | live_smoke | artifacts/run_all_seed_42/source_artifacts/live_smoke_seed_42 | True |
 | live_dsh_pilot | artifacts/run_all_seed_42/source_artifacts/live_dsh_seed_42 | True |

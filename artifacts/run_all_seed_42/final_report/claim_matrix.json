@@ -24,6 +24,7 @@
       "value": {
         "jlens_gate": true,
         "jlens_hf_smoke": true,
+        "jlens_leak_probe": true,
         "jlens_runtime_readiness": true,
         "jlens_smoke": true,
         "ledger_stress": true,
@@ -89,7 +90,10 @@
       "evidence_path": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42/metrics.json",
       "status": "deferred_with_failure_record",
       "value": {
+        "causal_intervention_performed": false,
         "failure_ledger_entry_id": "JLENS-FREEZE-001",
+        "leak_probe_performed": true,
+        "leak_probe_status": "passed",
         "rail_status": "frozen"
       }
     },

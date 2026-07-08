@@ -65,6 +65,14 @@
       "section": "jlens_hf_smoke"
     },
     {
+      "artifact_path": "artifacts/jlens_leak_probe_seed_42",
+      "evidence_path": "artifacts/jlens_leak_probe_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "leak_probe_status",
+      "primary_value": "passed",
+      "section": "jlens_leak_probe"
+    },
+    {
       "artifact_path": "artifacts/live_gate_seed_42",
       "evidence_path": "artifacts/live_gate_seed_42/metrics.json",
       "ledger_verified": true,

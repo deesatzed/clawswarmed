@@ -1,6 +1,7 @@
 {
   "jlens_gate": true,
   "jlens_hf_smoke": true,
+  "jlens_leak_probe": true,
   "jlens_runtime_readiness": true,
   "jlens_smoke": true,
   "ledger_stress": true,

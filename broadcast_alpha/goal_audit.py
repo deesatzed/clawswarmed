@@ -377,6 +377,15 @@ def audit_goal(
                 "failure_ledger_entry_id": final_metrics.get("jlens_failure_ledger_entry_id"),
                 "runtime_readiness_status": final_metrics.get("jlens_runtime_readiness_status"),
                 "runtime_reason_codes": final_metrics.get("jlens_runtime_reason_codes"),
+                "leak_probe_status": final_metrics.get("jlens_leak_probe_status"),
+                "leak_probe_performed": final_metrics.get("jlens_leak_probe_performed"),
+                "leak_pc_metric": final_metrics.get("jlens_leak_pc_metric"),
+                "leak_differential_activation_present": final_metrics.get(
+                    "jlens_leak_differential_activation_present"
+                ),
+                "leak_causal_intervention_performed": final_metrics.get(
+                    "jlens_leak_causal_intervention_performed"
+                ),
             },
         ),
         _item(

@@ -1,0 +1,34 @@
+{
+  "label_policy": "A/B labels are used because human-readable verdict words are tokenizer-dependent.",
+  "selected_label_check": {
+    " A": {
+      "decoded": " A",
+      "single_token": true,
+      "token_ids": [
+        240
+      ]
+    },
+    " B": {
+      "decoded": " B",
+      "single_token": true,
+      "token_ids": [
+        265
+      ]
+    },
+    " N": {
+      "decoded": " N",
+      "single_token": true,
+      "token_ids": [
+        318
+      ]
+    },
+    " Y": {
+      "decoded": " Y",
+      "single_token": true,
+      "token_ids": [
+        558
+      ]
+    }
+  },
+  "selected_labels_all_single_token": true
+}

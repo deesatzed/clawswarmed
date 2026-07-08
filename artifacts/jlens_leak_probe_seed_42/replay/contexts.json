@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "J-lens leak probe: model hf-internal-testing/tiny-random-gpt2, prereg PREREG_LEAK-01",
+    "2": "J-lens leak probe: status passed; PC 0.07183928849796455 threshold 1.0",
+    "3": "J-lens leak probe: readouts recorded; no causal intervention performed; J-lens proof remains deferred"
+  }
+}

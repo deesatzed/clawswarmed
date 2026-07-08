@@ -1,0 +1,16 @@
+{
+  "causal_claim_allowed": false,
+  "pc_metric_definition": "For each vignette, compute the pre-evidence B-minus-A Jacobian-lens logit margin in outcome_revealed, outcome_withheld, and negative_control conditions. The pair PC is the maximum layer-wise minimum of revealed-minus-withheld and revealed-minus-negative-control margins.",
+  "pc_threshold": 1.0,
+  "prereg_id": "PREREG_LEAK-01",
+  "prereg_path": "prereg/PREREG_LEAK-01.md",
+  "primary_labels": {
+    "foil": " A",
+    "target": " B"
+  },
+  "sham_labels": {
+    "foil": " N",
+    "target": " Y"
+  },
+  "vignette_packet_path": "/Volumes/WS4TB/claswarmed/claswarmed-app/prereg/jlens_vignette_packet_01.json"
+}

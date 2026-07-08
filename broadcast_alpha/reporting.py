@@ -111,6 +111,11 @@ HF smoke: {metrics['jlens_hf_smoke_status']}
 HF smoke real: {metrics['jlens_hf_smoke_real_fit_apply']}
 HF selected labels single-token: {metrics['jlens_hf_selected_labels_all_single_token']}
 HF critical labels single-token: {metrics['jlens_hf_critical_labels_all_single_token']}
+Leak probe: {metrics['jlens_leak_probe_status']}
+Leak probe performed: {metrics['jlens_leak_probe_performed']}
+Leak PC metric: {metrics['jlens_leak_pc_metric']}
+Leak differential activation: {metrics['jlens_leak_differential_activation_present']}
+Leak causal intervention: {metrics['jlens_leak_causal_intervention_performed']}
 
 ## Live model rail
 
@@ -164,6 +169,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     jlens_runtime_path = artifact_root / "jlens_runtime_readiness_seed_42"
     jlens_smoke_path = artifact_root / "jlens_smoke_seed_42"
     jlens_hf_smoke_path = artifact_root / "jlens_hf_smoke_seed_42"
+    jlens_leak_probe_path = artifact_root / "jlens_leak_probe_seed_42"
     live_path = artifact_root / "live_gate_seed_42"
     live_smoke_path = artifact_root / "live_smoke_seed_42"
     live_dsh_path = artifact_root / "live_dsh_seed_42"
@@ -225,6 +231,23 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "not_sufficient_for_JLENS_PROVED": True,
         }
         jlens_hf_smoke_ledger_verified = False
+    if (jlens_leak_probe_path / "metrics.json").exists():
+        jlens_leak_probe_metrics = _read_json(jlens_leak_probe_path / "metrics.json")
+        jlens_leak_probe_ledger_verified = _verify_ledger(jlens_leak_probe_path)
+    else:
+        jlens_leak_probe_metrics = {
+            "leak_probe_status": "not_run",
+            "real_hf_jlens_leak_probe": False,
+            "outcome_leak_probe_performed": False,
+            "pc_metric": None,
+            "pc_threshold": None,
+            "differential_activation_present": False,
+            "negative_control_performed": False,
+            "sham_control_performed": False,
+            "causal_intervention_performed": False,
+            "not_sufficient_for_JLENS_PROVED": True,
+        }
+        jlens_leak_probe_ledger_verified = False
     if (live_path / "metrics.json").exists():
         live_metrics = _read_json(live_path / "metrics.json")
         live_ledger_verified = _verify_ledger(live_path)
@@ -293,6 +316,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "jlens_runtime_readiness": jlens_runtime_ledger_verified,
         "jlens_smoke": jlens_smoke_ledger_verified,
         "jlens_hf_smoke": jlens_hf_smoke_ledger_verified,
+        "jlens_leak_probe": jlens_leak_probe_ledger_verified,
         "live_model_gate": live_ledger_verified,
         "live_smoke": live_smoke_ledger_verified,
         "live_dsh_pilot": live_dsh_ledger_verified,
@@ -362,6 +386,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "primary_value": jlens_hf_smoke_metrics["smoke_status"],
             "ledger_verified": ledger_verified["jlens_hf_smoke"],
             "evidence_path": str(jlens_hf_smoke_path / "metrics.json"),
+        },
+        {
+            "section": "jlens_leak_probe",
+            "artifact_path": str(jlens_leak_probe_path),
+            "primary_metric": "leak_probe_status",
+            "primary_value": jlens_leak_probe_metrics["leak_probe_status"],
+            "ledger_verified": ledger_verified["jlens_leak_probe"],
+            "evidence_path": str(jlens_leak_probe_path / "metrics.json"),
         },
         {
             "section": "live_model_gate",
@@ -474,6 +506,11 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "value": {
                 "rail_status": jlens_metrics["rail_status"],
                 "failure_ledger_entry_id": jlens_metrics["failure_ledger_entry_id"],
+                "leak_probe_status": jlens_leak_probe_metrics["leak_probe_status"],
+                "leak_probe_performed": jlens_leak_probe_metrics["outcome_leak_probe_performed"],
+                "causal_intervention_performed": jlens_leak_probe_metrics[
+                    "causal_intervention_performed"
+                ],
             },
         },
         {
@@ -626,6 +663,28 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "critical_labels_all_single_token"
         ],
         "jlens_hf_smoke_not_sufficient_for_JLENS_PROVED": jlens_hf_smoke_metrics[
+            "not_sufficient_for_JLENS_PROVED"
+        ],
+        "jlens_leak_probe_status": jlens_leak_probe_metrics["leak_probe_status"],
+        "jlens_leak_probe_real": jlens_leak_probe_metrics["real_hf_jlens_leak_probe"],
+        "jlens_leak_probe_performed": jlens_leak_probe_metrics[
+            "outcome_leak_probe_performed"
+        ],
+        "jlens_leak_pc_metric": jlens_leak_probe_metrics["pc_metric"],
+        "jlens_leak_pc_threshold": jlens_leak_probe_metrics["pc_threshold"],
+        "jlens_leak_differential_activation_present": jlens_leak_probe_metrics[
+            "differential_activation_present"
+        ],
+        "jlens_leak_negative_control_performed": jlens_leak_probe_metrics[
+            "negative_control_performed"
+        ],
+        "jlens_leak_sham_control_performed": jlens_leak_probe_metrics[
+            "sham_control_performed"
+        ],
+        "jlens_leak_causal_intervention_performed": jlens_leak_probe_metrics[
+            "causal_intervention_performed"
+        ],
+        "jlens_leak_not_sufficient_for_JLENS_PROVED": jlens_leak_probe_metrics[
             "not_sufficient_for_JLENS_PROVED"
         ],
         "live_model_rail_status": live_metrics["rail_status"],

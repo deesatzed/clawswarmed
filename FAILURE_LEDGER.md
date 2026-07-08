@@ -37,12 +37,18 @@ Reason:
   `https://github.com/anthropics/jacobian-lens` and
   `https://transformer-circuits.pub/2026/workspace/index.html`; the rail
   remains frozen for runtime/model/intervention reasons.
-- No configured white-box gatekeeper model with gradient/layer access is
-  available in this repository/runtime.
+- 2026-07-08 amendment: local reference and Hugging Face tiny-model fit/apply
+  smokes passed in the external runtime.
+- 2026-07-08 amendment: the first tiny-HF outcome-leak readout probe ran at
+  `artifacts/jlens_leak_probe_seed_42/`; PC was
+  `0.07183928849796455` against threshold `1.0`, so no differential activation
+  was detected for this pilot.
 - Timing or readout alone is insufficient for the Glass Gate causal claim.
+- No causal intervention or causal sham-control artifact exists yet.
 
-Decision: do not implement or claim a real J-lens probe. Continue macro DSH
-and RQGM rails. Optional bridge and mechanistic rails remain deferred.
+Decision: do not claim a prejudgment detector, causal mechanism, bridge rail,
+or mechanistic admission result. Continue macro DSH and RQGM rails. Optional
+bridge and mechanistic rails remain deferred.
 
 Evidence:
 
@@ -52,3 +58,7 @@ Evidence:
 - `artifacts/jlens_gate_seed_42/metrics.json` sets `rail_status = frozen`.
 - `artifacts/jlens_gate_seed_42/ledger.jsonl` includes a
   `jlens_gate_decision` receipt.
+- `artifacts/jlens_leak_probe_seed_42/metrics.json` records
+  `outcome_leak_probe_performed = true`,
+  `differential_activation_present = false`, and
+  `causal_intervention_performed = false`.

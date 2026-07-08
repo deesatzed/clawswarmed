@@ -11,8 +11,9 @@ fit/apply smoke artifacts:
 - a tiny Hugging Face GPT-2 smoke using local model weights and tokenizer
   checks.
 
-The J-lens execution rail remains frozen because no preregistered outcome-leak
-probe or causal intervention/sham-control run has been executed.
+The J-lens execution rail remains frozen because the first preregistered
+outcome-leak readout probe was null on the tiny HF model and no causal
+intervention/sham-control run has been executed.
 
 ## Verified Exact Sources
 
@@ -138,8 +139,42 @@ This is still not `JLENS_PROVED`: it is not a preregistered outcome-leak probe,
 does not test early verdict-direction activation, and performs no causal
 intervention or sham control.
 
+## Outcome-Leak Readout Probe
+
+Run:
+
+```bash
+python3 -m broadcast_alpha run-jlens-leak-probe --seed 42 --model-id hf-internal-testing/tiny-random-gpt2
+```
+
+This writes:
+
+- `artifacts/jlens_leak_probe_seed_42/metrics.json`
+- `artifacts/jlens_leak_probe_seed_42/model_manifest.json`
+- `artifacts/jlens_leak_probe_seed_42/tokenizer_label_check.json`
+- `artifacts/jlens_leak_probe_seed_42/prereg_manifest.json`
+- `artifacts/jlens_leak_probe_seed_42/readouts.json`
+- `artifacts/jlens_leak_probe_seed_42/probe_payload.json`
+- `artifacts/jlens_leak_probe_seed_42/result_card.md`
+- `artifacts/jlens_leak_probe_seed_42/ledger.jsonl`
+- `artifacts/jlens_leak_probe_seed_42/replay/contexts.json`
+
+Current checked-in leak probe status is `passed` as an execution artifact but
+null as evidence:
+
+- PC metric: `0.07183928849796455`;
+- PC threshold: `1.0`;
+- differential activation present: `false`;
+- negative control performed: `true`;
+- sham readout control performed: `true`;
+- causal intervention performed: `false`.
+
+This keeps `JLENS-FREEZE-001` active. The next possible progress step is a
+larger/better white-box model or a causal intervention command only if a later
+probe produces a meaningful signal. The current tiny-model probe does not.
+
 ## Still Frozen Records
 
-- `JLENS-FREEZE-001` remains valid as an outcome-leak/intervention defer.
+- `JLENS-FREEZE-001` remains valid as a null-outcome-leak/intervention defer.
 - `bridge_rail` and `mechanistic_admission` remain deferred while J-lens is
   frozen or only manually inspected.

@@ -144,6 +144,11 @@
       "value": {
         "failure_ledger_entry_id": "JLENS-FREEZE-001",
         "jlens_rail_status": "frozen",
+        "leak_causal_intervention_performed": false,
+        "leak_differential_activation_present": false,
+        "leak_pc_metric": 0.07183928849796455,
+        "leak_probe_performed": true,
+        "leak_probe_status": "passed",
         "runtime_readiness_status": "blocked_missing_dependencies",
         "runtime_reason_codes": [
           "torch_missing",

@@ -11,10 +11,10 @@ That exact source is now verified: the public `anthropics/jacobian-lens`
 repository is the reference implementation for the linked Transformer Circuits
 paper. The app now has local external-runtime smoke artifacts proving that the
 reference implementation can fit/apply a Jacobian lens on both the reference
-tiny decoder and a tiny Hugging Face decoder. It still has no preregistered
-outcome-leak probe or causal intervention control. Because of that,
-`broadcast_alpha` must not claim a prejudgment detector or causal mechanistic
-result.
+tiny decoder and a tiny Hugging Face decoder. It also has a preregistered
+tiny-HF outcome-leak readout probe. That probe was null and no causal
+intervention control exists. Because of that, `broadcast_alpha` must not claim
+a prejudgment detector or causal mechanistic result.
 
 The rail can reopen only when all conditions are true:
 
@@ -75,6 +75,16 @@ This uses the same external runtime, loads
 `hf-internal-testing/tiny-random-gpt2` locally, fits/applies a Jacobian lens,
 and records tokenizer label checks. Current artifact status is `passed`, but it
 is still not an outcome-leak or causal proof.
+
+The outcome-leak readout probe is:
+
+```bash
+python3 -m broadcast_alpha run-jlens-leak-probe --seed 42 --model-id hf-internal-testing/tiny-random-gpt2
+```
+
+Current artifact status is `passed` for execution, with PC
+`0.07183928849796455` against threshold `1.0`. This is a null/non-causal
+readout result and keeps the J-lens rail frozen.
 
 ## Exact Sources Verified
 
