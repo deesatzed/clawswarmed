@@ -133,8 +133,24 @@ def _fake_jlens_leak_probe_runner(
                 "sham_pc_layer": "1",
                 "sham_pc_metric": 0.1,
                 "differential_activation_present": False,
-                "condition_results": {},
-                "layer_deltas": {},
+                "condition_results": {
+                    "outcome_revealed": {
+                        "pre_evidence_positions": [10, 11, 12],
+                        "layers": {
+                            "2": {"target_minus_foil_mean": 0.5},
+                        },
+                    },
+                },
+                "layer_deltas": {
+                    "2": {
+                        "target_delta_vs_withheld": 0.4,
+                        "target_delta_vs_negative_control": 0.45,
+                        "target_min_control_delta": 0.4,
+                        "sham_delta_vs_withheld": 0.1,
+                        "sham_delta_vs_negative_control": 0.12,
+                        "sham_min_control_delta": 0.1,
+                    },
+                },
             },
             {
                 "pair_id": "LEAK-FACT-001",
@@ -148,8 +164,24 @@ def _fake_jlens_leak_probe_runner(
                 "sham_pc_layer": "0",
                 "sham_pc_metric": -0.1,
                 "differential_activation_present": False,
-                "condition_results": {},
-                "layer_deltas": {},
+                "condition_results": {
+                    "outcome_revealed": {
+                        "pre_evidence_positions": [8, 9],
+                        "layers": {
+                            "3": {"target_minus_foil_mean": -0.2},
+                        },
+                    },
+                },
+                "layer_deltas": {
+                    "3": {
+                        "target_delta_vs_withheld": 0.2,
+                        "target_delta_vs_negative_control": 0.25,
+                        "target_min_control_delta": 0.2,
+                        "sham_delta_vs_withheld": -0.1,
+                        "sham_delta_vs_negative_control": -0.08,
+                        "sham_min_control_delta": -0.1,
+                    },
+                },
             },
         ],
         "pc_metric": 0.4,
@@ -777,6 +809,20 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertFalse(metrics["differential_activation_present"])
         self.assertFalse(metrics["causal_intervention_performed"])
         self.assertFalse(metrics["sham_intervention_control_performed"])
+        self.assertTrue(metrics["derived_metrics_not_causal"])
+        self.assertEqual(metrics["causal_support_set"]["evidence_class"], "shadow_probe_noninterventional")
+        self.assertEqual(metrics["causal_support_set"]["entry_count"], 2)
+        self.assertEqual(
+            metrics["causal_support_set"]["entries"][0]["intervention_type"],
+            "not_run_preregistered_signal_gate_failed",
+        )
+        self.assertEqual(metrics["causal_support_set"]["entries"][0]["position_window"], [10, 11, 12])
+        self.assertFalse(metrics["causal_support_set"]["entries"][0]["causal_intervention_performed"])
+        self.assertTrue(metrics["causal_support_set"]["not_sufficient_for_JLENS_PROVED"])
+        self.assertEqual(metrics["convergence_dynamics"]["evidence_class"], "derived_readout_dynamics")
+        self.assertEqual(metrics["convergence_dynamics"]["case_count"], 2)
+        self.assertTrue(metrics["convergence_dynamics"]["not_causal"])
+        self.assertTrue(metrics["convergence_dynamics"]["not_sufficient_for_JLENS_PROVED"])
         self.assertTrue(metrics["freeze_recommended"])
         self.assertTrue(metrics["not_sufficient_for_JLENS_PROVED"])
         self.assertIn("intervention_not_run_by_prereg_kill_criterion", metrics["reason_codes"])
@@ -2119,6 +2165,9 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["jlens_intervention_status"], "blocked_no_differential_signal")
         self.assertFalse(metrics["jlens_intervention_performed"])
         self.assertFalse(metrics["jlens_intervention_sham_control_performed"])
+        self.assertEqual(metrics["jlens_intervention_causal_support_entry_count"], 2)
+        self.assertEqual(metrics["jlens_intervention_convergence_case_count"], 2)
+        self.assertTrue(metrics["jlens_intervention_derived_metrics_not_causal"])
         self.assertTrue(metrics["jlens_intervention_not_sufficient_for_JLENS_PROVED"])
         self.assertEqual(metrics["live_model_rail_status"], "unavailable")
         self.assertFalse(metrics["live_adapter_call_performed"])
@@ -2294,6 +2343,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertFalse(metrics["jlens_leak_causal_intervention_performed"])
             self.assertEqual(metrics["jlens_intervention_status"], "blocked_no_differential_signal")
             self.assertFalse(metrics["jlens_intervention_performed"])
+            self.assertEqual(metrics["jlens_intervention_causal_support_entry_count"], 2)
+            self.assertTrue(metrics["jlens_intervention_derived_metrics_not_causal"])
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
@@ -2430,6 +2481,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_hf_smoke_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_leak_probe_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_intervention_seed_42" / "metrics.json").exists())
+            self.assertTrue(metrics["jlens_intervention_derived_metrics_not_causal"])
             self.assertTrue((result.artifact_path / "source_artifacts" / "ledger_stress_seed_42" / "receipt_kind_counts.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 

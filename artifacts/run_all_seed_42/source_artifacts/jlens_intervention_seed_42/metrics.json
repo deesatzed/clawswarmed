@@ -1,6 +1,123 @@
 {
   "causal_intervention_performed": false,
+  "causal_support_set": {
+    "causal_intervention_performed": false,
+    "derived_metric": true,
+    "entries": [
+      {
+        "causal_intervention_performed": false,
+        "concept_direction": "verdict_target_minus_foil",
+        "evidence_class": "shadow_probe_noninterventional",
+        "intervention_type": "not_run_preregistered_signal_gate_failed",
+        "layer": "3",
+        "not_causal": true,
+        "not_sufficient_for_JLENS_PROVED": true,
+        "output_logit_delta": null,
+        "pair_id": "LEAK-CODE-001",
+        "position_window": [
+          49,
+          50,
+          51
+        ],
+        "readout_delta_vs_negative_control": -0.024325817823410034,
+        "readout_delta_vs_withheld": -0.07816842198371887,
+        "readout_min_control_delta": -0.07816842198371887,
+        "sham_control_delta_vs_negative": -0.02205391228199005,
+        "sham_control_delta_vs_withheld": -0.10302647079030672,
+        "sham_control_min_delta": -0.10302647079030672,
+        "verdict_flip_status": false
+      },
+      {
+        "causal_intervention_performed": false,
+        "concept_direction": "verdict_target_minus_foil",
+        "evidence_class": "shadow_probe_noninterventional",
+        "intervention_type": "not_run_preregistered_signal_gate_failed",
+        "layer": "3",
+        "not_causal": true,
+        "not_sufficient_for_JLENS_PROVED": true,
+        "output_logit_delta": null,
+        "pair_id": "LEAK-FACT-001",
+        "position_window": [
+          61,
+          62,
+          63
+        ],
+        "readout_delta_vs_negative_control": 0.07183928849796455,
+        "readout_delta_vs_withheld": 0.10362806047002475,
+        "readout_min_control_delta": 0.07183928849796455,
+        "sham_control_delta_vs_negative": 0.04790429460505645,
+        "sham_control_delta_vs_withheld": 0.08817670494318008,
+        "sham_control_min_delta": 0.05934817406038443,
+        "verdict_flip_status": false
+      }
+    ],
+    "entry_count": 2,
+    "evidence_class": "shadow_probe_noninterventional",
+    "metric_name": "causal_support_set",
+    "not_causal": true,
+    "not_sufficient_for_JLENS_PROVED": true,
+    "sham_intervention_control_performed": false
+  },
+  "convergence_dynamics": {
+    "case_count": 2,
+    "cases": [
+      {
+        "collapse_before_evidence_span": false,
+        "collapse_layer": null,
+        "commitment_order_parameter": 0.0448262095451355,
+        "derived_metric": true,
+        "differential_activation_present": false,
+        "evidence_class": "derived_readout_dynamics",
+        "layers": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "not_causal": true,
+        "not_sufficient_for_JLENS_PROVED": true,
+        "pair_id": "LEAK-CODE-001",
+        "pre_evidence_entropy_over_layers": 1.386236550971439,
+        "target_min_control_delta_by_layer": [
+          -0.09887463351090749,
+          -0.08949466049671173,
+          -0.08723109836379687,
+          -0.07816842198371887
+        ]
+      },
+      {
+        "collapse_before_evidence_span": false,
+        "collapse_layer": null,
+        "commitment_order_parameter": 0.07653134564558665,
+        "derived_metric": true,
+        "differential_activation_present": false,
+        "evidence_class": "derived_readout_dynamics",
+        "layers": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "not_causal": true,
+        "not_sufficient_for_JLENS_PROVED": true,
+        "pair_id": "LEAK-FACT-001",
+        "pre_evidence_entropy_over_layers": 1.3861535613653317,
+        "target_min_control_delta_by_layer": [
+          0.036632408698399864,
+          0.043460461000601455,
+          0.048361774533987045,
+          0.07183928849796455
+        ]
+      }
+    ],
+    "derived_metric": true,
+    "evidence_class": "derived_readout_dynamics",
+    "metric_name": "convergence_dynamics",
+    "not_causal": true,
+    "not_sufficient_for_JLENS_PROVED": true
+  },
   "decision_path": "artifacts/run_all_seed_42/source_artifacts/jlens_intervention_seed_42/decision.json",
+  "derived_metrics_not_causal": true,
   "differential_activation_present": false,
   "freeze_recommended": true,
   "intervention_delta": null,

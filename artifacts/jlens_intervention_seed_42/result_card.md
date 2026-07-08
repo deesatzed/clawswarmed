@@ -11,6 +11,10 @@ PC threshold: 1.0
 Differential activation present: False
 Causal intervention performed: False
 Sham intervention control performed: False
+Causal support set evidence class: shadow_probe_noninterventional
+Causal support set entries: 2
+Convergence dynamics evidence class: derived_readout_dynamics
+Convergence dynamics cases: 2
 
 The current leak-probe signal is below threshold, so the preregistered causal
 intervention is not run. This is a clean defer/kill record, not a causal

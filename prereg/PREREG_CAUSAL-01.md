@@ -34,5 +34,9 @@ In that case, write a replayable intervention gate artifact with status
 - PC threshold: `1.0`
 - Causal intervention performed: `false`
 - Sham intervention control performed: `false`
+- Derived `causal_support_set` entries: `2`
+- Derived `convergence_dynamics` cases: `2`
+- Derived metrics are labeled non-causal and cannot satisfy this preregistered
+  causal proof requirement.
 
 This is a clean defer/kill record, not a causal result.

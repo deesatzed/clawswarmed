@@ -80,6 +80,9 @@ Leak causal intervention: False
 Intervention gate: blocked_no_differential_signal
 Intervention performed: False
 Intervention sham control: False
+Intervention derived metrics non-causal: True
+Causal support set entries: 2
+Convergence dynamics cases: 2
 
 ## Live model rail
 

@@ -128,6 +128,12 @@ CURRENT 2026-07-08 UPDATE:
   - source PC threshold: `1.0`
   - causal intervention performed: `false`
   - sham intervention control performed: `false`
+  - derived `causal_support_set` entries: `2`
+  - derived `convergence_dynamics` cases: `2`
+  - derived metrics evidence classes:
+    `shadow_probe_noninterventional` and `derived_readout_dynamics`
+  - derived metrics are explicitly non-causal and not sufficient for
+    `JLENS_PROVED`
   - decision: do not run causal intervention because the preregistered signal
     gate failed
   - not causal, not sufficient for `JLENS_PROVED`
@@ -220,6 +226,10 @@ PROOF OF DONE:
    - Status: intervention gate completed on 2026-07-08. It records that causal
      intervention was not run because the prerequisite differential signal was
      absent.
+   - Status: derived shadow-probe fields added on 2026-07-08. The intervention
+     artifact now records candidate support-set rows and convergence-dynamics
+     summaries from the existing readouts. These fields are non-interventional,
+     non-causal, and cannot satisfy the proof requirement.
 
 4. App integration:
    - Add a real J-lens rail beside the existing `NullJLensProbe`; keep the null
@@ -279,12 +289,19 @@ PROOF OF DONE:
        comparison.
      - Use this to make the required causal intervention more inspectable, not
        to replace it.
+     - Status: implemented as `shadow_probe_noninterventional` entries inside
+       `artifacts/jlens_intervention_seed_42/metrics.json`, with
+       `causal_intervention_performed = false`, `output_logit_delta = null`,
+       and `not_sufficient_for_JLENS_PROVED = true`.
    - `convergence_dynamics`:
      - Optionally record entropy over layers, commitment/order parameter,
        collapse layer, and whether collapse occurred before the evidence span
        was processed.
      - Treat these as triage or suspicious-run flags only. They are not causal
        evidence without intervention.
+     - Status: implemented as `derived_readout_dynamics` summaries inside
+       `artifacts/jlens_intervention_seed_42/metrics.json`; current collapse
+       layer is `null` for both checked-in cases.
    - `mechanistic_drift_rate`:
      - For future RQGM/evaluator epochs, optionally record cosine-distance
        drift of critical verdict directions such as `admit`, `reject`, `pass`,

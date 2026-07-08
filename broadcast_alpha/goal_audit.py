@@ -391,6 +391,15 @@ def audit_goal(
                 "intervention_sham_control_performed": final_metrics.get(
                     "jlens_intervention_sham_control_performed"
                 ),
+                "intervention_causal_support_entry_count": final_metrics.get(
+                    "jlens_intervention_causal_support_entry_count"
+                ),
+                "intervention_convergence_case_count": final_metrics.get(
+                    "jlens_intervention_convergence_case_count"
+                ),
+                "intervention_derived_metrics_not_causal": final_metrics.get(
+                    "jlens_intervention_derived_metrics_not_causal"
+                ),
             },
         ),
         _item(

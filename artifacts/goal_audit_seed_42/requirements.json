@@ -143,6 +143,9 @@
       "status": "deferred_with_record",
       "value": {
         "failure_ledger_entry_id": "JLENS-FREEZE-001",
+        "intervention_causal_support_entry_count": 2,
+        "intervention_convergence_case_count": 2,
+        "intervention_derived_metrics_not_causal": true,
         "intervention_performed": false,
         "intervention_sham_control_performed": false,
         "intervention_status": "blocked_no_differential_signal",

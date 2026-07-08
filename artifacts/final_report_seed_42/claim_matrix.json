@@ -92,6 +92,9 @@
       "status": "deferred_with_failure_record",
       "value": {
         "causal_intervention_performed": false,
+        "causal_support_entry_count": 2,
+        "convergence_case_count": 2,
+        "derived_metrics_not_causal": true,
         "failure_ledger_entry_id": "JLENS-FREEZE-001",
         "intervention_status": "blocked_no_differential_signal",
         "leak_probe_performed": true,

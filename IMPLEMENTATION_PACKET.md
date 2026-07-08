@@ -3,7 +3,10 @@
 ## Task Being Attempted
 
 Add the first executable J-lens causal-intervention gate without falsely
-claiming the causal rail is proved.
+claiming the causal rail is proved. Current follow-up: add derived
+`causal_support_set` / `shadow_probe` and `convergence_dynamics` fields to make
+the clean defer artifact more inspectable without treating derived fields as
+causal proof.
 
 ## Actual User Goal
 
@@ -30,6 +33,9 @@ is below threshold.
   authorized; this command follows the same artifact pattern.
 - The intervention gate consumes the checked-in leak-probe metrics and does not
   run external model code unless a future implementation adds real intervention.
+- The intervention gate loads detailed leak-probe readouts when available so
+  derived support/dynamics fields are tied to inspected layers and pre-evidence
+  positions.
 - Existing audit logic treats frozen J-lens as a valid defer, not completion.
 - Failure history stays in `FAILURE_LEDGER.md`; amendments do not erase the
   original freeze.
@@ -42,6 +48,8 @@ is below threshold.
   metadata, so artifacts record `unknown_not_declared`.
 - A blocked intervention gate proves the preregistered no-signal stop rule ran,
   but not that the causal hypothesis is true.
+- Derived `causal_support_set` and `convergence_dynamics` fields improve
+  inspection/debugging only; they are not causal intervention evidence.
 - No large model download or third-party source vendoring should happen here.
 
 ## Non-Goals For This Pass
@@ -67,6 +75,9 @@ is below threshold.
   `decision.json`, result card, ledger, and replay context.
 - The intervention artifact records source leak-probe PC, threshold, decision,
   reason codes, and proof limitations.
+- The intervention artifact records derived `causal_support_set` and
+  `convergence_dynamics` fields as non-causal and not sufficient for
+  `JLENS_PROVED`.
 - Report/run-all expose intervention status without changing the honest deferred
   verdict.
 - Full repo tests pass.
@@ -99,6 +110,7 @@ macro/live rails and prior J-lens artifacts are not altered in behavior.
 | Risk | Mitigation |
 |---|---|
 | Blocked intervention gets overstated as proof. | Keep `causal_intervention_performed=false`, `sham_intervention_control_performed=false`, and `not_sufficient_for_JLENS_PROVED=true`. |
+| Derived metrics get mistaken for causal evidence. | Mark `derived_metrics_not_causal=true` and keep each derived structure `not_sufficient_for_JLENS_PROVED=true`. |
 | Leak-probe artifact is missing. | Command writes `blocked_missing_leak_probe` instead of failing silently. |
 | Null signal is routed around. | Gate uses the preregistered PC threshold and records `blocked_no_differential_signal`. |
 

@@ -285,6 +285,15 @@ def run_all(
         "jlens_intervention_sham_control_performed": final_metrics[
             "jlens_intervention_sham_control_performed"
         ],
+        "jlens_intervention_causal_support_entry_count": final_metrics[
+            "jlens_intervention_causal_support_entry_count"
+        ],
+        "jlens_intervention_convergence_case_count": final_metrics[
+            "jlens_intervention_convergence_case_count"
+        ],
+        "jlens_intervention_derived_metrics_not_causal": final_metrics[
+            "jlens_intervention_derived_metrics_not_causal"
+        ],
         "jlens_intervention_not_sufficient_for_JLENS_PROVED": final_metrics[
             "jlens_intervention_not_sufficient_for_JLENS_PROVED"
         ],

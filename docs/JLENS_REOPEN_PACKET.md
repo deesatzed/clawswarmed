@@ -196,6 +196,18 @@ Current checked-in intervention status is
 `0.07183928849796455` against threshold `1.0` and did not run a causal or sham
 intervention.
 
+The same artifact now records derived inspection fields:
+
+- `causal_support_set.entry_count = 2`
+- `causal_support_set.evidence_class = shadow_probe_noninterventional`
+- `convergence_dynamics.case_count = 2`
+- `convergence_dynamics.evidence_class = derived_readout_dynamics`
+- `derived_metrics_not_causal = true`
+
+These fields are for replay, triage, and future intervention targeting only.
+They are not activation causality, not an ablation/swap/suppression result, and
+not sufficient for `JLENS_PROVED`.
+
 ## Still Frozen Records
 
 - `JLENS-FREEZE-001` remains valid as a null-outcome-leak/intervention defer.

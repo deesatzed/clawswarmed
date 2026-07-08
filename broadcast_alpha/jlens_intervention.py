@@ -1,4 +1,5 @@
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -21,6 +22,159 @@ def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
 
+def _load_leak_readouts(leak_metrics: dict, leak_probe_path: Path) -> list[dict]:
+    direct_cases = leak_metrics.get("case_results")
+    if isinstance(direct_cases, list):
+        return direct_cases
+
+    candidate_paths = []
+    for key in ("readouts_path", "probe_payload_path"):
+        value = leak_metrics.get(key)
+        if value:
+            candidate_paths.append(Path(value))
+    candidate_paths.extend([leak_probe_path / "readouts.json", leak_probe_path / "probe_payload.json"])
+
+    for path in candidate_paths:
+        if not path.is_absolute():
+            path = Path.cwd() / path
+        if not path.exists():
+            continue
+        payload = _read_json(path)
+        cases = payload.get("case_results")
+        if isinstance(cases, list):
+            return cases
+    return []
+
+
+def _softmax_entropy(values: list[float]) -> float | None:
+    if not values:
+        return None
+    max_value = max(values)
+    exps = [math.exp(value - max_value) for value in values]
+    total = sum(exps)
+    if total == 0:
+        return None
+    probabilities = [value / total for value in exps]
+    return float(-sum(prob * math.log(prob) for prob in probabilities if prob > 0))
+
+
+def _position_window(case_result: dict) -> list[int]:
+    for condition in case_result.get("condition_results", {}).values():
+        positions = condition.get("pre_evidence_positions")
+        if isinstance(positions, list):
+            return [int(position) for position in positions]
+    return []
+
+
+def _mean_for_layer(case_result: dict, layer: str, condition: str, field: str) -> float | None:
+    condition_result = case_result.get("condition_results", {}).get(condition, {})
+    layer_result = condition_result.get("layers", {}).get(str(layer), {})
+    value = layer_result.get(field)
+    return float(value) if value is not None else None
+
+
+def _build_causal_support_set(leak_metrics: dict, intervention_status: str) -> dict:
+    entries = []
+    for case_result in leak_metrics.get("case_results", []):
+        layer = str(case_result.get("pc_layer"))
+        layer_deltas = case_result.get("layer_deltas", {}).get(layer, {})
+        entries.append(
+            {
+                "pair_id": case_result.get("pair_id"),
+                "concept_direction": "verdict_target_minus_foil",
+                "evidence_class": "shadow_probe_noninterventional",
+                "intervention_type": (
+                    "not_run_preregistered_signal_gate_failed"
+                    if intervention_status == "blocked_no_differential_signal"
+                    else "not_run"
+                ),
+                "layer": layer if layer != "None" else None,
+                "position_window": _position_window(case_result),
+                "readout_delta_vs_withheld": layer_deltas.get("target_delta_vs_withheld"),
+                "readout_delta_vs_negative_control": layer_deltas.get(
+                    "target_delta_vs_negative_control"
+                ),
+                "readout_min_control_delta": case_result.get("pc_metric"),
+                "sham_control_delta_vs_withheld": layer_deltas.get("sham_delta_vs_withheld"),
+                "sham_control_delta_vs_negative": layer_deltas.get(
+                    "sham_delta_vs_negative_control"
+                ),
+                "sham_control_min_delta": case_result.get("sham_pc_metric"),
+                "output_logit_delta": None,
+                "verdict_flip_status": False,
+                "causal_intervention_performed": False,
+                "not_causal": True,
+                "not_sufficient_for_JLENS_PROVED": True,
+            }
+        )
+    return {
+        "metric_name": "causal_support_set",
+        "evidence_class": "shadow_probe_noninterventional",
+        "derived_metric": True,
+        "causal_intervention_performed": False,
+        "sham_intervention_control_performed": False,
+        "not_causal": True,
+        "not_sufficient_for_JLENS_PROVED": True,
+        "entry_count": len(entries),
+        "entries": entries,
+    }
+
+
+def _build_convergence_dynamics(leak_metrics: dict, pc_threshold: float | None) -> dict:
+    cases = []
+    threshold = float(pc_threshold) if pc_threshold is not None else None
+    for case_result in leak_metrics.get("case_results", []):
+        layer_deltas = case_result.get("layer_deltas", {})
+        layers = sorted(
+            layer_deltas.keys(),
+            key=lambda value: (0, int(value)) if str(value).isdigit() else (1, str(value)),
+        )
+        target_min_deltas = [
+            float(layer_deltas[layer].get("target_min_control_delta", 0.0))
+            for layer in layers
+        ]
+        revealed_margins = [
+            _mean_for_layer(case_result, layer, "outcome_revealed", "target_minus_foil_mean")
+            for layer in layers
+        ]
+        revealed_margins = [value for value in revealed_margins if value is not None]
+        abs_margins = [abs(value) for value in revealed_margins]
+        commitment = max(abs_margins) if abs_margins else abs(float(case_result.get("pc_metric", 0.0)))
+        collapse_layer = None
+        if threshold is not None:
+            for layer, delta in zip(layers, target_min_deltas):
+                if delta >= threshold:
+                    collapse_layer = layer
+                    break
+        cases.append(
+            {
+                "pair_id": case_result.get("pair_id"),
+                "evidence_class": "derived_readout_dynamics",
+                "derived_metric": True,
+                "layers": layers,
+                "target_min_control_delta_by_layer": target_min_deltas,
+                "pre_evidence_entropy_over_layers": _softmax_entropy(abs_margins or target_min_deltas),
+                "commitment_order_parameter": float(commitment),
+                "collapse_layer": collapse_layer,
+                "collapse_before_evidence_span": collapse_layer is not None,
+                "differential_activation_present": bool(
+                    case_result.get("differential_activation_present", False)
+                ),
+                "not_causal": True,
+                "not_sufficient_for_JLENS_PROVED": True,
+            }
+        )
+    return {
+        "metric_name": "convergence_dynamics",
+        "evidence_class": "derived_readout_dynamics",
+        "derived_metric": True,
+        "not_causal": True,
+        "not_sufficient_for_JLENS_PROVED": True,
+        "case_count": len(cases),
+        "cases": cases,
+    }
+
+
 def _result_card(run_id: str, metrics: dict) -> str:
     return f"""# Result Card: {run_id}
 
@@ -35,6 +189,10 @@ PC threshold: {metrics['pc_threshold']}
 Differential activation present: {metrics['differential_activation_present']}
 Causal intervention performed: {metrics['causal_intervention_performed']}
 Sham intervention control performed: {metrics['sham_intervention_control_performed']}
+Causal support set evidence class: {metrics['causal_support_set']['evidence_class']}
+Causal support set entries: {metrics['causal_support_set']['entry_count']}
+Convergence dynamics evidence class: {metrics['convergence_dynamics']['evidence_class']}
+Convergence dynamics cases: {metrics['convergence_dynamics']['case_count']}
 
 The current leak-probe signal is below threshold, so the preregistered causal
 intervention is not run. This is a clean defer/kill record, not a causal
@@ -68,6 +226,7 @@ def run_jlens_intervention(
         reason_codes.append("leak_probe_metrics_missing")
     else:
         leak_metrics = _read_json(leak_metrics_path)
+        leak_metrics["case_results"] = _load_leak_readouts(leak_metrics, leak_probe_path)
         threshold = pc_threshold if pc_threshold is not None else leak_metrics.get("pc_threshold")
         pc_metric = leak_metrics.get("pc_metric")
         differential_activation_present = bool(leak_metrics.get("differential_activation_present", False))
@@ -84,6 +243,12 @@ def run_jlens_intervention(
         else:
             intervention_status = "blocked_intervention_not_implemented"
             reason_codes.append("differential_signal_present_but_intervention_not_implemented")
+
+    effective_threshold = (
+        pc_threshold if pc_threshold is not None else leak_metrics.get("pc_threshold")
+    )
+    causal_support_set = _build_causal_support_set(leak_metrics, intervention_status)
+    convergence_dynamics = _build_convergence_dynamics(leak_metrics, effective_threshold)
 
     prereg_manifest = {
         "prereg_id": "PREREG_CAUSAL-01",
@@ -115,12 +280,15 @@ def run_jlens_intervention(
         "leak_probe_status": leak_metrics.get("leak_probe_status"),
         "leak_probe_performed": bool(leak_metrics.get("outcome_leak_probe_performed", False)),
         "pc_metric": leak_metrics.get("pc_metric"),
-        "pc_threshold": pc_threshold if pc_threshold is not None else leak_metrics.get("pc_threshold"),
+        "pc_threshold": effective_threshold,
         "differential_activation_present": bool(leak_metrics.get("differential_activation_present", False)),
         "causal_intervention_performed": False,
         "sham_intervention_control_performed": False,
         "intervention_delta": None,
         "verdict_flip_observed": False,
+        "causal_support_set": causal_support_set,
+        "convergence_dynamics": convergence_dynamics,
+        "derived_metrics_not_causal": True,
         "not_causal": True,
         "not_sufficient_for_JLENS_PROVED": True,
         "freeze_recommended": True,

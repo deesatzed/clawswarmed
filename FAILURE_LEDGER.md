@@ -47,6 +47,11 @@ Reason:
   `artifacts/jlens_intervention_seed_42/` and returned
   `blocked_no_differential_signal`; by preregistered kill criterion, no causal
   intervention was run.
+- 2026-07-08 amendment: the intervention artifact now records derived
+  `causal_support_set` / `shadow_probe` rows and `convergence_dynamics`
+  summaries. These fields are labeled non-interventional and non-causal; they
+  strengthen replay/debuggability of the defer record but do not satisfy
+  `JLENS_PROVED`.
 - Timing or readout alone is insufficient for the Glass Gate causal claim.
 - No causal intervention or causal sham-control execution exists yet because
   the required pre-intervention signal was absent.
@@ -70,3 +75,7 @@ Evidence:
 - `artifacts/jlens_intervention_seed_42/metrics.json` records
   `intervention_status = blocked_no_differential_signal` and
   `causal_intervention_performed = false`.
+- `artifacts/jlens_intervention_seed_42/metrics.json` also records
+  `causal_support_set.entry_count = 2`,
+  `convergence_dynamics.case_count = 2`, and
+  `derived_metrics_not_causal = true`.

@@ -119,6 +119,9 @@ Leak causal intervention: {metrics['jlens_leak_causal_intervention_performed']}
 Intervention gate: {metrics['jlens_intervention_status']}
 Intervention performed: {metrics['jlens_intervention_performed']}
 Intervention sham control: {metrics['jlens_intervention_sham_control_performed']}
+Intervention derived metrics non-causal: {metrics['jlens_intervention_derived_metrics_not_causal']}
+Causal support set entries: {metrics['jlens_intervention_causal_support_entry_count']}
+Convergence dynamics cases: {metrics['jlens_intervention_convergence_case_count']}
 
 ## Live model rail
 
@@ -264,9 +267,49 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "differential_activation_present": False,
             "causal_intervention_performed": False,
             "sham_intervention_control_performed": False,
+            "causal_support_set": {
+                "evidence_class": "not_run",
+                "derived_metric": True,
+                "not_causal": True,
+                "not_sufficient_for_JLENS_PROVED": True,
+                "entry_count": 0,
+                "entries": [],
+            },
+            "convergence_dynamics": {
+                "evidence_class": "not_run",
+                "derived_metric": True,
+                "not_causal": True,
+                "not_sufficient_for_JLENS_PROVED": True,
+                "case_count": 0,
+                "cases": [],
+            },
+            "derived_metrics_not_causal": True,
             "not_sufficient_for_JLENS_PROVED": True,
         }
         jlens_intervention_ledger_verified = False
+    jlens_intervention_metrics.setdefault(
+        "causal_support_set",
+        {
+            "evidence_class": "not_available",
+            "derived_metric": True,
+            "not_causal": True,
+            "not_sufficient_for_JLENS_PROVED": True,
+            "entry_count": 0,
+            "entries": [],
+        },
+    )
+    jlens_intervention_metrics.setdefault(
+        "convergence_dynamics",
+        {
+            "evidence_class": "not_available",
+            "derived_metric": True,
+            "not_causal": True,
+            "not_sufficient_for_JLENS_PROVED": True,
+            "case_count": 0,
+            "cases": [],
+        },
+    )
+    jlens_intervention_metrics.setdefault("derived_metrics_not_causal", True)
     if (live_path / "metrics.json").exists():
         live_metrics = _read_json(live_path / "metrics.json")
         live_ledger_verified = _verify_ledger(live_path)
@@ -540,6 +583,15 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
                     "causal_intervention_performed"
                 ],
                 "intervention_status": jlens_intervention_metrics["intervention_status"],
+                "causal_support_entry_count": jlens_intervention_metrics[
+                    "causal_support_set"
+                ]["entry_count"],
+                "convergence_case_count": jlens_intervention_metrics[
+                    "convergence_dynamics"
+                ]["case_count"],
+                "derived_metrics_not_causal": jlens_intervention_metrics[
+                    "derived_metrics_not_causal"
+                ],
             },
         },
         {
@@ -730,6 +782,21 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         ],
         "jlens_intervention_sham_control_performed": jlens_intervention_metrics[
             "sham_intervention_control_performed"
+        ],
+        "jlens_intervention_causal_support_evidence_class": jlens_intervention_metrics[
+            "causal_support_set"
+        ]["evidence_class"],
+        "jlens_intervention_causal_support_entry_count": jlens_intervention_metrics[
+            "causal_support_set"
+        ]["entry_count"],
+        "jlens_intervention_convergence_evidence_class": jlens_intervention_metrics[
+            "convergence_dynamics"
+        ]["evidence_class"],
+        "jlens_intervention_convergence_case_count": jlens_intervention_metrics[
+            "convergence_dynamics"
+        ]["case_count"],
+        "jlens_intervention_derived_metrics_not_causal": jlens_intervention_metrics[
+            "derived_metrics_not_causal"
         ],
         "jlens_intervention_not_sufficient_for_JLENS_PROVED": jlens_intervention_metrics[
             "not_sufficient_for_JLENS_PROVED"
