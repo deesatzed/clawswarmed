@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .jlens import run_jlens_gate
+from .jlens_hf_smoke import run_jlens_hf_smoke
 from .jlens_runtime import prepare_jlens_probe
 from .jlens_smoke import run_jlens_smoke
 from .ledger import Ledger
@@ -117,6 +118,7 @@ def run_all(
     jlens_gate = run_jlens_gate(seed=seed, artifact_root=child_root)
     jlens_runtime = prepare_jlens_probe(seed=seed, artifact_root=child_root)
     jlens_smoke = run_jlens_smoke(seed=seed, artifact_root=child_root)
+    jlens_hf_smoke = run_jlens_hf_smoke(seed=seed, artifact_root=child_root)
     live_gate = run_live_gate(seed=seed, artifact_root=child_root, env_file=live_env_file, env=live_env)
     live_smoke = run_live_smoke(
         seed=seed,
@@ -150,6 +152,7 @@ def run_all(
         "jlens_gate": str(jlens_gate.artifact_path),
         "jlens_runtime_readiness": str(jlens_runtime.artifact_path),
         "jlens_smoke": str(jlens_smoke.artifact_path),
+        "jlens_hf_smoke": str(jlens_hf_smoke.artifact_path),
         "live_model_gate": str(live_gate.artifact_path),
         "live_smoke": str(live_smoke.artifact_path),
         "live_dsh_pilot": str(live_dsh.artifact_path),
@@ -164,6 +167,7 @@ def run_all(
         "jlens_gate": jlens_gate.artifact_path,
         "jlens_runtime_readiness": jlens_runtime.artifact_path,
         "jlens_smoke": jlens_smoke.artifact_path,
+        "jlens_hf_smoke": jlens_hf_smoke.artifact_path,
         "live_model_gate": live_gate.artifact_path,
         "live_smoke": live_smoke.artifact_path,
         "live_dsh_pilot": live_dsh.artifact_path,
@@ -189,6 +193,7 @@ def run_all(
             "jlens_gate",
             "jlens_runtime_readiness",
             "jlens_smoke",
+            "jlens_hf_smoke",
             "live_model_gate",
             "live_smoke",
             "live_dsh_pilot",
@@ -198,7 +203,7 @@ def run_all(
     }
     replay_contexts = {
         "agent_1": {
-            "1": "unattended bundle: generated ledger stress, synthetic, DSH, RQGM, J-lens gate, J-lens runtime readiness, J-lens smoke, live model gate, live smoke, live DSH pilot, live sequence, and final report artifacts",
+            "1": "unattended bundle: generated ledger stress, synthetic, DSH, RQGM, J-lens gate, J-lens runtime readiness, J-lens reference smoke, J-lens HF smoke, live model gate, live smoke, live DSH pilot, live sequence, and final report artifacts",
             "2": f"unattended bundle: GLASSGATE_LIFT {final_metrics['glassgate_lift']} with seed adversarial AUC {final_metrics['seed_adversarial_auc']}",
             "3": f"unattended bundle: final report ready, all child ledgers verified, J-lens rail frozen/deferred, live sequence {final_metrics['live_sequence_status']}, live model run not performed",
         }
@@ -240,6 +245,11 @@ def run_all(
         "jlens_smoke_status": final_metrics["jlens_smoke_status"],
         "jlens_smoke_real_fit_apply": final_metrics["jlens_smoke_real_fit_apply"],
         "jlens_smoke_not_sufficient_for_JLENS_PROVED": final_metrics["jlens_smoke_not_sufficient_for_JLENS_PROVED"],
+        "jlens_hf_smoke_status": final_metrics["jlens_hf_smoke_status"],
+        "jlens_hf_smoke_real_fit_apply": final_metrics["jlens_hf_smoke_real_fit_apply"],
+        "jlens_hf_selected_labels_all_single_token": final_metrics["jlens_hf_selected_labels_all_single_token"],
+        "jlens_hf_critical_labels_all_single_token": final_metrics["jlens_hf_critical_labels_all_single_token"],
+        "jlens_hf_smoke_not_sufficient_for_JLENS_PROVED": final_metrics["jlens_hf_smoke_not_sufficient_for_JLENS_PROVED"],
         "live_model_rail_status": final_metrics["live_model_rail_status"],
         "live_adapter_call_performed": final_metrics["live_adapter_call_performed"],
         "live_model_run_performed": final_metrics["live_model_run_performed"],

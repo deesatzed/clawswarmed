@@ -24,6 +24,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 - jlens_gate: rail_status = frozen
 - jlens_runtime_readiness: readiness_status = blocked_missing_dependencies
 - jlens_smoke: smoke_status = passed
+- jlens_hf_smoke: smoke_status = passed
 - live_model_gate: rail_status = unavailable
 - live_smoke: run_status = blocked_no_live_execution
 - live_dsh_pilot: run_status = blocked_no_live_execution
@@ -65,6 +66,10 @@ Tokenizer labels verified: False
 Fit/apply smoke: passed
 Fit/apply smoke real: True
 Fit/apply smoke sufficient for proof: False
+HF smoke: passed
+HF smoke real: True
+HF selected labels single-token: True
+HF critical labels single-token: False
 
 ## Live model rail
 

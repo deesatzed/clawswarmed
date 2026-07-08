@@ -9,6 +9,7 @@
 | jlens_gate | rail_status | frozen | True | artifacts/jlens_gate_seed_42 |
 | jlens_runtime_readiness | readiness_status | blocked_missing_dependencies | True | artifacts/jlens_runtime_readiness_seed_42 |
 | jlens_smoke | smoke_status | passed | True | artifacts/jlens_smoke_seed_42 |
+| jlens_hf_smoke | smoke_status | passed | True | artifacts/jlens_hf_smoke_seed_42 |
 | live_model_gate | rail_status | unavailable | True | artifacts/live_gate_seed_42 |
 | live_smoke | run_status | blocked_no_live_execution | True | artifacts/live_smoke_seed_42 |
 | live_dsh_pilot | run_status | blocked_no_live_execution | True | artifacts/live_dsh_seed_42 |

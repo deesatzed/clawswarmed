@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "HF J-lens smoke: model hf-internal-testing/tiny-random-gpt2",
+    "2": "HF J-lens smoke: status passed; real fit/apply True",
+    "3": "HF J-lens smoke: tokenizer labels recorded; no outcome-leak probe or causal intervention performed"
+  }
+}

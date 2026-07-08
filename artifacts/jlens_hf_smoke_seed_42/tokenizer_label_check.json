@@ -1,0 +1,92 @@
+{
+  "critical_label_check": {
+    "admit": {
+      "decoded": "admit",
+      "single_token": false,
+      "token_ids": [
+        256,
+        77,
+        211
+      ]
+    },
+    "fail": {
+      "decoded": "fail",
+      "single_token": false,
+      "token_ids": [
+        70,
+        651
+      ]
+    },
+    "no": {
+      "decoded": "no",
+      "single_token": false,
+      "token_ids": [
+        78,
+        79
+      ]
+    },
+    "pass": {
+      "decoded": "pass",
+      "single_token": false,
+      "token_ids": [
+        80,
+        481
+      ]
+    },
+    "reject": {
+      "decoded": "reject",
+      "single_token": false,
+      "token_ids": [
+        202,
+        832
+      ]
+    },
+    "yes": {
+      "decoded": "yes",
+      "single_token": false,
+      "token_ids": [
+        89,
+        216
+      ]
+    }
+  },
+  "critical_labels_all_single_token": false,
+  "selected_label_check": {
+    " A": {
+      "decoded": " A",
+      "single_token": true,
+      "token_ids": [
+        240
+      ]
+    },
+    " B": {
+      "decoded": " B",
+      "single_token": true,
+      "token_ids": [
+        265
+      ]
+    },
+    " N": {
+      "decoded": " N",
+      "single_token": true,
+      "token_ids": [
+        318
+      ]
+    },
+    " Y": {
+      "decoded": " Y",
+      "single_token": true,
+      "token_ids": [
+        558
+      ]
+    },
+    " no": {
+      "decoded": " no",
+      "single_token": true,
+      "token_ids": [
+        826
+      ]
+    }
+  },
+  "selected_labels_all_single_token": true
+}

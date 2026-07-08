@@ -1,0 +1,20 @@
+{
+  "d_model": 32,
+  "hf_model_class": "GPT2LMHeadModel",
+  "jlens_file": "/Volumes/WS4TB/claswarmed/external/jlens-runtime/jacobian-lens/jlens/__init__.py",
+  "layout": "Layout(path='transformer', layers='h', norm='ln_f', embed='wte', lm_head='lm_head')",
+  "model_id": "hf-internal-testing/tiny-random-gpt2",
+  "model_license": "unknown_not_declared",
+  "model_revision": "71034c5d8bde858ff824298bdedc65515b97d2b9",
+  "model_source": "huggingface",
+  "model_type": "gpt2",
+  "n_layers": 5,
+  "numpy_version": "2.4.4",
+  "python_version": "3.13.9",
+  "runtime_python": "/Users/o2satz/miniforge3/envs/py313/bin/python3.13",
+  "source_repo": "/Volumes/WS4TB/claswarmed/external/jlens-runtime/jacobian-lens",
+  "tokenizer_class": "GPT2Tokenizer",
+  "torch_version": "2.11.0",
+  "transformers_version": "5.12.1",
+  "vocab_size": 1000
+}

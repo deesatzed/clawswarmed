@@ -41,6 +41,46 @@ def _fake_jlens_smoke_runner(runtime_python, source_repo, external_artifact_path
     }
 
 
+def _fake_jlens_hf_smoke_runner(runtime_python, source_repo, external_artifact_path, model_id, timeout_seconds):
+    return {
+        "smoke_status": "passed",
+        "model_id": model_id,
+        "model_source": "huggingface",
+        "model_license": "unknown_not_declared",
+        "model_revision": "test-revision",
+        "model_type": "gpt2",
+        "tokenizer_class": "GPT2Tokenizer",
+        "hf_model_class": "GPT2LMHeadModel",
+        "layout": "Layout(path='transformer')",
+        "n_layers": 5,
+        "d_model": 32,
+        "vocab_size": 1000,
+        "python_version": "test-python",
+        "torch_version": "test-torch",
+        "numpy_version": "test-numpy",
+        "transformers_version": "test-transformers",
+        "jlens_file": str(source_repo / "jlens" / "__init__.py"),
+        "prompt_count": 2,
+        "n_prompts": 2,
+        "source_layers": [0, 1, 2, 3],
+        "lens_path": str(external_artifact_path / "hf_lens.pt"),
+        "input_token_count": 34,
+        "lens_layers_returned": [0, 2, 3],
+        "model_logits_shape": [1, 1000],
+        "selected_label_check": {
+            " A": {"token_ids": [240], "single_token": True, "decoded": " A"},
+            " B": {"token_ids": [265], "single_token": True, "decoded": " B"},
+        },
+        "critical_label_check": {
+            "yes": {"token_ids": [89, 216], "single_token": False, "decoded": "yes"},
+        },
+        "selected_labels_all_single_token": True,
+        "critical_labels_all_single_token": False,
+        "gradient_access_confirmed": True,
+        "layer_activation_access_confirmed": True,
+    }
+
+
 class BroadcastAlphaTests(unittest.TestCase):
     def test_contracts_include_task_and_metrics_records(self):
         from broadcast_alpha.contracts import MetricsRecord, Task
@@ -505,6 +545,55 @@ class BroadcastAlphaTests(unittest.TestCase):
 
         self.assertEqual(metrics["smoke_status"], "blocked_missing_runtime")
         self.assertFalse(metrics["real_jlens_fit_apply_smoke"])
+        self.assertIn("runtime_python_missing", metrics["reason_codes"])
+
+    def test_run_jlens_hf_smoke_records_tokenizer_and_model_manifest(self):
+        from broadcast_alpha.jlens_hf_smoke import run_jlens_hf_smoke
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            source_repo = tmp_path / "jacobian-lens"
+            runtime_python = tmp_path / "python"
+            source_repo.mkdir()
+            runtime_python.write_text("# fake runtime\n")
+            result = run_jlens_hf_smoke(
+                seed=42,
+                artifact_root=tmp_path,
+                runtime_python=runtime_python,
+                source_repo=source_repo,
+                model_id="hf-internal-testing/tiny-random-gpt2",
+                runner=_fake_jlens_hf_smoke_runner,
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            manifest = json.loads((result.artifact_path / "model_manifest.json").read_text())
+            labels = json.loads((result.artifact_path / "tokenizer_label_check.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+
+        self.assertEqual(metrics["smoke_status"], "passed")
+        self.assertTrue(metrics["real_hf_jlens_fit_apply_smoke"])
+        self.assertTrue(metrics["selected_labels_all_single_token"])
+        self.assertFalse(metrics["critical_labels_all_single_token"])
+        self.assertTrue(metrics["gradient_access_confirmed"])
+        self.assertFalse(metrics["causal_intervention_performed"])
+        self.assertTrue(metrics["not_sufficient_for_JLENS_PROVED"])
+        self.assertEqual(manifest["model_revision"], "test-revision")
+        self.assertEqual(labels["selected_label_check"][" A"]["single_token"], True)
+        self.assertIn('"kind": "jlens_hf_smoke_result"', ledger)
+
+    def test_jlens_hf_smoke_blocks_missing_runtime(self):
+        from broadcast_alpha.jlens_hf_smoke import run_jlens_hf_smoke
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_jlens_hf_smoke(
+                seed=42,
+                artifact_root=Path(tmp),
+                runtime_python=Path(tmp) / "missing-python",
+                source_repo=Path(tmp) / "missing-repo",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+
+        self.assertEqual(metrics["smoke_status"], "blocked_missing_runtime")
+        self.assertFalse(metrics["real_hf_jlens_fit_apply_smoke"])
         self.assertIn("runtime_python_missing", metrics["reason_codes"])
 
     def test_live_gate_records_provider_presence_without_secret_values(self):
@@ -1721,6 +1810,7 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_build_report_summarizes_required_rails(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.jlens_hf_smoke import run_jlens_hf_smoke
         from broadcast_alpha.jlens_runtime import prepare_jlens_probe
         from broadcast_alpha.jlens_smoke import run_jlens_smoke
         from broadcast_alpha.ledger_stress import run_ledger_stress
@@ -1758,6 +1848,14 @@ class BroadcastAlphaTests(unittest.TestCase):
                 source_repo=smoke_repo,
                 runner=_fake_jlens_smoke_runner,
             )
+            run_jlens_hf_smoke(
+                seed=42,
+                artifact_root=artifact_root,
+                runtime_python=smoke_python,
+                source_repo=smoke_repo,
+                model_id="hf-internal-testing/tiny-random-gpt2",
+                runner=_fake_jlens_hf_smoke_runner,
+            )
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
             run_live_smoke(
                 seed=42,
@@ -1793,6 +1891,11 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["jlens_smoke_status"], "passed")
         self.assertTrue(metrics["jlens_smoke_real_fit_apply"])
         self.assertTrue(metrics["jlens_smoke_not_sufficient_for_JLENS_PROVED"])
+        self.assertEqual(metrics["jlens_hf_smoke_status"], "passed")
+        self.assertTrue(metrics["jlens_hf_smoke_real_fit_apply"])
+        self.assertTrue(metrics["jlens_hf_selected_labels_all_single_token"])
+        self.assertFalse(metrics["jlens_hf_critical_labels_all_single_token"])
+        self.assertTrue(metrics["jlens_hf_smoke_not_sufficient_for_JLENS_PROVED"])
         self.assertEqual(metrics["live_model_rail_status"], "unavailable")
         self.assertFalse(metrics["live_adapter_call_performed"])
         self.assertFalse(metrics["live_model_run_performed"])
@@ -1830,6 +1933,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 "jlens_gate",
                 "jlens_runtime_readiness",
                 "jlens_smoke",
+                "jlens_hf_smoke",
                 "live_model_gate",
                 "live_smoke",
                 "live_dsh_pilot",
@@ -1849,12 +1953,14 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn("J-lens rail frozen", result_card)
         self.assertIn("Runtime readiness", result_card)
         self.assertIn("Fit/apply smoke", result_card)
+        self.assertIn("HF smoke", result_card)
         self.assertIn("Live model rail", result_card)
         self.assertIn("Live sequence", result_card)
 
     def test_cli_build_report_creates_replayable_report_artifact(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.jlens_hf_smoke import run_jlens_hf_smoke
         from broadcast_alpha.jlens_runtime import prepare_jlens_probe
         from broadcast_alpha.jlens_smoke import run_jlens_smoke
         from broadcast_alpha.ledger_stress import run_ledger_stress
@@ -1890,6 +1996,14 @@ class BroadcastAlphaTests(unittest.TestCase):
                 runtime_python=smoke_python,
                 source_repo=smoke_repo,
                 runner=_fake_jlens_smoke_runner,
+            )
+            run_jlens_hf_smoke(
+                seed=42,
+                artifact_root=artifact_root,
+                runtime_python=smoke_python,
+                source_repo=smoke_repo,
+                model_id="hf-internal-testing/tiny-random-gpt2",
+                runner=_fake_jlens_hf_smoke_runner,
             )
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
             run_live_smoke(
@@ -1931,6 +2045,10 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
             self.assertEqual(metrics["jlens_runtime_readiness_status"], "blocked_missing_dependencies")
             self.assertEqual(metrics["jlens_smoke_status"], "passed")
+            self.assertEqual(metrics["jlens_hf_smoke_status"], "passed")
+            self.assertTrue(metrics["jlens_hf_smoke_real_fit_apply"])
+            self.assertTrue(metrics["jlens_hf_selected_labels_all_single_token"])
+            self.assertFalse(metrics["jlens_hf_critical_labels_all_single_token"])
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
@@ -2004,6 +2122,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["jlens_runtime_readiness_status"], "blocked_missing_dependencies")
             self.assertFalse(metrics["jlens_runtime_real_probe_runnable"])
             self.assertIn(metrics["jlens_smoke_status"], {"passed", "blocked_missing_runtime"})
+            self.assertIn(metrics["jlens_hf_smoke_status"], {"passed", "blocked_missing_runtime", "failed"})
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertFalse(metrics["live_adapter_call_performed"])
             self.assertFalse(metrics["live_model_run_performed"])
@@ -2044,6 +2163,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                     "jlens_gate",
                     "jlens_runtime_readiness",
                     "jlens_smoke",
+                    "jlens_hf_smoke",
                     "live_model_gate",
                     "live_smoke",
                     "live_dsh_pilot",
@@ -2058,6 +2178,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_sequence_seed_42" / "manifest.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_runtime_readiness_seed_42" / "model_manifest.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_smoke_seed_42" / "metrics.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_hf_smoke_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "ledger_stress_seed_42" / "receipt_kind_counts.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 
@@ -2095,6 +2216,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
+            self.assertIn(metrics["jlens_hf_smoke_status"], {"passed", "blocked_missing_runtime", "failed"})
             self.assertEqual(metrics["live_sequence_adapter_call_count_total"], 0)
             self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
             self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])

@@ -9,17 +9,20 @@ The J-lens rail is frozen for the current build state.
 The handoff referred to an Anthropic-style J-lens or global-workspace paper.
 That exact source is now verified: the public `anthropics/jacobian-lens`
 repository is the reference implementation for the linked Transformer Circuits
-paper. The app still has no configured white-box gatekeeper model with
-gradient/layer access, no fitted Jacobian lens, and no causal intervention
-control. Because of that, `broadcast_alpha` must not claim a real J-lens probe,
-prejudgment detector, or causal mechanistic result.
+paper. The app now has local external-runtime smoke artifacts proving that the
+reference implementation can fit/apply a Jacobian lens on both the reference
+tiny decoder and a tiny Hugging Face decoder. It still has no preregistered
+outcome-leak probe or causal intervention control. Because of that,
+`broadcast_alpha` must not claim a prejudgment detector or causal mechanistic
+result.
 
 The rail can reopen only when all conditions are true:
 
 1. A white-box model runtime with gradient/layer access is configured.
 2. The reference implementation is installed or cloned outside this app repo.
 3. A fit/apply smoke confirms the model, tokenizer, and lens path work.
-4. Causal intervention and sham controls are implemented before mechanistic
+4. A preregistered outcome-leak probe runs with tokenizer-verified labels.
+5. Causal intervention and sham controls are implemented before mechanistic
    claims are made.
 
 ## Implemented Artifact
@@ -61,6 +64,17 @@ This uses the cloned `anthropics/jacobian-lens` repo under
 `../external/jlens-runtime/` and runs the reference CPU-only `TinyDecoder`
 fit/apply path. It is a real Jacobian-lens smoke, but not an outcome-leak or
 causal proof.
+
+The Hugging Face smoke is:
+
+```bash
+python3 -m broadcast_alpha run-jlens-hf-smoke --seed 42 --model-id hf-internal-testing/tiny-random-gpt2
+```
+
+This uses the same external runtime, loads
+`hf-internal-testing/tiny-random-gpt2` locally, fits/applies a Jacobian lens,
+and records tokenizer label checks. Current artifact status is `passed`, but it
+is still not an outcome-leak or causal proof.
 
 ## Exact Sources Verified
 

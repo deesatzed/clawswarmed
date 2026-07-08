@@ -4,9 +4,15 @@ Date: 2026-07-08
 
 ## Current Verdict
 
-The exact J-lens source blocker is resolved. The J-lens execution rail remains
-frozen because no local white-box model runtime, fitted Jacobian lens, or causal
-intervention control has been run in this repository.
+The exact J-lens source blocker is resolved. The repository now has two local
+fit/apply smoke artifacts:
+
+- a reference `TinyDecoder` smoke from `anthropics/jacobian-lens`;
+- a tiny Hugging Face GPT-2 smoke using local model weights and tokenizer
+  checks.
+
+The J-lens execution rail remains frozen because no preregistered outcome-leak
+probe or causal intervention/sham-control run has been executed.
 
 ## Verified Exact Sources
 
@@ -32,7 +38,8 @@ Before any real probe is claimed:
 4. Verify tokenizer labels for `pass`, `fail`, `yes`, `no`, `admit`, and
    `reject` using the selected model tokenizer.
 5. Run the smallest fit/apply smoke and write reproducible artifacts.
-6. Add intervention and sham-control evidence before claiming causal
+6. Run a preregistered outcome-leak probe with tokenizer-verified labels.
+7. Add intervention and sham-control evidence before claiming causal
    prejudgment.
 
 ## Runtime Readiness Command
@@ -53,8 +60,9 @@ This writes:
 - `artifacts/jlens_runtime_readiness_seed_42/replay/contexts.json`
 
 Current checked-in readiness status is `blocked_missing_dependencies` because
-this app runtime does not currently expose `torch`, `transformers`, or `jlens`,
-and the verdict labels have not been checked with the selected tokenizer.
+the default app runtime does not expose `torch`, `transformers`, or `jlens`.
+The external J-lens runtime below is intentionally kept outside the default app
+install path.
 
 Black-box model sources such as OpenRouter, OpenAI, Claude, Gemini, and Grok are
 rejected for real J-lens execution by this readiness gate.
@@ -91,8 +99,47 @@ gradient/layer access.
 This smoke is still not `JLENS_PROVED`: it is not a Hugging Face gatekeeper
 model, not an outcome-leak probe, and not a causal intervention.
 
+## Hugging Face Fit/Apply Smoke
+
+The external runtime path is the same:
+
+- `../external/jlens-runtime/jacobian-lens`
+- `../external/jlens-runtime/.venv`
+
+Run:
+
+```bash
+python3 -m broadcast_alpha run-jlens-hf-smoke --seed 42 --model-id hf-internal-testing/tiny-random-gpt2
+```
+
+This writes:
+
+- `artifacts/jlens_hf_smoke_seed_42/metrics.json`
+- `artifacts/jlens_hf_smoke_seed_42/model_manifest.json`
+- `artifacts/jlens_hf_smoke_seed_42/tokenizer_label_check.json`
+- `artifacts/jlens_hf_smoke_seed_42/smoke_payload.json`
+- `artifacts/jlens_hf_smoke_seed_42/result_card.md`
+- `artifacts/jlens_hf_smoke_seed_42/ledger.jsonl`
+- `artifacts/jlens_hf_smoke_seed_42/replay/contexts.json`
+
+Current checked-in HF smoke status is `passed` for
+`hf-internal-testing/tiny-random-gpt2` at model revision
+`71034c5d8bde858ff824298bdedc65515b97d2b9`. The artifact confirms local
+Hugging Face model loading, tokenizer access, gradient/layer access, and
+`jlens.fit()` plus `JacobianLens.apply()`.
+
+Tokenizer result for this tiny model:
+
+- selected probe labels such as `" A"` and `" B"` are single tokens;
+- the earlier human-readable labels `yes`, `no`, `admit`, `reject`, `pass`,
+  and `fail` are not all single tokens.
+
+This is still not `JLENS_PROVED`: it is not a preregistered outcome-leak probe,
+does not test early verdict-direction activation, and performs no causal
+intervention or sham control.
+
 ## Still Frozen Records
 
-- `JLENS-FREEZE-001` remains valid as a runtime/model/intervention defer.
+- `JLENS-FREEZE-001` remains valid as an outcome-leak/intervention defer.
 - `bridge_rail` and `mechanistic_admission` remain deferred while J-lens is
   frozen or only manually inspected.

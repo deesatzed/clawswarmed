@@ -1,0 +1,131 @@
+{
+  "critical_label_check": {
+    "admit": {
+      "decoded": "admit",
+      "single_token": false,
+      "token_ids": [
+        256,
+        77,
+        211
+      ]
+    },
+    "fail": {
+      "decoded": "fail",
+      "single_token": false,
+      "token_ids": [
+        70,
+        651
+      ]
+    },
+    "no": {
+      "decoded": "no",
+      "single_token": false,
+      "token_ids": [
+        78,
+        79
+      ]
+    },
+    "pass": {
+      "decoded": "pass",
+      "single_token": false,
+      "token_ids": [
+        80,
+        481
+      ]
+    },
+    "reject": {
+      "decoded": "reject",
+      "single_token": false,
+      "token_ids": [
+        202,
+        832
+      ]
+    },
+    "yes": {
+      "decoded": "yes",
+      "single_token": false,
+      "token_ids": [
+        89,
+        216
+      ]
+    }
+  },
+  "critical_labels_all_single_token": false,
+  "d_model": 32,
+  "gradient_access_confirmed": true,
+  "hf_model_class": "GPT2LMHeadModel",
+  "input_token_count": 34,
+  "jlens_file": "/Volumes/WS4TB/claswarmed/external/jlens-runtime/jacobian-lens/jlens/__init__.py",
+  "layer_activation_access_confirmed": true,
+  "layout": "Layout(path='transformer', layers='h', norm='ln_f', embed='wte', lm_head='lm_head')",
+  "lens_layers_returned": [
+    0,
+    2,
+    3
+  ],
+  "lens_path": "/Volumes/WS4TB/claswarmed/claswarmed-app/artifacts/run_all_seed_42/source_artifacts/jlens_hf_smoke_seed_42/external/hf_lens.pt",
+  "model_id": "hf-internal-testing/tiny-random-gpt2",
+  "model_license": "unknown_not_declared",
+  "model_logits_shape": [
+    1,
+    1000
+  ],
+  "model_revision": "71034c5d8bde858ff824298bdedc65515b97d2b9",
+  "model_source": "huggingface",
+  "model_type": "gpt2",
+  "n_layers": 5,
+  "n_prompts": 2,
+  "numpy_version": "2.4.4",
+  "prompt_count": 2,
+  "python_version": "3.13.9",
+  "selected_label_check": {
+    " A": {
+      "decoded": " A",
+      "single_token": true,
+      "token_ids": [
+        240
+      ]
+    },
+    " B": {
+      "decoded": " B",
+      "single_token": true,
+      "token_ids": [
+        265
+      ]
+    },
+    " N": {
+      "decoded": " N",
+      "single_token": true,
+      "token_ids": [
+        318
+      ]
+    },
+    " Y": {
+      "decoded": " Y",
+      "single_token": true,
+      "token_ids": [
+        558
+      ]
+    },
+    " no": {
+      "decoded": " no",
+      "single_token": true,
+      "token_ids": [
+        826
+      ]
+    }
+  },
+  "selected_labels_all_single_token": true,
+  "smoke_status": "passed",
+  "source_layers": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "stderr_tail": "\nLoading weights:   0%|          | 0/64 [00:00<?, ?it/s]\nLoading weights: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 64/64 [00:00<00:00, 26294.00it/s]\n",
+  "tokenizer_class": "GPT2Tokenizer",
+  "torch_version": "2.11.0",
+  "transformers_version": "5.12.1",
+  "vocab_size": 1000
+}

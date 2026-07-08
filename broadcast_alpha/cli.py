@@ -5,6 +5,7 @@ from pathlib import Path
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .goal_audit import audit_goal
 from .jlens import run_jlens_gate
+from .jlens_hf_smoke import run_jlens_hf_smoke
 from .jlens_runtime import prepare_jlens_probe
 from .jlens_smoke import run_jlens_smoke
 from .ledger import Ledger
@@ -70,6 +71,14 @@ def build_parser() -> argparse.ArgumentParser:
     jlens_smoke.add_argument("--runtime-python", default="../external/jlens-runtime/.venv/bin/python")
     jlens_smoke.add_argument("--source-repo", default="../external/jlens-runtime/jacobian-lens")
     jlens_smoke.add_argument("--timeout-seconds", type=int, default=120)
+
+    jlens_hf_smoke = sub.add_parser("run-jlens-hf-smoke", help="Run a tiny Hugging Face model J-lens fit/apply smoke")
+    jlens_hf_smoke.add_argument("--seed", type=int, default=42)
+    jlens_hf_smoke.add_argument("--artifact-root", default="artifacts")
+    jlens_hf_smoke.add_argument("--runtime-python", default="../external/jlens-runtime/.venv/bin/python")
+    jlens_hf_smoke.add_argument("--source-repo", default="../external/jlens-runtime/jacobian-lens")
+    jlens_hf_smoke.add_argument("--model-id", default="hf-internal-testing/tiny-random-gpt2")
+    jlens_hf_smoke.add_argument("--timeout-seconds", type=int, default=180)
 
     live = sub.add_parser("run-live-gate", help="Inspect live model provider readiness without API calls")
     live.add_argument("--seed", type=int, default=42)
@@ -229,6 +238,18 @@ def main(argv: list[str] | None = None) -> int:
             artifact_root=Path(args.artifact_root),
             runtime_python=Path(args.runtime_python),
             source_repo=Path(args.source_repo),
+            timeout_seconds=args.timeout_seconds,
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-jlens-hf-smoke":
+        result = run_jlens_hf_smoke(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            runtime_python=Path(args.runtime_python),
+            source_repo=Path(args.source_repo),
+            model_id=args.model_id,
             timeout_seconds=args.timeout_seconds,
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})

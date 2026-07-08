@@ -1,0 +1,41 @@
+{
+  "causal_intervention_performed": false,
+  "critical_labels_all_single_token": false,
+  "d_model": 32,
+  "gradient_access_confirmed": true,
+  "input_token_count": 34,
+  "layer_activation_access_confirmed": true,
+  "ledger_path": "artifacts/jlens_hf_smoke_seed_42/ledger.jsonl",
+  "lens_layers_returned": [
+    0,
+    2,
+    3
+  ],
+  "model_id": "hf-internal-testing/tiny-random-gpt2",
+  "model_license": "unknown_not_declared",
+  "model_manifest_path": "artifacts/jlens_hf_smoke_seed_42/model_manifest.json",
+  "model_revision": "71034c5d8bde858ff824298bdedc65515b97d2b9",
+  "model_source": "huggingface",
+  "n_layers": 5,
+  "n_prompts": 2,
+  "not_causal": true,
+  "not_sufficient_for_JLENS_PROVED": true,
+  "outcome_leak_probe_performed": false,
+  "prompt_count": 2,
+  "real_hf_jlens_fit_apply_smoke": true,
+  "reason_codes": [],
+  "replay_bundle_path": "artifacts/jlens_hf_smoke_seed_42/replay",
+  "result_card_path": "artifacts/jlens_hf_smoke_seed_42/result_card.md",
+  "run_id": "jlens_hf_smoke_seed_42",
+  "seed": 42,
+  "selected_labels_all_single_token": true,
+  "smoke_payload_path": "artifacts/jlens_hf_smoke_seed_42/smoke_payload.json",
+  "smoke_status": "passed",
+  "source_layers": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "tokenizer_label_check_path": "artifacts/jlens_hf_smoke_seed_42/tokenizer_label_check.json"
+}
