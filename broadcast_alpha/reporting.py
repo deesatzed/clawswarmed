@@ -100,6 +100,10 @@ Current evaluator: {metrics['current_evaluator_id']}
 
 J-lens rail frozen: {metrics['jlens_rail_status'] == 'frozen'}
 Failure ledger entry: {metrics['jlens_failure_ledger_entry_id']}
+Runtime readiness: {metrics['jlens_runtime_readiness_status']}
+Runtime reason codes: {metrics['jlens_runtime_reason_codes']}
+White-box model available: {metrics['jlens_runtime_white_box_model_available']}
+Tokenizer labels verified: {metrics['jlens_runtime_tokenizer_labels_all_single_token']}
 
 ## Live model rail
 
@@ -150,6 +154,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     ledger_stress_path = artifact_root / "ledger_stress_seed_42"
     rqgm_path = artifact_root / "rqgm_seed_42"
     jlens_path = artifact_root / "jlens_gate_seed_42"
+    jlens_runtime_path = artifact_root / "jlens_runtime_readiness_seed_42"
     live_path = artifact_root / "live_gate_seed_42"
     live_smoke_path = artifact_root / "live_smoke_seed_42"
     live_dsh_path = artifact_root / "live_dsh_seed_42"
@@ -172,6 +177,19 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         ledger_stress_ledger_verified = False
     rqgm_metrics = _read_json(rqgm_path / "metrics.json")
     jlens_metrics = _read_json(jlens_path / "metrics.json")
+    if (jlens_runtime_path / "metrics.json").exists():
+        jlens_runtime_metrics = _read_json(jlens_runtime_path / "metrics.json")
+        jlens_runtime_ledger_verified = _verify_ledger(jlens_runtime_path)
+    else:
+        jlens_runtime_metrics = {
+            "readiness_status": "not_run",
+            "white_box_model_available": False,
+            "gradient_access_confirmed": False,
+            "real_probe_runnable": False,
+            "tokenizer_labels_all_single_token": False,
+            "reason_codes": ["jlens_runtime_readiness_artifact_missing"],
+        }
+        jlens_runtime_ledger_verified = False
     if (live_path / "metrics.json").exists():
         live_metrics = _read_json(live_path / "metrics.json")
         live_ledger_verified = _verify_ledger(live_path)
@@ -237,6 +255,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "seed_detectability": _verify_ledger(dsh_path),
         "rqgm_epoch": _verify_ledger(rqgm_path),
         "jlens_gate": _verify_ledger(jlens_path),
+        "jlens_runtime_readiness": jlens_runtime_ledger_verified,
         "live_model_gate": live_ledger_verified,
         "live_smoke": live_smoke_ledger_verified,
         "live_dsh_pilot": live_dsh_ledger_verified,
@@ -282,6 +301,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "primary_value": jlens_metrics["rail_status"],
             "ledger_verified": ledger_verified["jlens_gate"],
             "evidence_path": str(jlens_path / "metrics.json"),
+        },
+        {
+            "section": "jlens_runtime_readiness",
+            "artifact_path": str(jlens_runtime_path),
+            "primary_metric": "readiness_status",
+            "primary_value": jlens_runtime_metrics["readiness_status"],
+            "ledger_verified": ledger_verified["jlens_runtime_readiness"],
+            "evidence_path": str(jlens_runtime_path / "metrics.json"),
         },
         {
             "section": "live_model_gate",
@@ -518,6 +545,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "current_evaluator_id": rqgm_metrics["current_evaluator_id"],
         "jlens_rail_status": jlens_metrics["rail_status"],
         "jlens_failure_ledger_entry_id": jlens_metrics["failure_ledger_entry_id"],
+        "jlens_runtime_readiness_status": jlens_runtime_metrics["readiness_status"],
+        "jlens_runtime_white_box_model_available": jlens_runtime_metrics["white_box_model_available"],
+        "jlens_runtime_gradient_access_confirmed": jlens_runtime_metrics["gradient_access_confirmed"],
+        "jlens_runtime_real_probe_runnable": jlens_runtime_metrics["real_probe_runnable"],
+        "jlens_runtime_tokenizer_labels_all_single_token": jlens_runtime_metrics[
+            "tokenizer_labels_all_single_token"
+        ],
+        "jlens_runtime_reason_codes": jlens_runtime_metrics["reason_codes"],
         "live_model_rail_status": live_metrics["rail_status"],
         "live_adapter_call_performed": live_metrics["adapter_call_performed"],
         "live_model_run_performed": live_metrics["live_model_run_performed"],

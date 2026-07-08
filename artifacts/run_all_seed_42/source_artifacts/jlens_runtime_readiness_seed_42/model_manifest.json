@@ -1,0 +1,35 @@
+{
+  "black_box_provider_rejected": false,
+  "dependency_preflight_passed": false,
+  "dtype": "float32",
+  "gradient_access_confirmed": false,
+  "hardware": {
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6"
+  },
+  "jacobian_lens_reference": {
+    "commit_sha": "581d398613e5602a5af361e1c34d3a92ea82ba8e",
+    "date_accessed": "2026-07-08",
+    "installed_module_available": false,
+    "url": "https://github.com/anthropics/jacobian-lens"
+  },
+  "layer_activation_access_confirmed": false,
+  "model_id": "hf-internal-testing/tiny-random-gpt2",
+  "model_license": "unknown_not_yet_verified",
+  "model_source": "huggingface",
+  "module_probe": {
+    "jlens": false,
+    "torch": false,
+    "transformers": false
+  },
+  "precision": "full",
+  "runtime_requirements": {
+    "black_box_api_models_allowed": false,
+    "requires_fitted_jacobian_lens": true,
+    "requires_gradient_access": true,
+    "requires_layer_activation_access": true,
+    "requires_open_weight_or_white_box_model": true
+  },
+  "tokenizer": "not_loaded",
+  "weight_source": "huggingface"
+}

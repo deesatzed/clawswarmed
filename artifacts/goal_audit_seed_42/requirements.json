@@ -136,14 +136,21 @@
       }
     },
     {
-      "evidence": "J-lens rail frozen with JLENS-FREEZE-001 because exact source/model access is unavailable.",
+      "evidence": "J-lens rail frozen with JLENS-FREEZE-001 because the exact source is verified but local white-box runtime/model/intervention access is unavailable.",
       "evidence_path": "FAILURE_LEDGER.md",
       "id": "jlens_or_clean_defer",
       "requirement": "J-lens rail either produces evidence or has a clean failure/defer record.",
       "status": "deferred_with_record",
       "value": {
         "failure_ledger_entry_id": "JLENS-FREEZE-001",
-        "jlens_rail_status": "frozen"
+        "jlens_rail_status": "frozen",
+        "runtime_readiness_status": "blocked_missing_dependencies",
+        "runtime_reason_codes": [
+          "torch_missing",
+          "transformers_missing",
+          "jacobian_lens_reference_missing",
+          "tokenizer_label_check_incomplete"
+        ]
       }
     },
     {

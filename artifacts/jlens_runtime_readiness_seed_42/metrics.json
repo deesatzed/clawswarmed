@@ -1,0 +1,36 @@
+{
+  "black_box_provider_rejected": false,
+  "dependency_preflight_passed": false,
+  "evidence_class": "runtime_readiness",
+  "gradient_access_confirmed": false,
+  "layer_activation_access_confirmed": false,
+  "ledger_path": "artifacts/jlens_runtime_readiness_seed_42/ledger.jsonl",
+  "model_id": "hf-internal-testing/tiny-random-gpt2",
+  "model_manifest_path": "artifacts/jlens_runtime_readiness_seed_42/model_manifest.json",
+  "model_source": "huggingface",
+  "module_probe": {
+    "jlens": false,
+    "torch": false,
+    "transformers": false
+  },
+  "next_required_step": "Install missing dependencies, verify tokenizer labels with the selected model, then run a fit/apply smoke.",
+  "not_activation_measurement": true,
+  "not_causal": true,
+  "not_sufficient_for_JLENS_PROVED": true,
+  "readiness_status": "blocked_missing_dependencies",
+  "ready_for_fit_apply_smoke": false,
+  "real_probe_runnable": false,
+  "reason_codes": [
+    "torch_missing",
+    "transformers_missing",
+    "jacobian_lens_reference_missing",
+    "tokenizer_label_check_incomplete"
+  ],
+  "replay_bundle_path": "artifacts/jlens_runtime_readiness_seed_42/replay",
+  "result_card_path": "artifacts/jlens_runtime_readiness_seed_42/result_card.md",
+  "run_id": "jlens_runtime_readiness_seed_42",
+  "seed": 42,
+  "tokenizer_label_check_path": "artifacts/jlens_runtime_readiness_seed_42/tokenizer_label_check.json",
+  "tokenizer_labels_all_single_token": false,
+  "white_box_model_available": false
+}

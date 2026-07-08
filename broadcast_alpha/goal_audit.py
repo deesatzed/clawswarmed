@@ -369,12 +369,14 @@ def audit_goal(
             "J-lens rail either produces evidence or has a clean failure/defer record.",
             "deferred_with_record" if jlens_frozen else "incomplete",
             repo_root / "FAILURE_LEDGER.md",
-            "J-lens rail frozen with JLENS-FREEZE-001 because exact source/model access is unavailable."
+            "J-lens rail frozen with JLENS-FREEZE-001 because the exact source is verified but local white-box runtime/model/intervention access is unavailable."
             if jlens_frozen
             else "J-lens evidence or clean defer record is missing.",
             {
                 "jlens_rail_status": final_metrics.get("jlens_rail_status"),
                 "failure_ledger_entry_id": final_metrics.get("jlens_failure_ledger_entry_id"),
+                "runtime_readiness_status": final_metrics.get("jlens_runtime_readiness_status"),
+                "runtime_reason_codes": final_metrics.get("jlens_runtime_reason_codes"),
             },
         ),
         _item(

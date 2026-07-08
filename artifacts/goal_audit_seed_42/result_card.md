@@ -30,7 +30,7 @@ Total requirements audited: 14
 | rqgm_epoch_trajectory | proved | Epoch count=5 replacement count=3. |
 | unattended_run_all_bundle | proved | run-all status is complete_with_deferred_jlens and all child ledgers verify. |
 | live_sequence_record | proved | Live sequence status=blocked_before_smoke adapter calls=0. |
-| jlens_or_clean_defer | deferred_with_record | J-lens rail frozen with JLENS-FREEZE-001 because exact source/model access is unavailable. |
+| jlens_or_clean_defer | deferred_with_record | J-lens rail frozen with JLENS-FREEZE-001 because the exact source is verified but local white-box runtime/model/intervention access is unavailable. |
 | bridge_rail | deferred_with_record | Bridge rail deferred because the J-lens rail is frozen. |
 | mechanistic_admission | deferred_with_record | Mechanistic admission deferred because the J-lens rail is frozen. |
 | live_model_backed_execution | proved | Live model-backed execution recorded. |

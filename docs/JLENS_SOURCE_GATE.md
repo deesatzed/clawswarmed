@@ -41,6 +41,16 @@ This writes:
 The expected rail status is `frozen`, with failure ledger entry
 `JLENS-FREEZE-001`.
 
+The local runtime-readiness preview is:
+
+```bash
+python3 -m broadcast_alpha prepare-jlens-probe --seed 42 --model-id hf-internal-testing/tiny-random-gpt2 --model-source huggingface
+```
+
+It does not load model weights or run J-lens. It records whether the local
+Python environment has the required white-box dependencies and whether verdict
+labels have been checked with the selected tokenizer.
+
 ## Exact Sources Verified
 
 - `https://github.com/anthropics/jacobian-lens`:

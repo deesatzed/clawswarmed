@@ -23,6 +23,7 @@
       "status": "proved_for_current_artifacts",
       "value": {
         "jlens_gate": true,
+        "jlens_runtime_readiness": true,
         "ledger_stress": true,
         "live_dsh_pilot": true,
         "live_model_gate": true,

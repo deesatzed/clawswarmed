@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "J-lens runtime readiness: model hf-internal-testing/tiny-random-gpt2 from huggingface",
+    "2": "J-lens runtime readiness: blocked_missing_dependencies; real probe runnable False",
+    "3": "J-lens runtime readiness: no model weights loaded and no activation measurement performed"
+  }
+}

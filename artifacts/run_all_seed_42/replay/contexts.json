@@ -1,6 +1,6 @@
 {
   "agent_1": {
-    "1": "unattended bundle: generated ledger stress, synthetic, DSH, RQGM, J-lens gate, live model gate, live smoke, live DSH pilot, live sequence, and final report artifacts",
+    "1": "unattended bundle: generated ledger stress, synthetic, DSH, RQGM, J-lens gate, J-lens runtime readiness, live model gate, live smoke, live DSH pilot, live sequence, and final report artifacts",
     "2": "unattended bundle: GLASSGATE_LIFT 0.4 with seed adversarial AUC 0.5",
     "3": "unattended bundle: final report ready, all child ledgers verified, J-lens rail frozen/deferred, live sequence blocked_before_smoke, live model run not performed"
   }

@@ -1,0 +1,31 @@
+{
+  "all_labels_confirmed_single_token": false,
+  "check_method": "whitespace_shape_only_pending_runtime_tokenizer",
+  "labels": {
+    "admit": {
+      "single_token": null,
+      "whitespace_single_token_shape": true
+    },
+    "fail": {
+      "single_token": null,
+      "whitespace_single_token_shape": true
+    },
+    "no": {
+      "single_token": null,
+      "whitespace_single_token_shape": true
+    },
+    "pass": {
+      "single_token": null,
+      "whitespace_single_token_shape": true
+    },
+    "reject": {
+      "single_token": null,
+      "whitespace_single_token_shape": true
+    },
+    "yes": {
+      "single_token": null,
+      "whitespace_single_token_shape": true
+    }
+  },
+  "requires_selected_tokenizer": true
+}

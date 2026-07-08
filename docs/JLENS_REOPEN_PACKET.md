@@ -35,6 +35,30 @@ Before any real probe is claimed:
 6. Add intervention and sham-control evidence before claiming causal
    prejudgment.
 
+## Runtime Readiness Command
+
+Run:
+
+```bash
+python3 -m broadcast_alpha prepare-jlens-probe --seed 42 --model-id hf-internal-testing/tiny-random-gpt2 --model-source huggingface
+```
+
+This writes:
+
+- `artifacts/jlens_runtime_readiness_seed_42/metrics.json`
+- `artifacts/jlens_runtime_readiness_seed_42/model_manifest.json`
+- `artifacts/jlens_runtime_readiness_seed_42/tokenizer_label_check.json`
+- `artifacts/jlens_runtime_readiness_seed_42/result_card.md`
+- `artifacts/jlens_runtime_readiness_seed_42/ledger.jsonl`
+- `artifacts/jlens_runtime_readiness_seed_42/replay/contexts.json`
+
+Current checked-in readiness status is `blocked_missing_dependencies` because
+this app runtime does not currently expose `torch`, `transformers`, or `jlens`,
+and the verdict labels have not been checked with the selected tokenizer.
+
+Black-box model sources such as OpenRouter, OpenAI, Claude, Gemini, and Grok are
+rejected for real J-lens execution by this readiness gate.
+
 ## Still Frozen Records
 
 - `JLENS-FREEZE-001` remains valid as a runtime/model/intervention defer.

@@ -347,6 +347,99 @@ class BroadcastAlphaTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             verify_single_token_labels(["yes", "not sure"])
 
+    def test_prepare_jlens_probe_rejects_black_box_providers(self):
+        from broadcast_alpha.jlens_runtime import prepare_jlens_probe
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = prepare_jlens_probe(
+                seed=42,
+                artifact_root=Path(tmp),
+                model_id="openai/gpt-4.1",
+                model_source="openrouter",
+                require_jacobian_lens=False,
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            model_manifest = json.loads((result.artifact_path / "model_manifest.json").read_text())
+            ledger = (result.artifact_path / "ledger.jsonl").read_text()
+
+        self.assertEqual(metrics["readiness_status"], "blocked_black_box_provider")
+        self.assertFalse(metrics["white_box_model_available"])
+        self.assertFalse(metrics["gradient_access_confirmed"])
+        self.assertFalse(metrics["real_probe_runnable"])
+        self.assertIn("black_box_provider_rejected", metrics["reason_codes"])
+        self.assertTrue(model_manifest["black_box_provider_rejected"])
+        self.assertIn('"kind": "jlens_runtime_readiness"', ledger)
+
+    def test_prepare_jlens_probe_records_missing_runtime_dependencies(self):
+        from broadcast_alpha.jlens_runtime import prepare_jlens_probe
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = prepare_jlens_probe(
+                seed=42,
+                artifact_root=Path(tmp),
+                model_id="hf-internal-testing/tiny-random-gpt2",
+                model_source="huggingface",
+                require_jacobian_lens=True,
+                module_probe={
+                    "torch": False,
+                    "transformers": False,
+                    "jlens": False,
+                },
+                tokenizer_single_token={
+                    "yes": True,
+                    "no": True,
+                    "admit": False,
+                    "reject": False,
+                    "pass": True,
+                    "fail": True,
+                },
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            model_manifest = json.loads((result.artifact_path / "model_manifest.json").read_text())
+            labels = json.loads((result.artifact_path / "tokenizer_label_check.json").read_text())
+            result_card = (result.artifact_path / "result_card.md").read_text()
+
+        self.assertEqual(metrics["readiness_status"], "blocked_missing_dependencies")
+        self.assertEqual(metrics["model_source"], "huggingface")
+        self.assertFalse(metrics["white_box_model_available"])
+        self.assertFalse(metrics["gradient_access_confirmed"])
+        self.assertFalse(metrics["real_probe_runnable"])
+        self.assertIn("torch_missing", metrics["reason_codes"])
+        self.assertIn("transformers_missing", metrics["reason_codes"])
+        self.assertIn("jacobian_lens_reference_missing", metrics["reason_codes"])
+        self.assertEqual(labels["labels"]["admit"]["single_token"], False)
+        self.assertEqual(model_manifest["runtime_requirements"]["requires_gradient_access"], True)
+        self.assertIn("not a real J-lens probe", result_card)
+
+    def test_cli_prepare_jlens_probe_creates_readiness_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "prepare-jlens-probe",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    tmp,
+                    "--model-id",
+                    "hf-internal-testing/tiny-random-gpt2",
+                    "--model-source",
+                    "huggingface",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+
+            self.assertTrue((artifact_path / "metrics.json").exists())
+            self.assertTrue((artifact_path / "model_manifest.json").exists())
+            self.assertTrue((artifact_path / "tokenizer_label_check.json").exists())
+
     def test_live_gate_records_provider_presence_without_secret_values(self):
         from broadcast_alpha.live_gate import run_live_gate
 
@@ -1561,6 +1654,7 @@ class BroadcastAlphaTests(unittest.TestCase):
     def test_build_report_summarizes_required_rails(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.jlens_runtime import prepare_jlens_probe
         from broadcast_alpha.ledger_stress import run_ledger_stress
         from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
@@ -1584,6 +1678,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 artifact_root=artifact_root,
             )
             run_jlens_gate(seed=42, artifact_root=artifact_root)
+            prepare_jlens_probe(seed=42, artifact_root=artifact_root)
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
             run_live_smoke(
                 seed=42,
@@ -1611,6 +1706,11 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertFalse(metrics["seed_camouflage_failed"])
         self.assertEqual(metrics["epoch_count"], 5)
         self.assertEqual(metrics["jlens_rail_status"], "frozen")
+        self.assertEqual(metrics["jlens_runtime_readiness_status"], "blocked_missing_dependencies")
+        self.assertFalse(metrics["jlens_runtime_white_box_model_available"])
+        self.assertFalse(metrics["jlens_runtime_gradient_access_confirmed"])
+        self.assertFalse(metrics["jlens_runtime_real_probe_runnable"])
+        self.assertIn("torch_missing", metrics["jlens_runtime_reason_codes"])
         self.assertEqual(metrics["live_model_rail_status"], "unavailable")
         self.assertFalse(metrics["live_adapter_call_performed"])
         self.assertFalse(metrics["live_model_run_performed"])
@@ -1646,6 +1746,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 "seed_detectability",
                 "rqgm_epoch",
                 "jlens_gate",
+                "jlens_runtime_readiness",
                 "live_model_gate",
                 "live_smoke",
                 "live_dsh_pilot",
@@ -1663,12 +1764,14 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn("Candidate ablation rate", result_card)
         self.assertIn("Adversarial token AUC", result_card)
         self.assertIn("J-lens rail frozen", result_card)
+        self.assertIn("Runtime readiness", result_card)
         self.assertIn("Live model rail", result_card)
         self.assertIn("Live sequence", result_card)
 
     def test_cli_build_report_creates_replayable_report_artifact(self):
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
+        from broadcast_alpha.jlens_runtime import prepare_jlens_probe
         from broadcast_alpha.ledger_stress import run_ledger_stress
         from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
@@ -1691,6 +1794,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 artifact_root=artifact_root,
             )
             run_jlens_gate(seed=42, artifact_root=artifact_root)
+            prepare_jlens_probe(seed=42, artifact_root=artifact_root)
             run_live_gate(seed=42, artifact_root=artifact_root, env={})
             run_live_smoke(
                 seed=42,
@@ -1729,6 +1833,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "result_table.md").exists())
             self.assertTrue((artifact_path / "claim_matrix.json").exists())
             self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
+            self.assertEqual(metrics["jlens_runtime_readiness_status"], "blocked_missing_dependencies")
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
@@ -1799,6 +1904,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["glassgate_lift"], 0.4)
             self.assertEqual(metrics["seed_adversarial_auc"], 0.5)
             self.assertEqual(metrics["jlens_rail_status"], "frozen")
+            self.assertEqual(metrics["jlens_runtime_readiness_status"], "blocked_missing_dependencies")
+            self.assertFalse(metrics["jlens_runtime_real_probe_runnable"])
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertFalse(metrics["live_adapter_call_performed"])
             self.assertFalse(metrics["live_model_run_performed"])
@@ -1837,6 +1944,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                     "dsh",
                     "rqgm",
                     "jlens_gate",
+                    "jlens_runtime_readiness",
                     "live_model_gate",
                     "live_smoke",
                     "live_dsh_pilot",
@@ -1849,6 +1957,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_smoke_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_dsh_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_sequence_seed_42" / "manifest.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_runtime_readiness_seed_42" / "model_manifest.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "ledger_stress_seed_42" / "receipt_kind_counts.json").exists())
             self.assertTrue((result.artifact_path / "final_report" / "claim_matrix.json").exists())
 

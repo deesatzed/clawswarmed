@@ -2,41 +2,43 @@
 
 ## Task Being Attempted
 
-Reopen the J-lens source gate without falsely claiming a runnable white-box
-probe.
+Add the first local white-box J-lens runtime-readiness gate without falsely
+claiming a runnable probe.
 
 ## Actual User Goal
 
-Turn the old `JLENS-FREEZE-001` source blocker into an updated,
-evidence-backed state: exact source verified, runtime/model/intervention still
-frozen, with a novice-reproducible prompt packet and manual sanity template
-ready for the next white-box step.
+Move beyond source verification by adding a `prepare-jlens-probe` command that
+records whether the selected model source is white-box eligible, whether local
+runtime dependencies exist, and whether verdict labels have been checked with a
+selected tokenizer.
 
 ## Files Expected To Change
 
 | File | Expected Change | Risk |
 |---|---|---|
-| `tests/test_broadcast_alpha.py` | Add tests for exact source manifest, checked-in vignette packet, and manual sanity template. | Low |
-| `broadcast_alpha/jlens.py` | Update source manifest and freeze reason from source-missing to source-verified/runtime-unavailable. | Low |
-| `prereg/jlens_vignette_packet_01.json` | Add paired outcome-withheld/revealed prompts and label policy. | Low |
-| `docs/JLENS_SOURCE_GATE.md`, `docs/JLENS_REOPEN_PACKET.md`, `docs/JLENS_MANUAL_SANITY_TEMPLATE.md` | Update the source gate and record the manual workflow. | Low |
-| `FAILURE_LEDGER.md`, `prereg/PREREG_LEAK-01.md` | Preserve freeze history while recording source unblock. | Low |
+| `tests/test_broadcast_alpha.py` | Add tests for black-box rejection, missing dependency recording, CLI artifact creation, and report/run-all integration. | Low |
+| `broadcast_alpha/jlens_runtime.py` | New stdlib-only runtime-readiness artifact writer. | Low |
+| `broadcast_alpha/cli.py` | Add `prepare-jlens-probe`. | Low |
+| `broadcast_alpha/reporting.py`, `broadcast_alpha/orchestrator.py`, `broadcast_alpha/goal_audit.py` | Surface runtime readiness in report, run-all, and audit evidence. | Medium |
+| `docs/JLENS_SOURCE_GATE.md`, `docs/JLENS_REOPEN_PACKET.md` | Document the runtime-readiness command and current blocker. | Low |
 | Workspace `DECISIONS.md`, `PROGRESS.md`, `GOAL_J_LENS.md` | Record current status and next gate. | Low |
 
 ## Existing Patterns To Follow
 
 - Existing J-lens gate writes `metrics.json`, `sources.json`,
   `result_card.md`, `ledger.jsonl`, and replay contexts.
+- Existing readiness/live commands are no-spend/no-network until explicitly
+  authorized; this command follows the same artifact pattern.
 - Existing audit logic treats frozen J-lens as a valid defer, not completion.
 - Failure history stays in `FAILURE_LEDGER.md`; amendments do not erase the
   original freeze.
 
 ## Assumptions
 
-- The source commit SHA was verified with `git ls-remote` on 2026-07-08.
-- Manual Neuronpedia checks may be useful but are not formal proof.
-- No large model download or third-party source vendoring should happen in this
-  slice.
+- `hf-internal-testing/tiny-random-gpt2` is a placeholder candidate for the
+  first tiny Hugging Face smoke, not a proven final gatekeeper.
+- Dependency readiness is checked by import availability only in this slice.
+- No large model download or third-party source vendoring should happen here.
 
 ## Non-Goals For This Pass
 
@@ -47,23 +49,21 @@ ready for the next white-box step.
 
 ## Step-by-Step Plan
 
-1. Add failing tests for source manifest and new docs/artifacts.
-2. Update `broadcast_alpha.jlens` manifest and result card.
-3. Add the vignette packet and manual sanity template.
-4. Update docs, failure ledger, prereg, and workspace truth docs.
-5. Regenerate the checked-in J-lens gate artifact.
+1. Add failing tests for runtime readiness and CLI artifact creation.
+2. Implement stdlib-only readiness module and CLI command.
+3. Integrate readiness status into report, run-all, and audit.
+4. Update docs and workspace truth files.
+5. Regenerate the checked-in runtime, report, run-all, and audit artifacts.
 6. Run focused tests, full tests, compile checks, report/audit commands, and
    `git diff --check`.
 
 ## Acceptance Criteria
 
-- `sources.json` records exact source URL, license, commit SHA, and access
-  date.
-- `metrics.json` records `required_exact_source_found = true` while
-  `rail_status = frozen`.
-- Vignette packet includes at least two paired prompts and single-token label
-  shape checks.
-- Manual sanity template states it is not formal proof.
+- `prepare-jlens-probe` rejects black-box provider sources for real J-lens.
+- The readiness artifact records dependency availability, selected model ID,
+  tokenizer-label status, and whether a real probe is runnable.
+- Report/run-all/audit expose runtime readiness without changing the honest
+  deferred verdict.
 - Full repo tests pass.
 
 ## Verification Plan
@@ -72,25 +72,28 @@ ready for the next white-box step.
 - `python3 -m unittest tests/test_broadcast_alpha.py`
 - `python3 -m unittest discover -s tests`
 - `python3 -m compileall -q broadcast_alpha tests`
+- `python3 -m broadcast_alpha prepare-jlens-probe --seed 42 --model-id hf-internal-testing/tiny-random-gpt2 --model-source huggingface`
 - `python3 -m broadcast_alpha run-jlens-gate --seed 42`
+- `python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5`
 - `python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42`
 - `python3 -m broadcast_alpha audit-goal --artifact-root artifacts --output artifacts/goal_audit_seed_42 --repo-root .`
 - `git diff --check`
 
 ## Rollback Plan
 
-Revert the manifest updates, packet, docs, and generated J-lens artifact.
-Existing macro/live rails are not altered in behavior.
+Revert `broadcast_alpha/jlens_runtime.py`, CLI/report/orchestrator/audit
+integration, tests, docs, and generated readiness artifacts. Existing macro/live
+rails are not altered in behavior.
 
 ## Risks
 
 | Risk | Mitigation |
 |---|---|
-| Source verification gets overstated as J-lens proof. | Keep `rail_status = frozen` and label manual checks as non-proof. |
-| Token labels are only whitespace-checked. | Mark the packet provisional until a selected tokenizer verifies labels. |
+| Runtime readiness gets overstated as J-lens proof. | Keep `not_activation_measurement`, `not_causal`, and `not_sufficient_for_JLENS_PROVED` true. |
+| Token labels are only whitespace-checked. | Keep readiness blocked until a selected tokenizer verifies labels. |
 | Runtime work expands into model downloads. | Keep this slice source/docs/artifact only. |
 
 ## Proceed / Block Decision
 
-Proceed. This is a bounded source-gate update that reduces uncertainty without
-changing the formal proof threshold.
+Proceed. This is a bounded runtime-readiness update that makes the next blocker
+explicit without changing the formal proof threshold.

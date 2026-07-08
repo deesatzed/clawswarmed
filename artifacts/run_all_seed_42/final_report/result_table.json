@@ -41,6 +41,14 @@
       "section": "jlens_gate"
     },
     {
+      "artifact_path": "artifacts/run_all_seed_42/source_artifacts/jlens_runtime_readiness_seed_42",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/jlens_runtime_readiness_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "readiness_status",
+      "primary_value": "blocked_missing_dependencies",
+      "section": "jlens_runtime_readiness"
+    },
+    {
       "artifact_path": "artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42",
       "evidence_path": "artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42/metrics.json",
       "ledger_verified": true,

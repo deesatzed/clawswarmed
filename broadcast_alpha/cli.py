@@ -5,6 +5,7 @@ from pathlib import Path
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .goal_audit import audit_goal
 from .jlens import run_jlens_gate
+from .jlens_runtime import prepare_jlens_probe
 from .ledger import Ledger
 from .ledger_stress import run_ledger_stress
 from .live_dsh import run_live_dsh, run_live_smoke
@@ -51,6 +52,16 @@ def build_parser() -> argparse.ArgumentParser:
     jlens = sub.add_parser("run-jlens-gate", help="Run the J-lens source/model availability gate")
     jlens.add_argument("--seed", type=int, default=42)
     jlens.add_argument("--artifact-root", default="artifacts")
+
+    jlens_prepare = sub.add_parser("prepare-jlens-probe", help="Inspect local white-box J-lens runtime readiness")
+    jlens_prepare.add_argument("--seed", type=int, default=42)
+    jlens_prepare.add_argument("--artifact-root", default="artifacts")
+    jlens_prepare.add_argument("--model-id", default="hf-internal-testing/tiny-random-gpt2")
+    jlens_prepare.add_argument("--model-source", default="huggingface")
+    jlens_prepare.add_argument("--model-license")
+    jlens_prepare.add_argument("--dtype", default="float32")
+    jlens_prepare.add_argument("--precision", default="full")
+    jlens_prepare.add_argument("--no-require-jacobian-lens", action="store_true")
 
     live = sub.add_parser("run-live-gate", help="Inspect live model provider readiness without API calls")
     live.add_argument("--seed", type=int, default=42)
@@ -187,6 +198,20 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "run-jlens-gate":
         result = run_jlens_gate(seed=args.seed, artifact_root=Path(args.artifact_root))
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "prepare-jlens-probe":
+        result = prepare_jlens_probe(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            model_id=args.model_id,
+            model_source=args.model_source,
+            model_license=args.model_license,
+            dtype=args.dtype,
+            precision=args.precision,
+            require_jacobian_lens=not args.no_require_jacobian_lens,
+        )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0
 
