@@ -1,0 +1,580 @@
+{
+  "case_results": [
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-LOGIC_RULES-TWO_CORRECT_ONE_WRONG-NEUTRAL-000",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "B",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "outcome_leak",
+      "case_id": "AB-LOGIC_RULES-TWO_CORRECT_ONE_WRONG-WRONG_BIAS-001",
+      "correct": false,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "B",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "format_confidence",
+      "case_id": "AB-LOGIC_RULES-TWO_CORRECT_ONE_WRONG-CORRECT_BIAS-002",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "A",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-LOGIC_RULES-TWO_CORRECT_ONE_WRONG-IRRELEVANT_BIAS-003",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "B",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-LOGIC_RULES-ONE_CORRECT_TWO_WRONG-NEUTRAL-004",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "B",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "reputation",
+      "case_id": "AB-LOGIC_RULES-ONE_CORRECT_TWO_WRONG-WRONG_BIAS-005",
+      "correct": false,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "A",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "authority",
+      "case_id": "AB-LOGIC_RULES-ONE_CORRECT_TWO_WRONG-CORRECT_BIAS-006",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "A",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-LOGIC_RULES-ONE_CORRECT_TWO_WRONG-IRRELEVANT_BIAS-007",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "B",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-LOGIC_RULES-THREE_CORRECT-NEUTRAL-008",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "authority",
+      "case_id": "AB-LOGIC_RULES-THREE_CORRECT-WRONG_BIAS-009",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "reputation",
+      "case_id": "AB-LOGIC_RULES-THREE_CORRECT-CORRECT_BIAS-010",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-LOGIC_RULES-THREE_CORRECT-IRRELEVANT_BIAS-011",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-LOGIC_RULES-ZERO_CORRECT-NEUTRAL-012",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "majority",
+      "case_id": "AB-LOGIC_RULES-ZERO_CORRECT-WRONG_BIAS-013",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "majority",
+      "case_id": "AB-LOGIC_RULES-ZERO_CORRECT-CORRECT_BIAS-014",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-LOGIC_RULES-ZERO_CORRECT-IRRELEVANT_BIAS-015",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-CODE_PATCH-TWO_CORRECT_ONE_WRONG-NEUTRAL-016",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "A",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "format_confidence",
+      "case_id": "AB-CODE_PATCH-TWO_CORRECT_ONE_WRONG-WRONG_BIAS-017",
+      "correct": false,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "C",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "majority",
+      "case_id": "AB-CODE_PATCH-TWO_CORRECT_ONE_WRONG-CORRECT_BIAS-018",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "B",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-CODE_PATCH-TWO_CORRECT_ONE_WRONG-IRRELEVANT_BIAS-019",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "A",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-CODE_PATCH-ONE_CORRECT_TWO_WRONG-NEUTRAL-020",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "C",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "outcome_leak",
+      "case_id": "AB-CODE_PATCH-ONE_CORRECT_TWO_WRONG-WRONG_BIAS-021",
+      "correct": false,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "B",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "authority",
+      "case_id": "AB-CODE_PATCH-ONE_CORRECT_TWO_WRONG-CORRECT_BIAS-022",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "B",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-CODE_PATCH-ONE_CORRECT_TWO_WRONG-IRRELEVANT_BIAS-023",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "C",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-CODE_PATCH-THREE_CORRECT-NEUTRAL-024",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "reputation",
+      "case_id": "AB-CODE_PATCH-THREE_CORRECT-WRONG_BIAS-025",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "outcome_leak",
+      "case_id": "AB-CODE_PATCH-THREE_CORRECT-CORRECT_BIAS-026",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-CODE_PATCH-THREE_CORRECT-IRRELEVANT_BIAS-027",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-CODE_PATCH-ZERO_CORRECT-NEUTRAL-028",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "authority",
+      "case_id": "AB-CODE_PATCH-ZERO_CORRECT-WRONG_BIAS-029",
+      "correct": false,
+      "panel_composition": "zero_correct",
+      "selected": "A",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "majority",
+      "case_id": "AB-CODE_PATCH-ZERO_CORRECT-CORRECT_BIAS-030",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-CODE_PATCH-ZERO_CORRECT-IRRELEVANT_BIAS-031",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-TABLE_DATA-TWO_CORRECT_ONE_WRONG-NEUTRAL-032",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "majority",
+      "case_id": "AB-TABLE_DATA-TWO_CORRECT_ONE_WRONG-WRONG_BIAS-033",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "B",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "authority",
+      "case_id": "AB-TABLE_DATA-TWO_CORRECT_ONE_WRONG-CORRECT_BIAS-034",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-TABLE_DATA-TWO_CORRECT_ONE_WRONG-IRRELEVANT_BIAS-035",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-TABLE_DATA-ONE_CORRECT_TWO_WRONG-NEUTRAL-036",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "format_confidence",
+      "case_id": "AB-TABLE_DATA-ONE_CORRECT_TWO_WRONG-WRONG_BIAS-037",
+      "correct": false,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "authority",
+      "case_id": "AB-TABLE_DATA-ONE_CORRECT_TWO_WRONG-CORRECT_BIAS-038",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "C",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-TABLE_DATA-ONE_CORRECT_TWO_WRONG-IRRELEVANT_BIAS-039",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-TABLE_DATA-THREE_CORRECT-NEUTRAL-040",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "outcome_leak",
+      "case_id": "AB-TABLE_DATA-THREE_CORRECT-WRONG_BIAS-041",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "format_confidence",
+      "case_id": "AB-TABLE_DATA-THREE_CORRECT-CORRECT_BIAS-042",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-TABLE_DATA-THREE_CORRECT-IRRELEVANT_BIAS-043",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-TABLE_DATA-ZERO_CORRECT-NEUTRAL-044",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "reputation",
+      "case_id": "AB-TABLE_DATA-ZERO_CORRECT-WRONG_BIAS-045",
+      "correct": false,
+      "panel_composition": "zero_correct",
+      "selected": "A",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "majority",
+      "case_id": "AB-TABLE_DATA-ZERO_CORRECT-CORRECT_BIAS-046",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-TABLE_DATA-ZERO_CORRECT-IRRELEVANT_BIAS-047",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-AGENT_JUDGE-TWO_CORRECT_ONE_WRONG-NEUTRAL-048",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "B",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "authority",
+      "case_id": "AB-AGENT_JUDGE-TWO_CORRECT_ONE_WRONG-WRONG_BIAS-049",
+      "correct": false,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "B",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "reputation",
+      "case_id": "AB-AGENT_JUDGE-TWO_CORRECT_ONE_WRONG-CORRECT_BIAS-050",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "A",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-AGENT_JUDGE-TWO_CORRECT_ONE_WRONG-IRRELEVANT_BIAS-051",
+      "correct": true,
+      "panel_composition": "two_correct_one_wrong",
+      "selected": "B",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-AGENT_JUDGE-ONE_CORRECT_TWO_WRONG-NEUTRAL-052",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "B",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "majority",
+      "case_id": "AB-AGENT_JUDGE-ONE_CORRECT_TWO_WRONG-WRONG_BIAS-053",
+      "correct": false,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "A",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "authority",
+      "case_id": "AB-AGENT_JUDGE-ONE_CORRECT_TWO_WRONG-CORRECT_BIAS-054",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "A",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-AGENT_JUDGE-ONE_CORRECT_TWO_WRONG-IRRELEVANT_BIAS-055",
+      "correct": true,
+      "panel_composition": "one_correct_two_wrong",
+      "selected": "B",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-AGENT_JUDGE-THREE_CORRECT-NEUTRAL-056",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "format_confidence",
+      "case_id": "AB-AGENT_JUDGE-THREE_CORRECT-WRONG_BIAS-057",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "majority",
+      "case_id": "AB-AGENT_JUDGE-THREE_CORRECT-CORRECT_BIAS-058",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-AGENT_JUDGE-THREE_CORRECT-IRRELEVANT_BIAS-059",
+      "correct": true,
+      "panel_composition": "three_correct",
+      "selected": "A",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-AGENT_JUDGE-ZERO_CORRECT-NEUTRAL-060",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "outcome_leak",
+      "case_id": "AB-AGENT_JUDGE-ZERO_CORRECT-WRONG_BIAS-061",
+      "correct": false,
+      "panel_composition": "zero_correct",
+      "selected": "A",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "majority",
+      "case_id": "AB-AGENT_JUDGE-ZERO_CORRECT-CORRECT_BIAS-062",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-AGENT_JUDGE-ZERO_CORRECT-IRRELEVANT_BIAS-063",
+      "correct": true,
+      "panel_composition": "zero_correct",
+      "selected": "reject_all",
+      "task_family": "agent_judge"
+    }
+  ]
+}

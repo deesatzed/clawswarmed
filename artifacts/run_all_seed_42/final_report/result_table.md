@@ -3,6 +3,7 @@
 | Section | Primary metric | Value | Ledger verified | Artifact |
 |---|---|---:|---:|---|
 | ledger_stress | synthetic_receipt_count | 10000 | True | artifacts/run_all_seed_42/source_artifacts/ledger_stress_seed_42 |
+| ab_bias_suite | wrong_bias_harm | 0.625 | True | artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42 |
 | macro_dsh | GLASSGATE_LIFT | 0.4 | True | artifacts/run_all_seed_42/source_artifacts/dsh_seed_42 |
 | seed_detectability | seed_detectability_auc | 0.5 | True | artifacts/run_all_seed_42/source_artifacts/dsh_seed_42 |
 | rqgm_epoch | epoch_count | 5 | True | artifacts/run_all_seed_42/source_artifacts/rqgm_seed_42 |

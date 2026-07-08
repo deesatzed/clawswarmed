@@ -96,6 +96,16 @@ Epoch count: {metrics['epoch_count']}
 Replacement count: {metrics['replacement_count']}
 Current evaluator: {metrics['current_evaluator_id']}
 
+## A/B behavioral bias
+
+A/B suite status: {metrics['ab_bias_suite_status']}
+A/B cases: {metrics['ab_bias_case_count']}
+A/B wrong-bias harm: {metrics['ab_bias_wrong_bias_harm']}
+A/B dissent rescue rate: {metrics['ab_bias_dissent_rescue_rate']}
+A/B false consensus rejection rate: {metrics['ab_bias_false_consensus_rejection_rate']}
+A/B behavioral screening only: {metrics['ab_bias_behavioral_screening_only']}
+A/B sufficient for J-lens proof: {not metrics['ab_bias_not_sufficient_for_JLENS_PROVED']}
+
 ## J-lens rail
 
 J-lens rail frozen: {metrics['jlens_rail_status'] == 'frozen'}
@@ -169,6 +179,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     output_dir.mkdir(parents=True, exist_ok=True)
 
     dsh_path = artifact_root / "dsh_seed_42"
+    ab_bias_path = artifact_root / "ab_bias_suite_seed_42"
     ledger_stress_path = artifact_root / "ledger_stress_seed_42"
     rqgm_path = artifact_root / "rqgm_seed_42"
     jlens_path = artifact_root / "jlens_gate_seed_42"
@@ -184,6 +195,21 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
 
     dsh_metrics = _read_json(dsh_path / "metrics.json")
     seed_audit = _read_json(dsh_path / "seed_audit.json")
+    if (ab_bias_path / "metrics.json").exists():
+        ab_bias_metrics = _read_json(ab_bias_path / "metrics.json")
+        ab_bias_ledger_verified = _verify_ledger(ab_bias_path)
+    else:
+        ab_bias_metrics = {
+            "case_count": 0,
+            "wrong_bias_harm": 0.0,
+            "dissent_rescue_rate": 0.0,
+            "false_consensus_rejection_rate": 0.0,
+            "behavioral_screening_only": True,
+            "not_sufficient_for_JLENS_PROVED": True,
+            "live_model_run_performed": False,
+            "jlens_probe_performed": False,
+        }
+        ab_bias_ledger_verified = False
     if (ledger_stress_path / "metrics.json").exists():
         ledger_stress_metrics = _read_json(ledger_stress_path / "metrics.json")
         ledger_stress_ledger_verified = _verify_ledger(ledger_stress_path)
@@ -370,6 +396,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         live_sequence_ledger_verified = False
 
     ledger_verified = {
+        "ab_bias_suite": ab_bias_ledger_verified,
         "macro_dsh": _verify_ledger(dsh_path),
         "ledger_stress": ledger_stress_ledger_verified,
         "seed_detectability": _verify_ledger(dsh_path),
@@ -393,6 +420,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "primary_value": ledger_stress_metrics["synthetic_receipt_count"],
             "ledger_verified": ledger_verified["ledger_stress"],
             "evidence_path": str(ledger_stress_path / "metrics.json"),
+        },
+        {
+            "section": "ab_bias_suite",
+            "artifact_path": str(ab_bias_path),
+            "primary_metric": "wrong_bias_harm",
+            "primary_value": ab_bias_metrics["wrong_bias_harm"],
+            "ledger_verified": ledger_verified["ab_bias_suite"],
+            "evidence_path": str(ab_bias_path / "metrics.json"),
         },
         {
             "section": "macro_dsh",
@@ -534,6 +569,24 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
                 "mixed_kind_count": ledger_stress_metrics["mixed_kind_count"],
                 "ledger_verified": ledger_stress_metrics["ledger_verified"],
                 "tamper_detection_passed": ledger_stress_metrics["tamper_detection_passed"],
+            },
+        },
+        {
+            "claim": "A/B behavioral bias suite screens scripted three-agent panels without claiming J-lens proof.",
+            "status": "proved_behavioral_screening_artifact"
+            if ab_bias_metrics["case_count"] >= 48
+            and ab_bias_metrics["behavioral_screening_only"]
+            and ab_bias_metrics["not_sufficient_for_JLENS_PROVED"]
+            and ledger_verified["ab_bias_suite"]
+            else "missing_or_failed_behavioral_screening_artifact",
+            "evidence_path": str(ab_bias_path / "metrics.json"),
+            "value": {
+                "case_count": ab_bias_metrics["case_count"],
+                "wrong_bias_harm": ab_bias_metrics["wrong_bias_harm"],
+                "behavioral_screening_only": ab_bias_metrics["behavioral_screening_only"],
+                "not_sufficient_for_JLENS_PROVED": ab_bias_metrics[
+                    "not_sufficient_for_JLENS_PROVED"
+                ],
             },
         },
         {
@@ -693,6 +746,19 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     metrics = {
         "run_id": run_id,
         "report_status": report_status,
+        "ab_bias_suite_status": "behavioral_screening_complete"
+        if ab_bias_metrics["case_count"] >= 48 and ledger_verified["ab_bias_suite"]
+        else "missing_or_incomplete",
+        "ab_bias_case_count": ab_bias_metrics["case_count"],
+        "ab_bias_wrong_bias_harm": ab_bias_metrics["wrong_bias_harm"],
+        "ab_bias_dissent_rescue_rate": ab_bias_metrics["dissent_rescue_rate"],
+        "ab_bias_false_consensus_rejection_rate": ab_bias_metrics[
+            "false_consensus_rejection_rate"
+        ],
+        "ab_bias_behavioral_screening_only": ab_bias_metrics["behavioral_screening_only"],
+        "ab_bias_not_sufficient_for_JLENS_PROVED": ab_bias_metrics[
+            "not_sufficient_for_JLENS_PROVED"
+        ],
         "glassgate_lift": dsh_metrics["glassgate_lift"],
         "glassgate_lift_ci95": dsh_metrics["glassgate_lift_ci95"],
         "D_by_arm": dsh_metrics["D_by_arm"],

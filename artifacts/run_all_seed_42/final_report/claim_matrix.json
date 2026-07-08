@@ -22,6 +22,7 @@
       "evidence_path": "artifacts/run_all_seed_42/final_report/ledger_verification.json",
       "status": "proved_for_current_artifacts",
       "value": {
+        "ab_bias_suite": true,
         "jlens_gate": true,
         "jlens_hf_smoke": true,
         "jlens_intervention": true,
@@ -47,6 +48,17 @@
         "mixed_kind_count": 8,
         "synthetic_receipt_count": 10000,
         "tamper_detection_passed": true
+      }
+    },
+    {
+      "claim": "A/B behavioral bias suite screens scripted three-agent panels without claiming J-lens proof.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42/metrics.json",
+      "status": "proved_behavioral_screening_artifact",
+      "value": {
+        "behavioral_screening_only": true,
+        "case_count": 64,
+        "not_sufficient_for_JLENS_PROVED": true,
+        "wrong_bias_harm": 0.625
       }
     },
     {

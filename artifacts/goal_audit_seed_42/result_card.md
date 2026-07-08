@@ -11,10 +11,10 @@ Incomplete requirements: none
 
 ## Counts
 
-Proved: 11
+Proved: 12
 Deferred with record: 3
 Incomplete: 0
-Total requirements audited: 14
+Total requirements audited: 15
 
 ## Requirement Matrix
 
@@ -28,6 +28,7 @@ Total requirements audited: 14
 | ledger_stress_10k | proved | 10,000 mixed synthetic receipts verify and tamper detection passes. |
 | seed_detectability_audit | proved | Seed detectability and adversarial token AUC are both 0.5 with no camouflage failure. |
 | rqgm_epoch_trajectory | proved | Epoch count=5 replacement count=3. |
+| ab_bias_behavioral_screening | proved | A/B suite has at least 48 behavioral cases, wrong-bias harm metric, and explicit non-J-lens labels. |
 | unattended_run_all_bundle | proved | run-all status is complete_with_deferred_jlens and all child ledgers verify. |
 | live_sequence_record | proved | Live sequence status=blocked_before_smoke adapter calls=0. |
 | jlens_or_clean_defer | deferred_with_record | J-lens rail frozen with JLENS-FREEZE-001 because the exact source is verified but local white-box runtime/model/intervention access is unavailable. |

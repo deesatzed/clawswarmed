@@ -9,6 +9,14 @@
       "section": "ledger_stress"
     },
     {
+      "artifact_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "wrong_bias_harm",
+      "primary_value": 0.625,
+      "section": "ab_bias_suite"
+    },
+    {
       "artifact_path": "artifacts/run_all_seed_42/source_artifacts/dsh_seed_42",
       "evidence_path": "artifacts/run_all_seed_42/source_artifacts/dsh_seed_42/metrics.json",
       "ledger_verified": true,

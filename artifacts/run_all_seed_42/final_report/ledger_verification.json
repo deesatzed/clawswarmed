@@ -1,4 +1,5 @@
 {
+  "ab_bias_suite": true,
   "jlens_gate": true,
   "jlens_hf_smoke": true,
   "jlens_intervention": true,

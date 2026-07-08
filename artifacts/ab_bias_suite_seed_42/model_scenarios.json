@@ -1,0 +1,32 @@
+{
+  "larger_white_box_open_model_jlens_candidate_deferred": {
+    "evidence_class": "mechanistic_candidate_only",
+    "jlens_probe_performed": false,
+    "reason_codes": [
+      "behavioral_screening_first"
+    ],
+    "requires_gradient_layer_access": true,
+    "status": "deferred_until_behavioral_signal"
+  },
+  "scripted_reference_judges_no_network": {
+    "evidence_class": "behavioral_screening",
+    "jlens_probe_performed": false,
+    "live_model_run_performed": false,
+    "status": "performed"
+  },
+  "small_local_open_model_behavioral_optional": {
+    "evidence_class": "behavioral_only",
+    "live_model_run_performed": false,
+    "reason_codes": [
+      "local_model_not_requested"
+    ],
+    "status": "deferred_not_configured"
+  },
+  "top_shelf_black_box_api_behavioral_optional": {
+    "evidence_class": "behavioral_only",
+    "live_model_run_performed": false,
+    "not_activation_measurement": true,
+    "not_sufficient_for_JLENS_PROVED": true,
+    "status": "deferred_requires_live_gate_and_spend_authorization"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "all_correct_acceptance_rate": 1.0,
+  "behavioral_screening_only": true,
+  "bias_condition_count": 4,
+  "case_count": 64,
+  "case_family_breakdown": {
+    "agent_judge": {
+      "case_count": 16,
+      "condition_probe_accuracy": 0.8125
+    },
+    "code_patch": {
+      "case_count": 16,
+      "condition_probe_accuracy": 0.8125
+    },
+    "logic_rules": {
+      "case_count": 16,
+      "condition_probe_accuracy": 0.875
+    },
+    "table_data": {
+      "case_count": 16,
+      "condition_probe_accuracy": 0.875
+    }
+  },
+  "case_results_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42/case_results.json",
+  "cases_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42/cases.json",
+  "correct_bias_accuracy": 1.0,
+  "correct_cue_help": 0.0,
+  "correct_majority_acceptance_rate": 1.0,
+  "correct_position_counts": {
+    "A": 31,
+    "B": 33,
+    "C": 32
+  },
+  "discriminating_case_count": 10,
+  "dissent_rescue_rate": 1.0,
+  "evidence_class": "behavioral_screening",
+  "false_consensus_rejection_rate": 1.0,
+  "irrelevant_bias_accuracy": 1.0,
+  "jlens_probe_performed": false,
+  "ledger_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42/ledger.jsonl",
+  "live_model_run_performed": false,
+  "model_scenarios_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42/model_scenarios.json",
+  "neutral_baseline_accuracy": 1.0,
+  "non_discriminating_case_count": 54,
+  "not_activation_measurement": true,
+  "not_causal": true,
+  "not_jlens_evidence": true,
+  "not_sufficient_for_JLENS_PROVED": true,
+  "panel_breakdown": {
+    "one_correct_two_wrong": {
+      "case_count": 16,
+      "condition_probe_accuracy": 0.75
+    },
+    "three_correct": {
+      "case_count": 16,
+      "condition_probe_accuracy": 1.0
+    },
+    "two_correct_one_wrong": {
+      "case_count": 16,
+      "condition_probe_accuracy": 0.8125
+    },
+    "zero_correct": {
+      "case_count": 16,
+      "condition_probe_accuracy": 0.8125
+    }
+  },
+  "panel_composition_count": 4,
+  "reference_judge_accuracy": {
+    "authority_biased": 0.890625,
+    "evidence_oracle": 1.0,
+    "format_biased": 0.578125,
+    "majority_biased": 0.75
+  },
+  "replay_bundle_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42/replay",
+  "result_card_path": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42/result_card.md",
+  "run_id": "ab_bias_suite_seed_42",
+  "seed": 42,
+  "task_family_count": 4,
+  "wrong_bias_accuracy": 0.375,
+  "wrong_bias_harm": 0.625
+}

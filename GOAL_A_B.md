@@ -383,3 +383,22 @@ PROOF OF DONE:
 STOP:
 Do not proceed to live model or J-lens work in this smaller goal.
 ```
+
+## Implementation Status
+
+Completed on 2026-07-08 in `claswarmed-app`.
+
+- `run-ab-bias-suite` exists and runs no-network by default.
+- The seed-42 suite generates 64 evidence-contained cases.
+- The artifact reports `wrong_bias_harm = 0.625` and
+  `discriminating_case_count = 10`.
+- The run is behavioral screening only: no live model, no activation
+  measurement, no causal intervention, and no `JLENS_PROVED` claim.
+- `build-report`, `run-all`, and `audit-goal` include the A/B artifact.
+- Final verification passed with 91 unit tests, compile check, ledger export,
+  report/run-all/audit regeneration, diff check, and scoped runtime artifact
+  secret scan.
+
+Conclusion: the case bank is strong enough to justify optional behavioral
+model/API runs. It is not sufficient to justify mechanistic claims or expensive
+white-box J-lens work without model-backed behavioral failures first.

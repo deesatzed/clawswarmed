@@ -198,6 +198,95 @@ def _fake_jlens_leak_probe_runner(
 
 
 class BroadcastAlphaTests(unittest.TestCase):
+    def test_ab_bias_suite_generates_counterbalanced_evidence_cases(self):
+        from broadcast_alpha.ab_bias_suite import (
+            BIAS_CONDITIONS,
+            PANEL_COMPOSITIONS,
+            TASK_FAMILIES,
+            generate_ab_cases,
+        )
+
+        cases = generate_ab_cases(seed=42)
+
+        self.assertGreaterEqual(len(cases), 48)
+        self.assertEqual({case["task_family"] for case in cases}, set(TASK_FAMILIES))
+        self.assertEqual({case["panel_composition"] for case in cases}, set(PANEL_COMPOSITIONS))
+        self.assertEqual({case["bias_condition"] for case in cases}, set(BIAS_CONDITIONS))
+        self.assertTrue(all(case["evidence_contained"] for case in cases))
+        self.assertTrue(all(case["expected_choice"] for case in cases))
+        self.assertTrue(all(len(case["agents"]) == 3 for case in cases))
+        self.assertTrue(all(case["not_jlens_evidence"] for case in cases))
+
+        correct_positions = {
+            agent["position"]
+            for case in cases
+            for agent in case["agents"]
+            if agent["is_correct"]
+        }
+        self.assertEqual(correct_positions, {"A", "B", "C"})
+
+        zero_correct = [
+            case for case in cases if case["panel_composition"] == "zero_correct"
+        ]
+        self.assertTrue(zero_correct)
+        self.assertTrue(all(case["expected_choice"] == "reject_all" for case in zero_correct))
+
+    def test_ab_reference_judges_expose_bias_controls_without_jlens_claims(self):
+        from broadcast_alpha.ab_bias_suite import evaluate_ab_suite, generate_ab_cases
+
+        result = evaluate_ab_suite(generate_ab_cases(seed=42))
+        metrics = result["metrics"]
+
+        self.assertEqual(metrics["evidence_class"], "behavioral_screening")
+        self.assertTrue(metrics["not_jlens_evidence"])
+        self.assertTrue(metrics["not_activation_measurement"])
+        self.assertTrue(metrics["not_causal"])
+        self.assertTrue(metrics["not_sufficient_for_JLENS_PROVED"])
+        self.assertEqual(metrics["case_count"], 64)
+        self.assertEqual(metrics["neutral_baseline_accuracy"], 1.0)
+        self.assertLess(metrics["wrong_bias_accuracy"], metrics["neutral_baseline_accuracy"])
+        self.assertGreater(metrics["wrong_bias_harm"], 0.0)
+        self.assertEqual(metrics["correct_bias_accuracy"], metrics["neutral_baseline_accuracy"])
+        self.assertEqual(metrics["correct_cue_help"], 0.0)
+        self.assertEqual(metrics["dissent_rescue_rate"], 1.0)
+        self.assertEqual(metrics["correct_majority_acceptance_rate"], 1.0)
+        self.assertEqual(metrics["false_consensus_rejection_rate"], 1.0)
+        self.assertEqual(metrics["all_correct_acceptance_rate"], 1.0)
+        self.assertGreater(metrics["discriminating_case_count"], 0)
+        self.assertGreater(
+            metrics["reference_judge_accuracy"]["evidence_oracle"],
+            metrics["reference_judge_accuracy"]["majority_biased"],
+        )
+        self.assertEqual(
+            result["model_scenarios"]["top_shelf_black_box_api_behavioral_optional"]["evidence_class"],
+            "behavioral_only",
+        )
+
+    def test_run_ab_bias_suite_writes_replayable_behavioral_artifact(self):
+        from broadcast_alpha.ab_bias_suite import run_ab_bias_suite
+        from broadcast_alpha.ledger import Ledger
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_ab_bias_suite(seed=42, artifact_root=Path(tmp))
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            cases = json.loads((result.artifact_path / "cases.json").read_text())
+            scenarios = json.loads((result.artifact_path / "model_scenarios.json").read_text())
+            ledger = Ledger.from_jsonl(result.artifact_path / "ledger.jsonl")
+            result_card_exists = (result.artifact_path / "result_card.md").exists()
+            replay_exists = (result.artifact_path / "replay" / "contexts.json").exists()
+
+        self.assertEqual(metrics["run_id"], "ab_bias_suite_seed_42")
+        self.assertEqual(metrics["case_count"], 64)
+        self.assertTrue(metrics["behavioral_screening_only"])
+        self.assertFalse(metrics["live_model_run_performed"])
+        self.assertFalse(metrics["jlens_probe_performed"])
+        self.assertTrue(metrics["not_sufficient_for_JLENS_PROVED"])
+        self.assertEqual(len(cases["cases"]), 64)
+        self.assertIn("larger_white_box_open_model_jlens_candidate_deferred", scenarios)
+        self.assertTrue(ledger.verify_chain())
+        self.assertTrue(result_card_exists)
+        self.assertTrue(replay_exists)
+
     def test_contracts_include_task_and_metrics_records(self):
         from broadcast_alpha.contracts import MetricsRecord, Task
 
@@ -2002,6 +2091,55 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "metrics.json").exists())
             self.assertTrue((artifact_path / "result_card.md").exists())
 
+    def test_cli_run_ab_bias_suite_creates_behavioral_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-ab-bias-suite",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    tmp,
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(payload["run_id"], "ab_bias_suite_seed_42")
+            self.assertEqual(metrics["evidence_class"], "behavioral_screening")
+            self.assertEqual(metrics["case_count"], 64)
+            self.assertGreater(metrics["wrong_bias_harm"], 0.0)
+            self.assertFalse(metrics["live_model_run_performed"])
+            self.assertFalse(metrics["jlens_probe_performed"])
+            self.assertTrue((artifact_path / "cases.json").exists())
+            self.assertTrue((artifact_path / "model_scenarios.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
     def test_cli_run_jlens_gate_creates_freeze_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run(
@@ -2056,6 +2194,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertIn("J-lens rail frozen", replay.stdout)
 
     def test_build_report_summarizes_required_rails(self):
+        from broadcast_alpha.ab_bias_suite import run_ab_bias_suite
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
         from broadcast_alpha.jlens_hf_smoke import run_jlens_hf_smoke
@@ -2071,6 +2210,7 @@ class BroadcastAlphaTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             artifact_root = Path(tmp)
+            run_ab_bias_suite(seed=42, artifact_root=artifact_root)
             run_ledger_stress(seed=42, receipt_count=10_000, artifact_root=artifact_root)
             run_synthetic(seed=42, artifact_root=artifact_root)
             run_dsh(
@@ -2138,6 +2278,10 @@ class BroadcastAlphaTests(unittest.TestCase):
 
         self.assertEqual(metrics["run_id"], "final_report_seed_42")
         self.assertEqual(metrics["glassgate_lift"], 0.4)
+        self.assertEqual(metrics["ab_bias_suite_status"], "behavioral_screening_complete")
+        self.assertEqual(metrics["ab_bias_case_count"], 64)
+        self.assertGreater(metrics["ab_bias_wrong_bias_harm"], 0.0)
+        self.assertTrue(metrics["ab_bias_not_sufficient_for_JLENS_PROVED"])
         self.assertEqual(metrics["seed_detectability_auc"], 0.5)
         self.assertEqual(metrics["seed_adversarial_auc"], 0.5)
         self.assertFalse(metrics["seed_camouflage_failed"])
@@ -2200,6 +2344,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             {row["section"] for row in result_table["rows"]},
             {
                 "ledger_stress",
+                "ab_bias_suite",
                 "macro_dsh",
                 "seed_detectability",
                 "rqgm_epoch",
@@ -2221,6 +2366,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertTrue(any("10,000 mixed synthetic receipts" in claim["claim"] for claim in claim_matrix["claims"]))
         self.assertTrue(any("macro diagnostics" in claim["claim"] for claim in claim_matrix["claims"]))
         self.assertIn("GLASSGATE_LIFT", result_card)
+        self.assertIn("A/B behavioral bias", result_card)
         self.assertIn("10k ledger stress", result_card)
         self.assertIn("Macro diagnostics", result_card)
         self.assertIn("Candidate ablation rate", result_card)
@@ -2235,6 +2381,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn("Live sequence", result_card)
 
     def test_cli_build_report_creates_replayable_report_artifact(self):
+        from broadcast_alpha.ab_bias_suite import run_ab_bias_suite
         from broadcast_alpha.experiments import run_dsh, run_rqgm, run_synthetic
         from broadcast_alpha.jlens import run_jlens_gate
         from broadcast_alpha.jlens_hf_smoke import run_jlens_hf_smoke
@@ -2249,6 +2396,7 @@ class BroadcastAlphaTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             artifact_root = Path(tmp)
+            run_ab_bias_suite(seed=42, artifact_root=artifact_root)
             run_ledger_stress(seed=42, receipt_count=10_000, artifact_root=artifact_root)
             run_synthetic(seed=42, artifact_root=artifact_root)
             run_dsh(
@@ -2332,6 +2480,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((artifact_path / "result_table.md").exists())
             self.assertTrue((artifact_path / "claim_matrix.json").exists())
             self.assertEqual(metrics["report_status"], "complete_with_deferred_jlens")
+            self.assertEqual(metrics["ab_bias_case_count"], 64)
+            self.assertTrue(metrics["ab_bias_behavioral_screening_only"])
             self.assertEqual(metrics["jlens_runtime_readiness_status"], "blocked_missing_dependencies")
             self.assertEqual(metrics["jlens_smoke_status"], "passed")
             self.assertEqual(metrics["jlens_hf_smoke_status"], "passed")
@@ -2412,6 +2562,10 @@ class BroadcastAlphaTests(unittest.TestCase):
             final_metrics = json.loads((result.artifact_path / "final_report" / "metrics.json").read_text())
             self.assertEqual(result.run_id, "run_all_seed_42")
             self.assertEqual(metrics["run_status"], "complete_with_deferred_jlens")
+            self.assertEqual(metrics["ab_bias_case_count"], 64)
+            self.assertGreater(metrics["ab_bias_wrong_bias_harm"], 0.0)
+            self.assertTrue(metrics["ab_bias_behavioral_screening_only"])
+            self.assertTrue(metrics["ab_bias_not_sufficient_for_JLENS_PROVED"])
             self.assertEqual(metrics["glassgate_lift"], 0.4)
             self.assertEqual(metrics["seed_adversarial_auc"], 0.5)
             self.assertEqual(metrics["jlens_rail_status"], "frozen")
@@ -2455,6 +2609,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 set(manifest["child_artifacts"]),
                 {
                     "ledger_stress",
+                    "ab_bias_suite",
                     "synthetic",
                     "dsh",
                     "rqgm",
@@ -2472,6 +2627,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 },
             )
             self.assertTrue((result.artifact_path / "source_artifacts" / "dsh_seed_42" / "seed_audit.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "ab_bias_suite_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_gate_seed_42" / "provider_status.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_smoke_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_dsh_seed_42" / "task_runs.json").exists())
@@ -2515,6 +2671,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             metrics = json.loads((artifact_path / "metrics.json").read_text())
 
             self.assertEqual(metrics["run_status"], "complete_with_deferred_jlens")
+            self.assertEqual(metrics["ab_bias_case_count"], 64)
+            self.assertTrue(metrics["ab_bias_behavioral_screening_only"])
             self.assertEqual(metrics["live_model_rail_status"], "unavailable")
             self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
@@ -2608,6 +2766,9 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertTrue(by_id["ledger_stress_10k"]["value"]["tamper_detection_passed"])
         self.assertEqual(by_id["seed_detectability_audit"]["status"], "proved")
         self.assertEqual(by_id["rqgm_epoch_trajectory"]["status"], "proved")
+        self.assertEqual(by_id["ab_bias_behavioral_screening"]["status"], "proved")
+        self.assertEqual(by_id["ab_bias_behavioral_screening"]["value"]["case_count"], 64)
+        self.assertTrue(by_id["ab_bias_behavioral_screening"]["value"]["behavioral_screening_only"])
         self.assertEqual(by_id["jlens_or_clean_defer"]["status"], "deferred_with_record")
         self.assertEqual(by_id["bridge_rail"]["status"], "deferred_with_record")
         self.assertEqual(by_id["mechanistic_admission"]["status"], "deferred_with_record")

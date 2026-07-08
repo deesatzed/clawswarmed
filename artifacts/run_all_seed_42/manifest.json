@@ -1,5 +1,6 @@
 {
   "child_artifacts": {
+    "ab_bias_suite": "artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42",
     "dsh": "artifacts/run_all_seed_42/source_artifacts/dsh_seed_42",
     "final_report": "artifacts/run_all_seed_42/final_report",
     "jlens_gate": "artifacts/run_all_seed_42/source_artifacts/jlens_gate_seed_42",
@@ -19,6 +20,7 @@
   "epochs": 5,
   "run_id": "run_all_seed_42",
   "run_sequence": [
+    "ab_bias_suite",
     "synthetic",
     "ledger_stress",
     "dsh",

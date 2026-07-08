@@ -32,6 +32,7 @@ Live sequence adapter calls: 0
 
 | Artifact | Path | Ledger verified |
 |---|---|---:|
+| ab_bias_suite | artifacts/run_all_seed_42/source_artifacts/ab_bias_suite_seed_42 | True |
 | ledger_stress | artifacts/run_all_seed_42/source_artifacts/ledger_stress_seed_42 | True |
 | synthetic | artifacts/run_all_seed_42/source_artifacts/synthetic_seed_42 | True |
 | dsh | artifacts/run_all_seed_42/source_artifacts/dsh_seed_42 | True |

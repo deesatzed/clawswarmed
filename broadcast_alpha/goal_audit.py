@@ -14,6 +14,7 @@ class GoalAuditResult:
 
 
 REQUIRED_PREREGS = [
+    "PREREG_AB-01.md",
     "PREREG_DSH-01.md",
     "PREREG_PART-01.md",
     "PREREG_LEAK-01.md",
@@ -190,6 +191,12 @@ def audit_goal(
         and bool(ledger_stress_metrics.get("tamper_detection_passed"))
         and _ledger_verified(ledger_stress)
     )
+    ab_bias_ok = (
+        int(final_metrics.get("ab_bias_case_count", 0) or 0) >= 48
+        and bool(final_metrics.get("ab_bias_behavioral_screening_only"))
+        and bool(final_metrics.get("ab_bias_not_sufficient_for_JLENS_PROVED"))
+        and final_metrics.get("ab_bias_wrong_bias_harm") is not None
+    )
     live_adapter_calls = int(live_sequence_metrics.get("adapter_call_count_total", 0) or 0)
     live_sweep_adapter_calls = int(live_model_sweep_metrics.get("adapter_call_count_total", 0) or 0)
     live_model_run_performed = bool(
@@ -327,6 +334,25 @@ def audit_goal(
                 "epoch_count": final_metrics.get("epoch_count"),
                 "replacement_count": final_metrics.get("replacement_count"),
                 "current_evaluator_id": final_metrics.get("current_evaluator_id"),
+            },
+        ),
+        _item(
+            "ab_bias_behavioral_screening",
+            "A/B behavioral bias suite exists as a no-network screening rail without claiming J-lens proof.",
+            "proved" if ab_bias_ok else "incomplete",
+            final_report / "metrics.json",
+            "A/B suite has at least 48 behavioral cases, wrong-bias harm metric, and explicit non-J-lens labels."
+            if ab_bias_ok
+            else "A/B behavioral screening artifact is missing, too small, or overclaims mechanistic evidence.",
+            {
+                "case_count": final_metrics.get("ab_bias_case_count"),
+                "wrong_bias_harm": final_metrics.get("ab_bias_wrong_bias_harm"),
+                "behavioral_screening_only": final_metrics.get(
+                    "ab_bias_behavioral_screening_only"
+                ),
+                "not_sufficient_for_JLENS_PROVED": final_metrics.get(
+                    "ab_bias_not_sufficient_for_JLENS_PROVED"
+                ),
             },
         ),
         _item(

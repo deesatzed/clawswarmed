@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from .ab_bias_suite import run_ab_bias_suite
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .jlens import run_jlens_gate
 from .jlens_hf_smoke import run_jlens_hf_smoke
@@ -103,6 +104,7 @@ def run_all(
     final_report_path = artifact_path / "final_report"
     artifact_path.mkdir(parents=True, exist_ok=True)
 
+    ab_bias_suite = run_ab_bias_suite(seed=seed, artifact_root=child_root)
     ledger_stress = run_ledger_stress(seed=seed, receipt_count=10_000, artifact_root=child_root)
     synthetic = run_synthetic(seed=seed, artifact_root=child_root)
     dsh = run_dsh(
@@ -157,6 +159,7 @@ def run_all(
     final_report = build_result_report(artifact_root=child_root, output_dir=final_report_path)
 
     child_artifacts = {
+        "ab_bias_suite": str(ab_bias_suite.artifact_path),
         "ledger_stress": str(ledger_stress.artifact_path),
         "synthetic": str(synthetic.artifact_path),
         "dsh": str(dsh.artifact_path),
@@ -174,6 +177,7 @@ def run_all(
         "final_report": str(final_report.artifact_path),
     }
     child_paths = {
+        "ab_bias_suite": ab_bias_suite.artifact_path,
         "ledger_stress": ledger_stress.artifact_path,
         "synthetic": synthetic.artifact_path,
         "dsh": dsh.artifact_path,
@@ -202,6 +206,7 @@ def run_all(
         "epochs": epochs,
         "child_artifacts": child_artifacts,
         "run_sequence": [
+            "ab_bias_suite",
             "synthetic",
             "ledger_stress",
             "dsh",
@@ -232,6 +237,14 @@ def run_all(
         "seed": seed,
         "tasks_per_cell": tasks_per_cell,
         "epochs": epochs,
+        "ab_bias_case_count": final_metrics["ab_bias_case_count"],
+        "ab_bias_wrong_bias_harm": final_metrics["ab_bias_wrong_bias_harm"],
+        "ab_bias_behavioral_screening_only": final_metrics[
+            "ab_bias_behavioral_screening_only"
+        ],
+        "ab_bias_not_sufficient_for_JLENS_PROVED": final_metrics[
+            "ab_bias_not_sufficient_for_JLENS_PROVED"
+        ],
         "glassgate_lift": final_metrics["glassgate_lift"],
         "glassgate_lift_ci95": final_metrics["glassgate_lift_ci95"],
         "D_by_arm": final_metrics["D_by_arm"],

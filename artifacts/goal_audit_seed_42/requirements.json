@@ -113,6 +113,19 @@
       }
     },
     {
+      "evidence": "A/B suite has at least 48 behavioral cases, wrong-bias harm metric, and explicit non-J-lens labels.",
+      "evidence_path": "artifacts/final_report_seed_42/metrics.json",
+      "id": "ab_bias_behavioral_screening",
+      "requirement": "A/B behavioral bias suite exists as a no-network screening rail without claiming J-lens proof.",
+      "status": "proved",
+      "value": {
+        "behavioral_screening_only": true,
+        "case_count": 64,
+        "not_sufficient_for_JLENS_PROVED": true,
+        "wrong_bias_harm": 0.625
+      }
+    },
+    {
       "evidence": "run-all status is complete_with_deferred_jlens and all child ledgers verify.",
       "evidence_path": "artifacts/run_all_seed_42/metrics.json",
       "id": "unattended_run_all_bundle",

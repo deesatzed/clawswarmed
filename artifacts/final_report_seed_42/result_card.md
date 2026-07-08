@@ -18,6 +18,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 ## Required evidence
 
 - ledger_stress: synthetic_receipt_count = 10000
+- ab_bias_suite: wrong_bias_harm = 0.625
 - macro_dsh: GLASSGATE_LIFT = 0.4
 - seed_detectability: seed_detectability_auc = 0.5
 - rqgm_epoch: epoch_count = 5
@@ -56,6 +57,16 @@ Camouflage failed: False
 Epoch count: 5
 Replacement count: 3
 Current evaluator: eval_gate_v5
+
+## A/B behavioral bias
+
+A/B suite status: behavioral_screening_complete
+A/B cases: 64
+A/B wrong-bias harm: 0.625
+A/B dissent rescue rate: 1.0
+A/B false consensus rejection rate: 1.0
+A/B behavioral screening only: True
+A/B sufficient for J-lens proof: False
 
 ## J-lens rail
 

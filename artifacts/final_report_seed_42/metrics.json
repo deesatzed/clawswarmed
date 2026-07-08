@@ -9,6 +9,13 @@
     "correlated_shared_context": 0.225,
     "partitioned_disjoint_shards": 0.325
   },
+  "ab_bias_behavioral_screening_only": true,
+  "ab_bias_case_count": 64,
+  "ab_bias_dissent_rescue_rate": 1.0,
+  "ab_bias_false_consensus_rejection_rate": 1.0,
+  "ab_bias_not_sufficient_for_JLENS_PROVED": true,
+  "ab_bias_suite_status": "behavioral_screening_complete",
+  "ab_bias_wrong_bias_harm": 0.625,
   "all_source_ledgers_verified": true,
   "candidate_ablation_rate": 0.297222,
   "claim_matrix_path": "artifacts/final_report_seed_42/claim_matrix.json",
