@@ -7,15 +7,16 @@ Run type: J-lens source/model gate
 
 J-lens rail frozen.
 
-The exact named J-lens source was not verified, and this runtime has no
-configured white-box gatekeeper model with gradient/layer access. No real
-J-lens probe was implemented or run.
+The exact named J-lens source is now verified, but this runtime has no
+configured white-box gatekeeper model with gradient/layer access, no fitted
+Jacobian lens, and no causal intervention controls. No real J-lens probe was
+implemented or run.
 
 ## Gate checks
 
 | Check | Result |
 |---|---|
-| Exact source found | False |
+| Exact source found | True |
 | White-box model available | False |
 | Real probe runnable | False |
 | Single-token labels verified | 6 labels |

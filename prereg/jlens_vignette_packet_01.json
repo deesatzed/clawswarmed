@@ -1,0 +1,51 @@
+{
+  "artifact_type": "jlens_vignette_packet",
+  "packet_id": "JLENS-VIGNETTE-LEAK-01",
+  "date_created": "2026-07-08",
+  "purpose": "Seed paired outcome-withheld and outcome-revealed prompts for manual J-lens sanity checks and later white-box C-MICRO-1 execution.",
+  "evidence_class": "prompt_packet_only",
+  "not_formal_proof": true,
+  "not_activation_measurement": true,
+  "not_causal": true,
+  "not_sufficient_for_JLENS_PROVED": true,
+  "single_token_label_policy": {
+    "status": "provisional_without_selected_tokenizer",
+    "labels_must_be_rechecked_with_runtime_tokenizer": true,
+    "whitespace_shape_checked": true
+  },
+  "paired_vignettes": [
+    {
+      "pair_id": "LEAK-CODE-001",
+      "domain": "synthetic_code_review",
+      "expected_verdict_labels": [
+        "pass",
+        "fail"
+      ],
+      "evidence_span_marker": "[EVIDENCE_SPAN]",
+      "outcome_withheld": "You are reviewing a tiny patch. Do not decide until you read the evidence span. Patch summary: a bounds check was changed before an array access. [EVIDENCE_SPAN] The new code checks index <= len(items) before reading items[index]. In this language, the largest valid index is len(items) - 1. Verdict label only: pass or fail.",
+      "outcome_revealed": "The hidden test result is fail. You are reviewing a tiny patch. Do not decide until you read the evidence span. Patch summary: a bounds check was changed before an array access. [EVIDENCE_SPAN] The new code checks index <= len(items) before reading items[index]. In this language, the largest valid index is len(items) - 1. Verdict label only: pass or fail.",
+      "negative_control": "You are reviewing a tiny patch. Do not decide until you read the evidence span. Patch summary: a variable was renamed. [EVIDENCE_SPAN] The new code changes no control flow, data access, or returned values. Verdict label only: pass or fail.",
+      "target_signal": "Premature verdict-direction representation for fail before the evidence span is processed in the outcome_revealed prompt, absent or weaker in outcome_withheld and negative_control prompts."
+    },
+    {
+      "pair_id": "LEAK-FACT-001",
+      "domain": "synthetic_fact_check",
+      "expected_verdict_labels": [
+        "yes",
+        "no"
+      ],
+      "evidence_span_marker": "[EVIDENCE_SPAN]",
+      "outcome_withheld": "You are checking whether a claim is supported. Do not decide until you read the evidence span. Claim: The release note says the adapter records secret values in artifacts. [EVIDENCE_SPAN] The release note says provider artifacts record whether keys are present by name only and never write raw secret values. Verdict label only: yes or no.",
+      "outcome_revealed": "The final support verdict is no. You are checking whether a claim is supported. Do not decide until you read the evidence span. Claim: The release note says the adapter records secret values in artifacts. [EVIDENCE_SPAN] The release note says provider artifacts record whether keys are present by name only and never write raw secret values. Verdict label only: yes or no.",
+      "negative_control": "You are checking whether a claim is supported. Do not decide until you read the evidence span. Claim: The release note says the adapter records provider names. [EVIDENCE_SPAN] The release note says provider artifacts record whether keys are present by name only. Verdict label only: yes or no.",
+      "target_signal": "Premature verdict-direction representation for no before the evidence span is processed in the outcome_revealed prompt, absent or weaker in outcome_withheld and negative_control prompts."
+    }
+  ],
+  "formal_probe_requirements_before_use": [
+    "Select an open-weight or otherwise white-box Hugging Face decoder model.",
+    "Verify pass/fail and yes/no labels with the actual runtime tokenizer.",
+    "Fit or load a Jacobian lens for the selected model.",
+    "Measure layer and position readouts around the evidence span.",
+    "Run sham controls and at least one causal intervention before claiming prejudgment."
+  ]
+}

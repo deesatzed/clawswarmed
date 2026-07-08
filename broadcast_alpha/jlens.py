@@ -11,6 +11,8 @@ REQUIRED_EXACT_SOURCE = (
     "Verbalizable Representations Form a Global Workspace in Language Models / "
     "Anthropic jacobian-lens implementation"
 )
+SOURCE_ACCESS_DATE = "2026-07-08"
+JACOBIAN_LENS_COMMIT_SHA = "581d398613e5602a5af361e1c34d3a92ea82ba8e"
 
 SEARCHED_QUERIES = [
     "Anthropic Verbalizable Representations Form a Global Workspace in Language Models J-lens",
@@ -54,6 +56,49 @@ VERIFIED_ADJACENT_SOURCES = [
     },
 ]
 
+VERIFIED_EXACT_SOURCES = [
+    {
+        "title": "anthropics/jacobian-lens",
+        "url": "https://github.com/anthropics/jacobian-lens",
+        "role": "reference_implementation",
+        "license": "Apache-2.0",
+        "commit_sha": JACOBIAN_LENS_COMMIT_SHA,
+        "branch": "main",
+        "date_accessed": SOURCE_ACCESS_DATE,
+        "verified": True,
+        "note": (
+            "Reference implementation for the global-workspace/Jacobian-lens paper. "
+            "The repository states it is not maintained; no model weights or text corpora are bundled."
+        ),
+    },
+    {
+        "title": "Verbalizable Representations Form a Global Workspace in Language Models",
+        "url": "https://transformer-circuits.pub/2026/workspace/index.html",
+        "role": "primary_paper",
+        "license": "external_page_terms",
+        "commit_sha": None,
+        "branch": None,
+        "date_accessed": SOURCE_ACCESS_DATE,
+        "verified": True,
+        "note": (
+            "Primary Transformer Circuits article describing the Jacobian lens, "
+            "J-space, and intervention framing."
+        ),
+    },
+]
+
+MANUAL_SANITY_SURFACES = [
+    {
+        "title": "Neuronpedia Jacobian Lens",
+        "url": "https://www.neuronpedia.org/jlens",
+        "role": "manual_sanity_check_surface",
+        "date_accessed": SOURCE_ACCESS_DATE,
+        "verified": True,
+        "proof_status": "not_formal_proof",
+        "note": "Useful for a no-code directional check only; cannot satisfy the white-box causal proof gate.",
+    }
+]
+
 
 @dataclass(frozen=True)
 class JLensGateResult:
@@ -82,7 +127,7 @@ class NullJLensProbe:
         assert_single_token(verdict_label)
         return {
             "status": "unavailable",
-            "reason": "real J-lens source/model access has not been verified",
+            "reason": "reference source exists, but real J-lens runtime/model access has not been verified",
             "verdict_label": verdict_label,
             "evidence_chars": len(evidence_text),
             "layer_position_activation": [],
@@ -93,15 +138,21 @@ def _source_manifest() -> dict:
     return {
         "required_exact_source": {
             "name": REQUIRED_EXACT_SOURCE,
-            "found": False,
-            "decision": "do_not_implement_real_probe_without_exact_source",
+            "found": True,
+            "decision": "source_verified_runtime_still_gated",
+            "date_accessed": SOURCE_ACCESS_DATE,
         },
         "searched_queries": SEARCHED_QUERIES,
+        "verified_exact_sources": VERIFIED_EXACT_SOURCES,
         "verified_adjacent_sources": VERIFIED_ADJACENT_SOURCES,
+        "manual_sanity_surfaces": MANUAL_SANITY_SURFACES,
         "rejected_claims": [
             {
                 "claim": "A real Anthropic J-lens / global workspace probe is ready to implement",
-                "reason": "Exact paper, repository, or implementation was not verified in the current source lookup.",
+                "reason": (
+                    "The exact source is now verified, but no local white-box model runtime, "
+                    "fitted lens, or causal intervention controls are configured."
+                ),
             },
             {
                 "claim": "Timing or readout alone can support the Glass Gate causal claim",
@@ -121,9 +172,10 @@ Run type: J-lens source/model gate
 
 J-lens rail frozen.
 
-The exact named J-lens source was not verified, and this runtime has no
-configured white-box gatekeeper model with gradient/layer access. No real
-J-lens probe was implemented or run.
+The exact named J-lens source is now verified, but this runtime has no
+configured white-box gatekeeper model with gradient/layer access, no fitted
+Jacobian lens, and no causal intervention controls. No real J-lens probe was
+implemented or run.
 
 ## Gate checks
 
@@ -183,6 +235,7 @@ def run_jlens_gate(seed: int = 42, artifact_root: Path | None = None) -> JLensGa
         "source_manifest",
         {
             "required_exact_source": sources["required_exact_source"],
+            "verified_exact_source_count": len(VERIFIED_EXACT_SOURCES),
             "verified_adjacent_source_count": len(VERIFIED_ADJACENT_SOURCES),
             "searched_query_count": len(SEARCHED_QUERIES),
         },
@@ -199,12 +252,13 @@ def run_jlens_gate(seed: int = 42, artifact_root: Path | None = None) -> JLensGa
         {
             "failure_ledger_entry_id": FAILURE_LEDGER_ENTRY_ID,
             "rail_status": "frozen",
-            "required_exact_source_found": False,
+            "required_exact_source_found": True,
             "white_box_model_available": False,
             "real_probe_runnable": False,
             "reason_codes": [
-                "exact_jlens_source_not_verified",
+                "source_verified_runtime_unavailable",
                 "white_box_model_access_not_configured",
+                "causal_intervention_controls_not_run",
                 "real_probe_not_run",
             ],
             "decision": "freeze_jlens_rail_continue_macro_and_rqgm",
@@ -217,7 +271,9 @@ def run_jlens_gate(seed: int = 42, artifact_root: Path | None = None) -> JLensGa
         "rail_status": "frozen",
         "failure_ledger_entry_id": FAILURE_LEDGER_ENTRY_ID,
         "required_exact_source": REQUIRED_EXACT_SOURCE,
-        "required_exact_source_found": False,
+        "required_exact_source_found": True,
+        "source_access_date": SOURCE_ACCESS_DATE,
+        "jacobian_lens_commit_sha": JACOBIAN_LENS_COMMIT_SHA,
         "white_box_model_available": False,
         "real_probe_runnable": False,
         "single_token_labels_verified": single_token_labels,
@@ -227,13 +283,14 @@ def run_jlens_gate(seed: int = 42, artifact_root: Path | None = None) -> JLensGa
         "replay_bundle_path": str(artifact_path / "replay"),
         "result_card_path": str(artifact_path / "result_card.md"),
         "reason_codes": [
-            "exact_jlens_source_not_verified",
+            "source_verified_runtime_unavailable",
             "white_box_model_access_not_configured",
+            "causal_intervention_controls_not_run",
             "real_probe_not_run",
         ],
         "next_required_unblockers": [
-            "Identify and cite the exact J-lens paper, repository, or implementation.",
             "Configure a white-box gatekeeper model with gradient/layer access.",
+            "Install or clone the reference implementation outside the app repo and run the smallest fit/apply smoke.",
             "Add causal intervention controls before making mechanistic claims.",
         ],
     }

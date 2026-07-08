@@ -275,7 +275,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(result["status"], "unavailable")
         self.assertIn("source", result["reason"])
 
-    def test_jlens_gate_freezes_without_exact_source_or_white_box_model(self):
+    def test_jlens_gate_freezes_after_exact_source_until_white_box_model(self):
         from broadcast_alpha.jlens import run_jlens_gate
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -286,10 +286,17 @@ class BroadcastAlphaTests(unittest.TestCase):
             result_card = (result.artifact_path / "result_card.md").read_text()
 
         self.assertEqual(metrics["rail_status"], "frozen")
-        self.assertFalse(metrics["required_exact_source_found"])
+        self.assertTrue(metrics["required_exact_source_found"])
         self.assertFalse(metrics["white_box_model_available"])
         self.assertFalse(metrics["real_probe_runnable"])
         self.assertEqual(metrics["failure_ledger_entry_id"], "JLENS-FREEZE-001")
+        exact_sources = sources["verified_exact_sources"]
+        self.assertEqual(exact_sources[0]["url"], "https://github.com/anthropics/jacobian-lens")
+        self.assertEqual(exact_sources[0]["license"], "Apache-2.0")
+        self.assertEqual(exact_sources[0]["commit_sha"], "581d398613e5602a5af361e1c34d3a92ea82ba8e")
+        self.assertEqual(exact_sources[0]["date_accessed"], "2026-07-08")
+        self.assertIn("source_verified_runtime_unavailable", metrics["reason_codes"])
+        self.assertNotIn("exact_jlens_source_not_verified", metrics["reason_codes"])
         self.assertIn(
             "Verbalizable Representations Form a Global Workspace",
             " ".join(sources["searched_queries"]),
@@ -305,6 +312,28 @@ class BroadcastAlphaTests(unittest.TestCase):
         )
         self.assertIn('"kind": "jlens_gate_decision"', ledger)
         self.assertIn("J-lens rail frozen", result_card)
+
+    def test_jlens_vignette_packet_is_checked_in_and_non_proof(self):
+        packet = json.loads(Path("prereg/jlens_vignette_packet_01.json").read_text())
+
+        self.assertEqual(packet["artifact_type"], "jlens_vignette_packet")
+        self.assertTrue(packet["not_formal_proof"])
+        self.assertGreaterEqual(len(packet["paired_vignettes"]), 2)
+        for pair in packet["paired_vignettes"]:
+            self.assertIn("outcome_withheld", pair)
+            self.assertIn("outcome_revealed", pair)
+            self.assertIn("expected_verdict_labels", pair)
+            self.assertGreaterEqual(len(pair["expected_verdict_labels"]), 2)
+            for label in pair["expected_verdict_labels"]:
+                self.assertEqual(label, label.strip())
+                self.assertEqual(len(label.split()), 1)
+
+    def test_jlens_manual_sanity_template_blocks_formal_claim(self):
+        template = Path("docs/JLENS_MANUAL_SANITY_TEMPLATE.md").read_text()
+
+        self.assertIn("Neuronpedia", template)
+        self.assertIn("not formal proof", template.lower())
+        self.assertIn("white-box", template.lower())
 
     def test_jlens_gate_single_token_label_manifest(self):
         from broadcast_alpha.jlens import verify_single_token_labels

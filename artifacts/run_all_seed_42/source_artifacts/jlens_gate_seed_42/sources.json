@@ -1,8 +1,19 @@
 {
+  "manual_sanity_surfaces": [
+    {
+      "date_accessed": "2026-07-08",
+      "note": "Useful for a no-code directional check only; cannot satisfy the white-box causal proof gate.",
+      "proof_status": "not_formal_proof",
+      "role": "manual_sanity_check_surface",
+      "title": "Neuronpedia Jacobian Lens",
+      "url": "https://www.neuronpedia.org/jlens",
+      "verified": true
+    }
+  ],
   "rejected_claims": [
     {
       "claim": "A real Anthropic J-lens / global workspace probe is ready to implement",
-      "reason": "Exact paper, repository, or implementation was not verified in the current source lookup."
+      "reason": "The exact source is now verified, but no local white-box model runtime, fitted lens, or causal intervention controls are configured."
     },
     {
       "claim": "Timing or readout alone can support the Glass Gate causal claim",
@@ -10,8 +21,9 @@
     }
   ],
   "required_exact_source": {
-    "decision": "do_not_implement_real_probe_without_exact_source",
-    "found": false,
+    "date_accessed": "2026-07-08",
+    "decision": "source_verified_runtime_still_gated",
+    "found": true,
     "name": "Verbalizable Representations Form a Global Workspace in Language Models / Anthropic jacobian-lens implementation"
   },
   "searched_queries": [
@@ -51,6 +63,30 @@
       "role": "white_box_model_tooling_candidate",
       "title": "TransformerLens",
       "url": "https://github.com/TransformerLensOrg/TransformerLens",
+      "verified": true
+    }
+  ],
+  "verified_exact_sources": [
+    {
+      "branch": "main",
+      "commit_sha": "581d398613e5602a5af361e1c34d3a92ea82ba8e",
+      "date_accessed": "2026-07-08",
+      "license": "Apache-2.0",
+      "note": "Reference implementation for the global-workspace/Jacobian-lens paper. The repository states it is not maintained; no model weights or text corpora are bundled.",
+      "role": "reference_implementation",
+      "title": "anthropics/jacobian-lens",
+      "url": "https://github.com/anthropics/jacobian-lens",
+      "verified": true
+    },
+    {
+      "branch": null,
+      "commit_sha": null,
+      "date_accessed": "2026-07-08",
+      "license": "external_page_terms",
+      "note": "Primary Transformer Circuits article describing the Jacobian lens, J-space, and intervention framing.",
+      "role": "primary_paper",
+      "title": "Verbalizable Representations Form a Global Workspace in Language Models",
+      "url": "https://transformer-circuits.pub/2026/workspace/index.html",
       "verified": true
     }
   ]

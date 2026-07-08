@@ -31,8 +31,12 @@ Artifact: `artifacts/jlens_gate_seed_42/`
 
 Reason:
 
-- The exact named source from the handoff was not verified in the current
-  source lookup.
+- Original 2026-07-07 blocker: the exact named source from the handoff was not
+  verified in the current source lookup.
+- 2026-07-08 amendment: the exact source is now verified as
+  `https://github.com/anthropics/jacobian-lens` and
+  `https://transformer-circuits.pub/2026/workspace/index.html`; the rail
+  remains frozen for runtime/model/intervention reasons.
 - No configured white-box gatekeeper model with gradient/layer access is
   available in this repository/runtime.
 - Timing or readout alone is insufficient for the Glass Gate causal claim.
@@ -42,8 +46,9 @@ and RQGM rails. Optional bridge and mechanistic rails remain deferred.
 
 Evidence:
 
-- `artifacts/jlens_gate_seed_42/sources.json` records searched queries and
-  verified adjacent sources.
+- `artifacts/jlens_gate_seed_42/sources.json` records searched queries,
+  verified exact sources, manual sanity surfaces, and verified adjacent
+  sources.
 - `artifacts/jlens_gate_seed_42/metrics.json` sets `rail_status = frozen`.
 - `artifacts/jlens_gate_seed_42/ledger.jsonl` includes a
   `jlens_gate_decision` receipt.

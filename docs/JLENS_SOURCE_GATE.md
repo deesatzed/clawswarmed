@@ -1,21 +1,26 @@
 # J-lens Source And Model Gate
 
-Date: 2026-07-07
+Date: 2026-07-08
 
 ## Decision
 
 The J-lens rail is frozen for the current build state.
 
-The handoff referred to an Anthropic-style J-lens or global-workspace paper,
-but the exact paper, repository, or implementation was not verified in the
-current source lookup. The app also has no configured white-box gatekeeper
-model with gradient/layer access. Because of that, `broadcast_alpha` must not
-claim a real J-lens probe, prejudgment detector, or causal mechanistic result.
+The handoff referred to an Anthropic-style J-lens or global-workspace paper.
+That exact source is now verified: the public `anthropics/jacobian-lens`
+repository is the reference implementation for the linked Transformer Circuits
+paper. The app still has no configured white-box gatekeeper model with
+gradient/layer access, no fitted Jacobian lens, and no causal intervention
+control. Because of that, `broadcast_alpha` must not claim a real J-lens probe,
+prejudgment detector, or causal mechanistic result.
 
-The rail can reopen only when both conditions are true:
+The rail can reopen only when all conditions are true:
 
-1. The exact J-lens source is identified and cited.
-2. A white-box model runtime with gradient/layer access is configured.
+1. A white-box model runtime with gradient/layer access is configured.
+2. The reference implementation is installed or cloned outside this app repo.
+3. A fit/apply smoke confirms the model, tokenizer, and lens path work.
+4. Causal intervention and sham controls are implemented before mechanistic
+   claims are made.
 
 ## Implemented Artifact
 
@@ -36,10 +41,17 @@ This writes:
 The expected rail status is `frozen`, with failure ledger entry
 `JLENS-FREEZE-001`.
 
-## Sources Verified
+## Exact Sources Verified
 
-The exact named source was not found. Adjacent primary/tooling sources were
-verified only as background:
+- `https://github.com/anthropics/jacobian-lens`:
+  reference implementation, Apache-2.0, `main` commit
+  `581d398613e5602a5af361e1c34d3a92ea82ba8e`, accessed 2026-07-08.
+- `https://transformer-circuits.pub/2026/workspace/index.html`:
+  primary paper, accessed 2026-07-08.
+
+## Adjacent Sources Verified
+
+These remain background only:
 
 - `https://arxiv.org/abs/2309.16042`:
   `Towards Best Practices of Activation Patching in Language Models: Metrics
@@ -52,7 +64,18 @@ verified only as background:
 - `https://github.com/TransformerLensOrg/TransformerLens`:
   candidate tooling for white-box internal activations.
 
-These sources do not satisfy the exact J-lens source requirement by themselves.
+## No-Code Sanity Check
+
+The checked-in prompt packet is:
+
+- `prereg/jlens_vignette_packet_01.json`
+
+Manual inspection can be recorded with:
+
+- `docs/JLENS_MANUAL_SANITY_TEMPLATE.md`
+
+Neuronpedia or any other hosted viewer may provide useful direction, but manual
+inspection is not formal proof and cannot satisfy the white-box causal gate.
 
 ## Consequence
 
