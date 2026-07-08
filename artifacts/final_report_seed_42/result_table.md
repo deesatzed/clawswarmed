@@ -17,3 +17,4 @@
 | live_smoke | run_status | blocked_no_live_execution | True | artifacts/live_smoke_seed_42 |
 | live_dsh_pilot | run_status | blocked_no_live_execution | True | artifacts/live_dsh_seed_42 |
 | live_sequence | sequence_status | blocked_before_smoke | True | artifacts/live_sequence_seed_42 |
+| live_ab_bias_suite | accuracy | 0.571429 | True | artifacts/live_ab_bias_suite_seed_42 |

@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "live A/B bias suite: 0 model(s), 4 case(s) per model",
+    "2": "live A/B bias suite: adapter calls 0, accuracy 0.0",
+    "3": "live A/B bias suite status blocked_no_live_execution; behavioral only, no J-lens proof"
+  }
+}

@@ -10,6 +10,7 @@
     "jlens_runtime_readiness": "artifacts/run_all_seed_42/source_artifacts/jlens_runtime_readiness_seed_42",
     "jlens_smoke": "artifacts/run_all_seed_42/source_artifacts/jlens_smoke_seed_42",
     "ledger_stress": "artifacts/run_all_seed_42/source_artifacts/ledger_stress_seed_42",
+    "live_ab_bias_suite": "artifacts/run_all_seed_42/source_artifacts/live_ab_bias_suite_seed_42",
     "live_dsh_pilot": "artifacts/run_all_seed_42/source_artifacts/live_dsh_seed_42",
     "live_model_gate": "artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42",
     "live_sequence": "artifacts/run_all_seed_42/source_artifacts/live_sequence_seed_42",
@@ -35,6 +36,7 @@
     "live_smoke",
     "live_dsh_pilot",
     "live_sequence",
+    "live_ab_bias_suite",
     "final_report"
   ],
   "seed": 42,

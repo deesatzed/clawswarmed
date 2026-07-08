@@ -30,6 +30,7 @@
         "jlens_runtime_readiness": true,
         "jlens_smoke": true,
         "ledger_stress": true,
+        "live_ab_bias_suite": true,
         "live_dsh_pilot": true,
         "live_model_gate": true,
         "live_sequence": true,
@@ -186,6 +187,21 @@
         "sequence_status": "blocked_before_smoke",
         "smoke_hidden_verifier_pass_count": 0,
         "smoke_run_status": "blocked_no_live_execution"
+      }
+    },
+    {
+      "claim": "Live A/B behavioral suite records black-box model choices without claiming J-lens proof.",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/live_ab_bias_suite_seed_42/metrics.json",
+      "status": "not_run",
+      "value": {
+        "accuracy": 0.0,
+        "adapter_call_count_total": 0,
+        "behavioral_screening_only": true,
+        "model_count": 0,
+        "not_sufficient_for_JLENS_PROVED": true,
+        "run_status": "blocked_no_live_execution",
+        "total_case_runs": 0,
+        "wrong_bias_accuracy": 0.0
       }
     }
   ]

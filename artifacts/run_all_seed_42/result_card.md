@@ -27,6 +27,8 @@ Live DSH prereg: PREREG_LIVE-01
 Live DSH verifier pass rate: 0.0
 Live sequence: blocked_before_smoke
 Live sequence adapter calls: 0
+Live A/B behavioral: blocked_no_live_execution
+Live A/B adapter calls: 0
 
 ## Child artifacts
 
@@ -47,6 +49,7 @@ Live sequence adapter calls: 0
 | live_smoke | artifacts/run_all_seed_42/source_artifacts/live_smoke_seed_42 | True |
 | live_dsh_pilot | artifacts/run_all_seed_42/source_artifacts/live_dsh_seed_42 | True |
 | live_sequence | artifacts/run_all_seed_42/source_artifacts/live_sequence_seed_42 | True |
+| live_ab_bias_suite | artifacts/run_all_seed_42/source_artifacts/live_ab_bias_suite_seed_42 | True |
 | final_report | artifacts/run_all_seed_42/final_report | True |
 
 ## Replay

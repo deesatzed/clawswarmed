@@ -141,6 +141,17 @@ Live model run performed: {metrics['live_model_run_performed']}
 OpenRouter API key present by name: {metrics['live_openrouter_api_key_present']}
 No secret values recorded: {not metrics['live_secret_values_recorded']}
 
+## Live A/B behavioral
+
+Live A/B status: {metrics['live_ab_bias_status']}
+Live A/B models: {metrics['live_ab_model_count']}
+Live A/B case runs: {metrics['live_ab_total_case_runs']}
+Live A/B adapter calls: {metrics['live_ab_adapter_call_count_total']}
+Live A/B accuracy: {metrics['live_ab_accuracy']}
+Live A/B wrong-bias accuracy: {metrics['live_ab_wrong_bias_accuracy']}
+Live A/B parse failures: {metrics['live_ab_parse_failure_count']}
+Live A/B behavioral only: {metrics['live_ab_behavioral_screening_only']}
+
 ## Live smoke
 
 Live smoke status: {metrics['live_smoke_run_status']}
@@ -192,6 +203,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     live_smoke_path = artifact_root / "live_smoke_seed_42"
     live_dsh_path = artifact_root / "live_dsh_seed_42"
     live_sequence_path = artifact_root / "live_sequence_seed_42"
+    live_ab_path = artifact_root / "live_ab_bias_suite_seed_42"
 
     dsh_metrics = _read_json(dsh_path / "metrics.json")
     seed_audit = _read_json(dsh_path / "seed_audit.json")
@@ -394,6 +406,31 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "all_child_ledgers_verified": False,
         }
         live_sequence_ledger_verified = False
+    live_ab_exists = (live_ab_path / "metrics.json").exists()
+    if live_ab_exists:
+        live_ab_metrics = _read_json(live_ab_path / "metrics.json")
+        live_ab_ledger_verified = _verify_ledger(live_ab_path)
+    else:
+        live_ab_metrics = {
+            "run_status": "not_run",
+            "model_count": 0,
+            "attempted_model_count": 0,
+            "case_count_per_model": 0,
+            "total_case_runs": 0,
+            "adapter_call_count_total": 0,
+            "adapter_usage_total_tokens": 0,
+            "live_model_run_performed_count": 0,
+            "valid_choice_count": 0,
+            "parse_failure_count": 0,
+            "accuracy": 0.0,
+            "wrong_bias_accuracy": 0.0,
+            "neutral_accuracy": 0.0,
+            "behavioral_screening_only": True,
+            "not_sufficient_for_JLENS_PROVED": True,
+            "secret_values_recorded": False,
+            "reason_codes": ["live_ab_bias_artifact_missing"],
+        }
+        live_ab_ledger_verified = False
 
     ledger_verified = {
         "ab_bias_suite": ab_bias_ledger_verified,
@@ -412,6 +449,8 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_dsh_pilot": live_dsh_ledger_verified,
         "live_sequence": live_sequence_ledger_verified,
     }
+    if live_ab_exists:
+        ledger_verified["live_ab_bias_suite"] = live_ab_ledger_verified
     rows = [
         {
             "section": "ledger_stress",
@@ -534,6 +573,17 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "evidence_path": str(live_sequence_path / "metrics.json"),
         },
     ]
+    if live_ab_exists:
+        rows.append(
+            {
+                "section": "live_ab_bias_suite",
+                "artifact_path": str(live_ab_path),
+                "primary_metric": "accuracy",
+                "primary_value": live_ab_metrics["accuracy"],
+                "ledger_verified": live_ab_ledger_verified,
+                "evidence_path": str(live_ab_path / "metrics.json"),
+            }
+        )
     claims = [
         {
             "claim": "GLASSGATE_LIFT with 95% CI is available for the macro grid.",
@@ -723,6 +773,29 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
                 "all_child_ledgers_verified": live_sequence_metrics["all_child_ledgers_verified"],
             },
         },
+        {
+            "claim": "Live A/B behavioral suite records black-box model choices without claiming J-lens proof.",
+            "status": "live_behavioral_evidence_recorded"
+            if live_ab_exists
+            and live_ab_metrics["adapter_call_count_total"] > 0
+            and live_ab_metrics["behavioral_screening_only"]
+            and live_ab_metrics["not_sufficient_for_JLENS_PROVED"]
+            and live_ab_ledger_verified
+            else "not_run",
+            "evidence_path": str(live_ab_path / "metrics.json"),
+            "value": {
+                "run_status": live_ab_metrics["run_status"],
+                "model_count": live_ab_metrics["model_count"],
+                "total_case_runs": live_ab_metrics["total_case_runs"],
+                "adapter_call_count_total": live_ab_metrics["adapter_call_count_total"],
+                "accuracy": live_ab_metrics["accuracy"],
+                "wrong_bias_accuracy": live_ab_metrics["wrong_bias_accuracy"],
+                "behavioral_screening_only": live_ab_metrics["behavioral_screening_only"],
+                "not_sufficient_for_JLENS_PROVED": live_ab_metrics[
+                    "not_sufficient_for_JLENS_PROVED"
+                ],
+            },
+        },
     ]
 
     all_ledgers_verified = all(ledger_verified.values())
@@ -897,6 +970,24 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_sequence_pilot_status": live_sequence_metrics["pilot_run_status"],
         "live_sequence_pilot_promoted": live_sequence_metrics["pilot_promoted"],
         "live_sequence_all_child_ledgers_verified": live_sequence_metrics["all_child_ledgers_verified"],
+        "live_ab_bias_status": live_ab_metrics["run_status"],
+        "live_ab_model_count": live_ab_metrics["model_count"],
+        "live_ab_attempted_model_count": live_ab_metrics["attempted_model_count"],
+        "live_ab_case_count_per_model": live_ab_metrics["case_count_per_model"],
+        "live_ab_total_case_runs": live_ab_metrics["total_case_runs"],
+        "live_ab_adapter_call_count_total": live_ab_metrics["adapter_call_count_total"],
+        "live_ab_adapter_usage_total_tokens": live_ab_metrics["adapter_usage_total_tokens"],
+        "live_ab_model_run_performed_count": live_ab_metrics["live_model_run_performed_count"],
+        "live_ab_valid_choice_count": live_ab_metrics["valid_choice_count"],
+        "live_ab_parse_failure_count": live_ab_metrics["parse_failure_count"],
+        "live_ab_accuracy": live_ab_metrics["accuracy"],
+        "live_ab_wrong_bias_accuracy": live_ab_metrics["wrong_bias_accuracy"],
+        "live_ab_neutral_accuracy": live_ab_metrics["neutral_accuracy"],
+        "live_ab_behavioral_screening_only": live_ab_metrics["behavioral_screening_only"],
+        "live_ab_not_sufficient_for_JLENS_PROVED": live_ab_metrics[
+            "not_sufficient_for_JLENS_PROVED"
+        ],
+        "live_ab_secret_values_recorded": live_ab_metrics["secret_values_recorded"],
         "all_source_ledgers_verified": all_ledgers_verified,
         "result_table_path": str(output_dir / "result_table.json"),
         "claim_matrix_path": str(output_dir / "claim_matrix.json"),

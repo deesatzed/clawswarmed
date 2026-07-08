@@ -1,0 +1,36 @@
+{
+  "cases": [
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-LOGIC_RULES-TWO_CORRECT_ONE_WRONG-NEUTRAL-000",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "outcome_leak",
+      "case_id": "AB-LOGIC_RULES-TWO_CORRECT_ONE_WRONG-WRONG_BIAS-001",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "format_confidence",
+      "case_id": "AB-LOGIC_RULES-TWO_CORRECT_ONE_WRONG-CORRECT_BIAS-002",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-LOGIC_RULES-TWO_CORRECT_ONE_WRONG-IRRELEVANT_BIAS-003",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "logic_rules"
+    }
+  ]
+}

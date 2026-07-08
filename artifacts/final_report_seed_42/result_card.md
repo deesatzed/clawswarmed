@@ -32,6 +32,7 @@ GLASSGATE_LIFT = 0.4 [95% CI: 0.15, 0.55]
 - live_smoke: run_status = blocked_no_live_execution
 - live_dsh_pilot: run_status = blocked_no_live_execution
 - live_sequence: sequence_status = blocked_before_smoke
+- live_ab_bias_suite: accuracy = 0.571429
 
 ## 10k ledger stress
 
@@ -102,6 +103,17 @@ Adapter call performed: False
 Live model run performed: False
 OpenRouter API key present by name: False
 No secret values recorded: True
+
+## Live A/B behavioral
+
+Live A/B status: live_ab_executed
+Live A/B models: 7
+Live A/B case runs: 28
+Live A/B adapter calls: 28
+Live A/B accuracy: 0.571429
+Live A/B wrong-bias accuracy: 0.571429
+Live A/B parse failures: 12
+Live A/B behavioral only: True
 
 ## Live smoke
 

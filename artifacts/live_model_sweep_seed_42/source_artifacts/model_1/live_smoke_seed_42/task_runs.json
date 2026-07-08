@@ -3,7 +3,7 @@
     {
       "adapter_response": {
         "choice_count": 1,
-        "content_preview": "Candidate rationale:\n\nI can't inspect the actual helper source or hidden verifier cases, so I can't assert a specific fix is correct. My approach: locate the helper function, identify likely bug class",
+        "content_preview": "Candidate rationale: The bug is likely a narrow edge-case failure (e.g., off-by-one, wrong type coercion, or missing guard for empty/None/zero input) rather than a wholesale logic error, since the hel",
         "response_id_present": true,
         "usage_completion_tokens": 80,
         "usage_prompt_tokens": 154,

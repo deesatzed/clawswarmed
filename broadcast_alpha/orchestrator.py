@@ -12,6 +12,7 @@ from .jlens_runtime import prepare_jlens_probe
 from .jlens_smoke import run_jlens_smoke
 from .ledger import Ledger
 from .ledger_stress import run_ledger_stress
+from .live_ab_bias_suite import run_live_ab_bias_suite
 from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
 from .live_sequence import run_live_sequence
@@ -72,6 +73,8 @@ Live DSH prereg: {metrics['live_dsh_prereg_id']}
 Live DSH verifier pass rate: {metrics['live_dsh_hidden_verifier_pass_rate']}
 Live sequence: {metrics['live_sequence_status']}
 Live sequence adapter calls: {metrics['live_sequence_adapter_call_count_total']}
+Live A/B behavioral: {metrics['live_ab_bias_status']}
+Live A/B adapter calls: {metrics['live_ab_adapter_call_count_total']}
 
 ## Child artifacts
 
@@ -156,6 +159,13 @@ def run_all(
         env=live_env,
         prereg_path=prereg_dir / "PREREG_LIVE-01.md",
     )
+    live_ab_bias = run_live_ab_bias_suite(
+        seed=seed,
+        artifact_root=child_root,
+        env_file=live_env_file,
+        env=live_env,
+        prereg_path=prereg_dir / "PREREG_LIVE-01.md",
+    )
     final_report = build_result_report(artifact_root=child_root, output_dir=final_report_path)
 
     child_artifacts = {
@@ -174,6 +184,7 @@ def run_all(
         "live_smoke": str(live_smoke.artifact_path),
         "live_dsh_pilot": str(live_dsh.artifact_path),
         "live_sequence": str(live_sequence.artifact_path),
+        "live_ab_bias_suite": str(live_ab_bias.artifact_path),
         "final_report": str(final_report.artifact_path),
     }
     child_paths = {
@@ -192,6 +203,7 @@ def run_all(
         "live_smoke": live_smoke.artifact_path,
         "live_dsh_pilot": live_dsh.artifact_path,
         "live_sequence": live_sequence.artifact_path,
+        "live_ab_bias_suite": live_ab_bias.artifact_path,
         "final_report": final_report.artifact_path,
     }
     child_ledgers_verified = {
@@ -221,6 +233,7 @@ def run_all(
             "live_smoke",
             "live_dsh_pilot",
             "live_sequence",
+            "live_ab_bias_suite",
             "final_report",
         ],
     }
@@ -337,6 +350,17 @@ def run_all(
         "live_sequence_pilot_status": final_metrics["live_sequence_pilot_status"],
         "live_sequence_pilot_promoted": final_metrics["live_sequence_pilot_promoted"],
         "live_sequence_all_child_ledgers_verified": final_metrics["live_sequence_all_child_ledgers_verified"],
+        "live_ab_bias_status": final_metrics["live_ab_bias_status"],
+        "live_ab_model_count": final_metrics["live_ab_model_count"],
+        "live_ab_total_case_runs": final_metrics["live_ab_total_case_runs"],
+        "live_ab_adapter_call_count_total": final_metrics["live_ab_adapter_call_count_total"],
+        "live_ab_accuracy": final_metrics["live_ab_accuracy"],
+        "live_ab_wrong_bias_accuracy": final_metrics["live_ab_wrong_bias_accuracy"],
+        "live_ab_parse_failure_count": final_metrics["live_ab_parse_failure_count"],
+        "live_ab_behavioral_screening_only": final_metrics["live_ab_behavioral_screening_only"],
+        "live_ab_not_sufficient_for_JLENS_PROVED": final_metrics[
+            "live_ab_not_sufficient_for_JLENS_PROVED"
+        ],
         "child_ledgers_verified": child_ledgers_verified,
         "all_child_ledgers_verified": all(child_ledgers_verified.values()),
         "manifest_path": str(artifact_path / "manifest.json"),

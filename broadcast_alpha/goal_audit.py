@@ -140,6 +140,7 @@ def audit_goal(
     if not (live_sequence / "metrics.json").exists():
         live_sequence = run_all / "source_artifacts" / "live_sequence_seed_42"
     live_model_sweep = artifact_root / "live_model_sweep_seed_42"
+    live_ab_bias = artifact_root / "live_ab_bias_suite_seed_42"
 
     final_metrics = _read_json(final_report / "metrics.json") if (final_report / "metrics.json").exists() else {}
     run_all_metrics = _read_json(run_all / "metrics.json") if (run_all / "metrics.json").exists() else {}
@@ -156,6 +157,11 @@ def audit_goal(
     live_model_sweep_metrics = (
         _read_json(live_model_sweep / "metrics.json")
         if (live_model_sweep / "metrics.json").exists()
+        else {}
+    )
+    live_ab_bias_metrics = (
+        _read_json(live_ab_bias / "metrics.json")
+        if (live_ab_bias / "metrics.json").exists()
         else {}
     )
 
@@ -199,11 +205,13 @@ def audit_goal(
     )
     live_adapter_calls = int(live_sequence_metrics.get("adapter_call_count_total", 0) or 0)
     live_sweep_adapter_calls = int(live_model_sweep_metrics.get("adapter_call_count_total", 0) or 0)
+    live_ab_adapter_calls = int(live_ab_bias_metrics.get("adapter_call_count_total", 0) or 0)
     live_model_run_performed = bool(
         final_metrics.get("live_model_run_performed")
         or run_all_metrics.get("live_model_run_performed")
         or live_sequence_metrics.get("smoke_model_run_performed")
         or int(live_model_sweep_metrics.get("live_model_run_performed_count", 0) or 0) > 0
+        or int(live_ab_bias_metrics.get("live_model_run_performed_count", 0) or 0) > 0
     )
     live_model_evidence_verified = (
         (live_adapter_calls > 0 and _ledger_verified(live_sequence))
@@ -211,6 +219,13 @@ def audit_goal(
             live_sweep_adapter_calls > 0
             and bool(live_model_sweep_metrics.get("all_child_ledgers_verified"))
             and _ledger_verified(live_model_sweep)
+        )
+        or (
+            live_ab_adapter_calls > 0
+            and bool(live_ab_bias_metrics.get("behavioral_screening_only"))
+            and bool(live_ab_bias_metrics.get("not_sufficient_for_JLENS_PROVED"))
+            and not bool(live_ab_bias_metrics.get("secret_values_recorded"))
+            and _ledger_verified(live_ab_bias)
         )
     )
     jlens_frozen = (
@@ -448,7 +463,14 @@ def audit_goal(
             "live_model_backed_execution",
             "At least one real provider-backed model call has been made and recorded before live evidence is claimed.",
             "proved" if live_model_run_performed and live_model_evidence_verified else "incomplete",
-            (live_model_sweep if live_sweep_adapter_calls > 0 else live_sequence) / "metrics.json",
+            (
+                live_ab_bias
+                if live_ab_adapter_calls > 0
+                else live_model_sweep
+                if live_sweep_adapter_calls > 0
+                else live_sequence
+            )
+            / "metrics.json",
             "Live model-backed execution recorded."
             if live_model_run_performed and live_model_evidence_verified
             else "No live model-backed adapter call has been made; checked-in evidence remains no-spend/no-network.",
@@ -456,6 +478,13 @@ def audit_goal(
                 "live_model_run_performed": live_model_run_performed,
                 "live_sequence_adapter_call_count_total": live_adapter_calls,
                 "live_model_sweep_adapter_call_count_total": live_sweep_adapter_calls,
+                "live_ab_bias_adapter_call_count_total": live_ab_adapter_calls,
+                "live_ab_bias_behavioral_screening_only": live_ab_bias_metrics.get(
+                    "behavioral_screening_only"
+                ),
+                "live_ab_bias_not_sufficient_for_JLENS_PROVED": live_ab_bias_metrics.get(
+                    "not_sufficient_for_JLENS_PROVED"
+                ),
             },
         ),
     ]

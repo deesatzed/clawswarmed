@@ -1898,6 +1898,137 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(model_results["models"], [])
         self.assertIn("api_spend_not_authorized", metrics["reason_codes"])
 
+    def test_live_ab_bias_suite_fake_transport_scores_json_choices(self):
+        from broadcast_alpha.ledger import Ledger
+        from broadcast_alpha.live_ab_bias_suite import run_live_ab_bias_suite
+
+        captured_requests = []
+
+        def fake_transport(request):
+            captured_requests.append(request)
+            choice = request["metadata"]["local_expected_choice"]
+            return {
+                "id": f"chatcmpl_fake_live_ab_{len(captured_requests)}",
+                "choices": [{"message": {"content": json.dumps({"choice": choice})}}],
+                "usage": {"prompt_tokens": 20, "completion_tokens": 4, "total_tokens": 24},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+                "OPENROUTER_MODEL_2=test/model-b\n"
+            )
+            result = run_live_ab_bias_suite(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                budget_usd=25.0,
+                case_limit=2,
+                transport=fake_transport,
+                transport_label="fake",
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            model_results = json.loads((result.artifact_path / "model_results.json").read_text())
+            case_results = json.loads((result.artifact_path / "case_results.json").read_text())
+            ledger = Ledger.from_jsonl(result.artifact_path / "ledger.jsonl")
+            combined_artifacts = "\n".join(
+                [
+                    (result.artifact_path / "metrics.json").read_text(),
+                    (result.artifact_path / "model_results.json").read_text(),
+                    (result.artifact_path / "case_results.json").read_text(),
+                    (result.artifact_path / "result_card.md").read_text(),
+                    (result.artifact_path / "ledger.jsonl").read_text(),
+                ]
+            )
+
+        self.assertEqual(result.run_id, "live_ab_bias_suite_seed_42")
+        self.assertEqual(metrics["run_status"], "live_ab_executed")
+        self.assertEqual(metrics["model_count"], 2)
+        self.assertEqual(metrics["attempted_model_count"], 2)
+        self.assertEqual(metrics["case_count_per_model"], 2)
+        self.assertEqual(metrics["total_case_runs"], 4)
+        self.assertEqual(metrics["adapter_call_count_total"], 4)
+        self.assertEqual(metrics["live_model_run_performed_count"], 0)
+        self.assertEqual(metrics["valid_choice_count"], 4)
+        self.assertEqual(metrics["parse_failure_count"], 0)
+        self.assertEqual(metrics["accuracy"], 1.0)
+        self.assertTrue(metrics["behavioral_screening_only"])
+        self.assertTrue(metrics["not_sufficient_for_JLENS_PROVED"])
+        self.assertTrue(ledger.verify_chain())
+        self.assertEqual(len(captured_requests), 4)
+        self.assertEqual(len(model_results["models"]), 2)
+        self.assertEqual(len(case_results["cases"]), 4)
+        represented_conditions = {row["bias_condition"] for row in case_results["cases"]}
+        self.assertIn("neutral", represented_conditions)
+        self.assertIn("wrong_bias", represented_conditions)
+        self.assertNotIn("dummy-secret-value", combined_artifacts)
+        self.assertNotIn("local_expected_choice", json.dumps([request["body"] for request in captured_requests]))
+
+    def test_cli_run_live_ab_bias_suite_creates_blocked_replayable_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "run-live-ab-bias-suite",
+                    "--seed",
+                    "42",
+                    "--artifact-root",
+                    str(tmp_path / "artifacts"),
+                    "--env-file",
+                    str(env_file),
+                    "--case-limit",
+                    "2",
+                    "--budget-usd",
+                    "25",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                env=_without_openrouter_env(),
+            )
+            payload = json.loads(result.stdout)
+            artifact_path = Path(payload["artifact_path"])
+            metrics = json.loads((artifact_path / "metrics.json").read_text())
+
+            self.assertEqual(payload["run_id"], "live_ab_bias_suite_seed_42")
+            self.assertEqual(metrics["run_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["adapter_call_count_total"], 0)
+            self.assertTrue(metrics["behavioral_screening_only"])
+            self.assertTrue((artifact_path / "case_results.json").exists())
+
+            export = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "broadcast_alpha",
+                    "export-ledger",
+                    str(artifact_path),
+                    "--format",
+                    "jsonl",
+                ],
+                cwd=APP_ROOT,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            )
+            self.assertTrue(json.loads(export.stdout)["verified"])
+
     def test_cli_run_live_model_sweep_creates_replayable_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
@@ -2203,13 +2334,26 @@ class BroadcastAlphaTests(unittest.TestCase):
         from broadcast_alpha.jlens_runtime import prepare_jlens_probe
         from broadcast_alpha.jlens_smoke import run_jlens_smoke
         from broadcast_alpha.ledger_stress import run_ledger_stress
+        from broadcast_alpha.live_ab_bias_suite import run_live_ab_bias_suite
         from broadcast_alpha.live_dsh import run_live_dsh, run_live_smoke
         from broadcast_alpha.live_gate import run_live_gate
         from broadcast_alpha.live_sequence import run_live_sequence
         from broadcast_alpha.reporting import build_result_report
 
+        def fake_live_ab_transport(request):
+            return {
+                "id": "chatcmpl_fake_live_ab_report",
+                "choices": [{"message": {"content": json.dumps({"choice": request["metadata"]["local_expected_choice"]})}}],
+                "usage": {"prompt_tokens": 20, "completion_tokens": 4, "total_tokens": 24},
+            }
+
         with tempfile.TemporaryDirectory() as tmp:
             artifact_root = Path(tmp)
+            env_file = artifact_root / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+            )
             run_ab_bias_suite(seed=42, artifact_root=artifact_root)
             run_ledger_stress(seed=42, receipt_count=10_000, artifact_root=artifact_root)
             run_synthetic(seed=42, artifact_root=artifact_root)
@@ -2268,6 +2412,19 @@ class BroadcastAlphaTests(unittest.TestCase):
                 seed=42,
                 artifact_root=artifact_root,
                 env={},
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            run_live_ab_bias_suite(
+                seed=42,
+                artifact_root=artifact_root,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                budget_usd=25.0,
+                case_limit=2,
+                transport=fake_live_ab_transport,
+                transport_label="real",
                 prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
             )
             result = build_result_report(artifact_root=artifact_root, output_dir=artifact_root / "final_report_seed_42")
@@ -2330,6 +2487,13 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["live_sequence_pilot_status"], "not_requested")
         self.assertFalse(metrics["live_sequence_pilot_promoted"])
         self.assertTrue(metrics["live_sequence_all_child_ledgers_verified"])
+        self.assertEqual(metrics["live_ab_bias_status"], "live_ab_executed")
+        self.assertEqual(metrics["live_ab_model_count"], 1)
+        self.assertEqual(metrics["live_ab_total_case_runs"], 2)
+        self.assertEqual(metrics["live_ab_adapter_call_count_total"], 2)
+        self.assertEqual(metrics["live_ab_accuracy"], 1.0)
+        self.assertTrue(metrics["live_ab_behavioral_screening_only"])
+        self.assertTrue(metrics["live_ab_not_sufficient_for_JLENS_PROVED"])
         self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
         self.assertGreaterEqual(metrics["ledger_stress_mixed_kind_count"], 6)
         self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
@@ -2358,6 +2522,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                 "live_smoke",
                 "live_dsh_pilot",
                 "live_sequence",
+                "live_ab_bias_suite",
             },
         )
         self.assertTrue(all(row["ledger_verified"] for row in result_table["rows"]))
@@ -2379,6 +2544,7 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertIn("Intervention gate", result_card)
         self.assertIn("Live model rail", result_card)
         self.assertIn("Live sequence", result_card)
+        self.assertIn("Live A/B behavioral", result_card)
 
     def test_cli_build_report_creates_replayable_report_artifact(self):
         from broadcast_alpha.ab_bias_suite import run_ab_bias_suite
@@ -2592,6 +2758,10 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_sequence_pilot_status"], "not_requested")
             self.assertFalse(metrics["live_sequence_pilot_promoted"])
             self.assertTrue(metrics["live_sequence_all_child_ledgers_verified"])
+            self.assertEqual(metrics["live_ab_bias_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["live_ab_adapter_call_count_total"], 0)
+            self.assertTrue(metrics["live_ab_behavioral_screening_only"])
+            self.assertTrue(metrics["live_ab_not_sufficient_for_JLENS_PROVED"])
             self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
             self.assertGreaterEqual(metrics["ledger_stress_mixed_kind_count"], 6)
             self.assertTrue(metrics["ledger_stress_tamper_detection_passed"])
@@ -2623,6 +2793,7 @@ class BroadcastAlphaTests(unittest.TestCase):
                     "live_smoke",
                     "live_dsh_pilot",
                     "live_sequence",
+                    "live_ab_bias_suite",
                     "final_report",
                 },
             )
@@ -2632,6 +2803,7 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_smoke_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_dsh_seed_42" / "task_runs.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "live_sequence_seed_42" / "manifest.json").exists())
+            self.assertTrue((result.artifact_path / "source_artifacts" / "live_ab_bias_suite_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_runtime_readiness_seed_42" / "model_manifest.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_smoke_seed_42" / "metrics.json").exists())
             self.assertTrue((result.artifact_path / "source_artifacts" / "jlens_hf_smoke_seed_42" / "metrics.json").exists())
@@ -2677,6 +2849,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertEqual(metrics["live_smoke_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_dsh_run_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_sequence_status"], "blocked_before_smoke")
+            self.assertEqual(metrics["live_ab_bias_status"], "blocked_no_live_execution")
+            self.assertEqual(metrics["live_ab_adapter_call_count_total"], 0)
             self.assertIn(metrics["jlens_hf_smoke_status"], {"passed", "blocked_missing_runtime", "failed"})
             self.assertIn(metrics["jlens_leak_probe_status"], {"passed", "blocked_missing_runtime", "failed"})
             self.assertIn(metrics["jlens_intervention_status"], {"blocked_no_differential_signal", "blocked_missing_leak_probe", "blocked_intervention_not_implemented"})
@@ -2829,6 +3003,62 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(by_id["live_model_backed_execution"]["status"], "proved")
         self.assertIn("Live model-backed execution recorded", by_id["live_model_backed_execution"]["evidence"])
         self.assertEqual(by_id["live_model_backed_execution"]["value"]["live_model_sweep_adapter_call_count_total"], 1)
+
+    def test_goal_audit_accepts_live_ab_bias_as_behavioral_model_backed_evidence(self):
+        from broadcast_alpha.goal_audit import audit_goal
+        from broadcast_alpha.live_ab_bias_suite import run_live_ab_bias_suite
+        from broadcast_alpha.orchestrator import run_all
+
+        def fake_transport(request):
+            return {
+                "id": "chatcmpl_fake_live_ab_audit",
+                "choices": [{"message": {"content": json.dumps({"choice": request["metadata"]["local_expected_choice"]})}}],
+                "usage": {"prompt_tokens": 20, "completion_tokens": 4, "total_tokens": 24},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact_root = Path(tmp)
+            env_file = artifact_root / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+            )
+            run_all(
+                seed=42,
+                tasks_per_cell=30,
+                epochs=5,
+                prereg_dir=APP_ROOT / "prereg",
+                artifact_root=artifact_root,
+                live_env={},
+            )
+            run_live_ab_bias_suite(
+                seed=42,
+                artifact_root=artifact_root,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                budget_usd=25.0,
+                case_limit=2,
+                transport=fake_transport,
+                transport_label="real",
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            result = audit_goal(
+                artifact_root=artifact_root,
+                output_dir=artifact_root / "goal_audit_seed_42",
+                repo_root=APP_ROOT,
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            requirements = json.loads((result.artifact_path / "requirements.json").read_text())
+
+        by_id = {item["id"]: item for item in requirements["items"]}
+        self.assertEqual(metrics["overall_status"], "complete_with_deferred_records")
+        self.assertEqual(by_id["live_model_backed_execution"]["status"], "proved")
+        self.assertEqual(by_id["live_model_backed_execution"]["value"]["live_ab_bias_adapter_call_count_total"], 2)
+        self.assertTrue(by_id["live_model_backed_execution"]["value"]["live_ab_bias_behavioral_screening_only"])
+        self.assertTrue(by_id["live_model_backed_execution"]["value"]["live_ab_bias_not_sufficient_for_JLENS_PROVED"])
+        self.assertEqual(by_id["jlens_or_clean_defer"]["status"], "deferred_with_record")
 
     def test_cli_audit_goal_creates_replayable_audit_artifact(self):
         from broadcast_alpha.orchestrator import run_all

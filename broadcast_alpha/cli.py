@@ -13,6 +13,7 @@ from .jlens_runtime import prepare_jlens_probe
 from .jlens_smoke import run_jlens_smoke
 from .ledger import Ledger
 from .ledger_stress import run_ledger_stress
+from .live_ab_bias_suite import run_live_ab_bias_suite
 from .live_dsh import run_live_dsh, run_live_smoke
 from .live_gate import run_live_gate
 from .live_model_sweep import run_live_model_sweep
@@ -155,6 +156,18 @@ def build_parser() -> argparse.ArgumentParser:
     live_sweep.add_argument("--model", action="append", dest="models")
     live_sweep.add_argument("--models", dest="models_csv", help="Comma-separated model slugs; overrides env model list")
     live_sweep.add_argument("--budget-usd", type=float, default=0.0)
+
+    live_ab = sub.add_parser("run-live-ab-bias-suite", help="Run a bounded live-provider A/B behavioral bias suite")
+    live_ab.add_argument("--prereg", default="prereg/PREREG_LIVE-01.md")
+    live_ab.add_argument("--seed", type=int, default=42)
+    live_ab.add_argument("--artifact-root", default="artifacts")
+    live_ab.add_argument("--env-file")
+    live_ab.add_argument("--authorize-api-spend", action="store_true")
+    live_ab.add_argument("--execute-live", action="store_true")
+    live_ab.add_argument("--model", action="append", dest="models")
+    live_ab.add_argument("--models", dest="models_csv", help="Comma-separated model slugs; overrides env model list")
+    live_ab.add_argument("--budget-usd", type=float, default=0.0)
+    live_ab.add_argument("--case-limit", type=int, default=4)
 
     live_readiness = sub.add_parser("prepare-live-smoke", help="Preview the sanitized one-call live smoke request")
     live_readiness.add_argument("--prereg", default="prereg/PREREG_LIVE-01.md")
@@ -378,6 +391,26 @@ def main(argv: list[str] | None = None) -> int:
             network_probe=args.network_probe,
             execute_live=args.execute_live,
             budget_usd=args.budget_usd,
+            models=explicit_models or None,
+            prereg_path=Path(args.prereg),
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-live-ab-bias-suite":
+        explicit_models = []
+        if args.models:
+            explicit_models.extend(args.models)
+        if args.models_csv:
+            explicit_models.extend([model.strip() for model in args.models_csv.split(",") if model.strip()])
+        result = run_live_ab_bias_suite(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            env_file=Path(args.env_file) if args.env_file else None,
+            api_spend_authorized=args.authorize_api_spend,
+            execute_live=args.execute_live,
+            budget_usd=args.budget_usd,
+            case_limit=args.case_limit,
             models=explicit_models or None,
             prereg_path=Path(args.prereg),
         )

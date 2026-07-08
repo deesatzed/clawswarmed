@@ -7,6 +7,7 @@
   "jlens_runtime_readiness": true,
   "jlens_smoke": true,
   "ledger_stress": true,
+  "live_ab_bias_suite": true,
   "live_dsh_pilot": true,
   "live_model_gate": true,
   "live_sequence": true,

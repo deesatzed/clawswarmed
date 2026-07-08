@@ -119,6 +119,14 @@
       "primary_metric": "sequence_status",
       "primary_value": "blocked_before_smoke",
       "section": "live_sequence"
+    },
+    {
+      "artifact_path": "artifacts/live_ab_bias_suite_seed_42",
+      "evidence_path": "artifacts/live_ab_bias_suite_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "accuracy",
+      "primary_value": 0.571429,
+      "section": "live_ab_bias_suite"
     }
   ]
 }
