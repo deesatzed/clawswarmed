@@ -1,0 +1,41 @@
+{
+  "causal_intervention_performed": false,
+  "d_model": 8,
+  "gradient_access_confirmed": true,
+  "input_token_count": 26,
+  "jlens_file": "/Volumes/WS4TB/claswarmed/external/jlens-runtime/jacobian-lens/jlens/__init__.py",
+  "layer_activation_access_confirmed": true,
+  "ledger_path": "artifacts/jlens_smoke_seed_42/ledger.jsonl",
+  "lens_layers_returned": [
+    0,
+    2
+  ],
+  "model_id": "reference_tiny_decoder",
+  "model_license": "Apache-2.0",
+  "model_source": "local_reference",
+  "n_prompts": 2,
+  "not_causal": true,
+  "not_sufficient_for_JLENS_PROVED": true,
+  "numpy_version": "2.4.4",
+  "outcome_leak_probe_performed": false,
+  "prompt_count": 2,
+  "python_version": "3.13.9",
+  "real_jlens_fit_apply_smoke": true,
+  "reason_codes": [],
+  "reference_repo_commit": "581d398613e5602a5af361e1c34d3a92ea82ba8e",
+  "replay_bundle_path": "artifacts/jlens_smoke_seed_42/replay",
+  "result_card_path": "artifacts/jlens_smoke_seed_42/result_card.md",
+  "run_id": "jlens_smoke_seed_42",
+  "runtime_python": "/Users/o2satz/miniforge3/envs/py313/bin/python3.13",
+  "seed": 42,
+  "smoke_payload_path": "artifacts/jlens_smoke_seed_42/smoke_payload.json",
+  "smoke_status": "passed",
+  "source_layers": [
+    0,
+    1,
+    2
+  ],
+  "source_repo": "/Volumes/WS4TB/claswarmed/external/jlens-runtime/jacobian-lens",
+  "torch_version": "2.11.0",
+  "transformers_version": "5.12.1"
+}

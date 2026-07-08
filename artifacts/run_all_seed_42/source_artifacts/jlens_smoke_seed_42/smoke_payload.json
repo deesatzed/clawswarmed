@@ -1,0 +1,32 @@
+{
+  "d_model": 8,
+  "gradient_access_confirmed": true,
+  "input_token_count": 26,
+  "jlens_file": "/Volumes/WS4TB/claswarmed/external/jlens-runtime/jacobian-lens/jlens/__init__.py",
+  "layer_activation_access_confirmed": true,
+  "lens_layers_returned": [
+    0,
+    2
+  ],
+  "lens_path": "/Volumes/WS4TB/claswarmed/claswarmed-app/artifacts/run_all_seed_42/source_artifacts/jlens_smoke_seed_42/external/lens.pt",
+  "model_id": "reference_tiny_decoder",
+  "model_license": "Apache-2.0",
+  "model_logits_shape": [
+    1,
+    32
+  ],
+  "model_source": "local_reference",
+  "n_prompts": 2,
+  "numpy_version": "2.4.4",
+  "prompt_count": 2,
+  "python_version": "3.13.9",
+  "smoke_status": "passed",
+  "source_layers": [
+    0,
+    1,
+    2
+  ],
+  "stderr_tail": "",
+  "torch_version": "2.11.0",
+  "transformers_version": "5.12.1"
+}

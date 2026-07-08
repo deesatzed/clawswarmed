@@ -104,6 +104,9 @@ Runtime readiness: {metrics['jlens_runtime_readiness_status']}
 Runtime reason codes: {metrics['jlens_runtime_reason_codes']}
 White-box model available: {metrics['jlens_runtime_white_box_model_available']}
 Tokenizer labels verified: {metrics['jlens_runtime_tokenizer_labels_all_single_token']}
+Fit/apply smoke: {metrics['jlens_smoke_status']}
+Fit/apply smoke real: {metrics['jlens_smoke_real_fit_apply']}
+Fit/apply smoke sufficient for proof: {not metrics['jlens_smoke_not_sufficient_for_JLENS_PROVED']}
 
 ## Live model rail
 
@@ -155,6 +158,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
     rqgm_path = artifact_root / "rqgm_seed_42"
     jlens_path = artifact_root / "jlens_gate_seed_42"
     jlens_runtime_path = artifact_root / "jlens_runtime_readiness_seed_42"
+    jlens_smoke_path = artifact_root / "jlens_smoke_seed_42"
     live_path = artifact_root / "live_gate_seed_42"
     live_smoke_path = artifact_root / "live_smoke_seed_42"
     live_dsh_path = artifact_root / "live_dsh_seed_42"
@@ -190,6 +194,18 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "reason_codes": ["jlens_runtime_readiness_artifact_missing"],
         }
         jlens_runtime_ledger_verified = False
+    if (jlens_smoke_path / "metrics.json").exists():
+        jlens_smoke_metrics = _read_json(jlens_smoke_path / "metrics.json")
+        jlens_smoke_ledger_verified = _verify_ledger(jlens_smoke_path)
+    else:
+        jlens_smoke_metrics = {
+            "smoke_status": "not_run",
+            "real_jlens_fit_apply_smoke": False,
+            "gradient_access_confirmed": False,
+            "layer_activation_access_confirmed": False,
+            "not_sufficient_for_JLENS_PROVED": True,
+        }
+        jlens_smoke_ledger_verified = False
     if (live_path / "metrics.json").exists():
         live_metrics = _read_json(live_path / "metrics.json")
         live_ledger_verified = _verify_ledger(live_path)
@@ -256,6 +272,7 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "rqgm_epoch": _verify_ledger(rqgm_path),
         "jlens_gate": _verify_ledger(jlens_path),
         "jlens_runtime_readiness": jlens_runtime_ledger_verified,
+        "jlens_smoke": jlens_smoke_ledger_verified,
         "live_model_gate": live_ledger_verified,
         "live_smoke": live_smoke_ledger_verified,
         "live_dsh_pilot": live_dsh_ledger_verified,
@@ -309,6 +326,14 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "primary_value": jlens_runtime_metrics["readiness_status"],
             "ledger_verified": ledger_verified["jlens_runtime_readiness"],
             "evidence_path": str(jlens_runtime_path / "metrics.json"),
+        },
+        {
+            "section": "jlens_smoke",
+            "artifact_path": str(jlens_smoke_path),
+            "primary_metric": "smoke_status",
+            "primary_value": jlens_smoke_metrics["smoke_status"],
+            "ledger_verified": ledger_verified["jlens_smoke"],
+            "evidence_path": str(jlens_smoke_path / "metrics.json"),
         },
         {
             "section": "live_model_gate",
@@ -553,6 +578,15 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "tokenizer_labels_all_single_token"
         ],
         "jlens_runtime_reason_codes": jlens_runtime_metrics["reason_codes"],
+        "jlens_smoke_status": jlens_smoke_metrics["smoke_status"],
+        "jlens_smoke_real_fit_apply": jlens_smoke_metrics["real_jlens_fit_apply_smoke"],
+        "jlens_smoke_gradient_access_confirmed": jlens_smoke_metrics["gradient_access_confirmed"],
+        "jlens_smoke_layer_activation_access_confirmed": jlens_smoke_metrics[
+            "layer_activation_access_confirmed"
+        ],
+        "jlens_smoke_not_sufficient_for_JLENS_PROVED": jlens_smoke_metrics[
+            "not_sufficient_for_JLENS_PROVED"
+        ],
         "live_model_rail_status": live_metrics["rail_status"],
         "live_adapter_call_performed": live_metrics["adapter_call_performed"],
         "live_model_run_performed": live_metrics["live_model_run_performed"],

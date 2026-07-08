@@ -16,6 +16,7 @@
     "final_report": true,
     "jlens_gate": true,
     "jlens_runtime_readiness": true,
+    "jlens_smoke": true,
     "ledger_stress": true,
     "live_dsh_pilot": true,
     "live_model_gate": true,
@@ -45,6 +46,9 @@
     "tokenizer_label_check_incomplete"
   ],
   "jlens_runtime_white_box_model_available": false,
+  "jlens_smoke_not_sufficient_for_JLENS_PROVED": true,
+  "jlens_smoke_real_fit_apply": true,
+  "jlens_smoke_status": "passed",
   "ledger_path": "artifacts/run_all_seed_42/ledger.jsonl",
   "ledger_stress_ledger_verified": true,
   "ledger_stress_mixed_kind_count": 8,

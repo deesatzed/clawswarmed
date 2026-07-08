@@ -24,6 +24,7 @@
       "value": {
         "jlens_gate": true,
         "jlens_runtime_readiness": true,
+        "jlens_smoke": true,
         "ledger_stress": true,
         "live_dsh_pilot": true,
         "live_model_gate": true,

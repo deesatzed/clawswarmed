@@ -51,6 +51,17 @@ It does not load model weights or run J-lens. It records whether the local
 Python environment has the required white-box dependencies and whether verdict
 labels have been checked with the selected tokenizer.
 
+The external reference smoke is:
+
+```bash
+python3 -m broadcast_alpha run-jlens-smoke --seed 42
+```
+
+This uses the cloned `anthropics/jacobian-lens` repo under
+`../external/jlens-runtime/` and runs the reference CPU-only `TinyDecoder`
+fit/apply path. It is a real Jacobian-lens smoke, but not an outcome-leak or
+causal proof.
+
 ## Exact Sources Verified
 
 - `https://github.com/anthropics/jacobian-lens`:

@@ -1,0 +1,7 @@
+{
+  "agent_1": {
+    "1": "J-lens smoke: runtime /Users/o2satz/miniforge3/envs/py313/bin/python3.13",
+    "2": "J-lens smoke: status passed; real fit/apply True",
+    "3": "J-lens smoke: no outcome-leak probe and no causal intervention performed"
+  }
+}

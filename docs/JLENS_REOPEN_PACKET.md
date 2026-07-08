@@ -59,6 +59,38 @@ and the verdict labels have not been checked with the selected tokenizer.
 Black-box model sources such as OpenRouter, OpenAI, Claude, Gemini, and Grok are
 rejected for real J-lens execution by this readiness gate.
 
+## Reference Fit/Apply Smoke
+
+The external runtime path is:
+
+- `../external/jlens-runtime/jacobian-lens`
+- `../external/jlens-runtime/.venv`
+
+The reference repo is cloned outside the app repo and remains at commit
+`581d398613e5602a5af361e1c34d3a92ea82ba8e`.
+
+Run:
+
+```bash
+python3 -m broadcast_alpha run-jlens-smoke --seed 42
+```
+
+This writes:
+
+- `artifacts/jlens_smoke_seed_42/metrics.json`
+- `artifacts/jlens_smoke_seed_42/smoke_payload.json`
+- `artifacts/jlens_smoke_seed_42/result_card.md`
+- `artifacts/jlens_smoke_seed_42/ledger.jsonl`
+- `artifacts/jlens_smoke_seed_42/replay/contexts.json`
+
+Current checked-in smoke status is `passed`. It fitted and applied a real
+Jacobian lens on the reference repo's CPU-only `TinyDecoder`, confirming that
+the external runtime can execute `jlens.fit()` and `JacobianLens.apply()` with
+gradient/layer access.
+
+This smoke is still not `JLENS_PROVED`: it is not a Hugging Face gatekeeper
+model, not an outcome-leak probe, and not a causal intervention.
+
 ## Still Frozen Records
 
 - `JLENS-FREEZE-001` remains valid as a runtime/model/intervention defer.

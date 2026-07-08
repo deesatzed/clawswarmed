@@ -6,6 +6,7 @@ from .experiments import run_dsh, run_rqgm, run_synthetic
 from .goal_audit import audit_goal
 from .jlens import run_jlens_gate
 from .jlens_runtime import prepare_jlens_probe
+from .jlens_smoke import run_jlens_smoke
 from .ledger import Ledger
 from .ledger_stress import run_ledger_stress
 from .live_dsh import run_live_dsh, run_live_smoke
@@ -62,6 +63,13 @@ def build_parser() -> argparse.ArgumentParser:
     jlens_prepare.add_argument("--dtype", default="float32")
     jlens_prepare.add_argument("--precision", default="full")
     jlens_prepare.add_argument("--no-require-jacobian-lens", action="store_true")
+
+    jlens_smoke = sub.add_parser("run-jlens-smoke", help="Run the external reference J-lens tiny fit/apply smoke")
+    jlens_smoke.add_argument("--seed", type=int, default=42)
+    jlens_smoke.add_argument("--artifact-root", default="artifacts")
+    jlens_smoke.add_argument("--runtime-python", default="../external/jlens-runtime/.venv/bin/python")
+    jlens_smoke.add_argument("--source-repo", default="../external/jlens-runtime/jacobian-lens")
+    jlens_smoke.add_argument("--timeout-seconds", type=int, default=120)
 
     live = sub.add_parser("run-live-gate", help="Inspect live model provider readiness without API calls")
     live.add_argument("--seed", type=int, default=42)
@@ -211,6 +219,17 @@ def main(argv: list[str] | None = None) -> int:
             dtype=args.dtype,
             precision=args.precision,
             require_jacobian_lens=not args.no_require_jacobian_lens,
+        )
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-jlens-smoke":
+        result = run_jlens_smoke(
+            seed=args.seed,
+            artifact_root=Path(args.artifact_root),
+            runtime_python=Path(args.runtime_python),
+            source_repo=Path(args.source_repo),
+            timeout_seconds=args.timeout_seconds,
         )
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0

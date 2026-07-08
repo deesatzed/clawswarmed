@@ -49,6 +49,14 @@
       "section": "jlens_runtime_readiness"
     },
     {
+      "artifact_path": "artifacts/run_all_seed_42/source_artifacts/jlens_smoke_seed_42",
+      "evidence_path": "artifacts/run_all_seed_42/source_artifacts/jlens_smoke_seed_42/metrics.json",
+      "ledger_verified": true,
+      "primary_metric": "smoke_status",
+      "primary_value": "passed",
+      "section": "jlens_smoke"
+    },
+    {
       "artifact_path": "artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42",
       "evidence_path": "artifacts/run_all_seed_42/source_artifacts/live_gate_seed_42/metrics.json",
       "ledger_verified": true,
