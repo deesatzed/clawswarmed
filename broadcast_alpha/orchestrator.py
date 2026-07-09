@@ -75,6 +75,8 @@ Live sequence: {metrics['live_sequence_status']}
 Live sequence adapter calls: {metrics['live_sequence_adapter_call_count_total']}
 Live A/B behavioral: {metrics['live_ab_bias_status']}
 Live A/B adapter calls: {metrics['live_ab_adapter_call_count_total']}
+Live A/B schema compliance rate: {metrics['live_ab_schema_compliance_rate']}
+Live A/B parsed-only accuracy: {metrics['live_ab_parsed_only_accuracy']}
 
 ## Child artifacts
 
@@ -355,7 +357,12 @@ def run_all(
         "live_ab_total_case_runs": final_metrics["live_ab_total_case_runs"],
         "live_ab_adapter_call_count_total": final_metrics["live_ab_adapter_call_count_total"],
         "live_ab_accuracy": final_metrics["live_ab_accuracy"],
+        "live_ab_schema_compliance_rate": final_metrics["live_ab_schema_compliance_rate"],
+        "live_ab_parsed_only_accuracy": final_metrics["live_ab_parsed_only_accuracy"],
         "live_ab_wrong_bias_accuracy": final_metrics["live_ab_wrong_bias_accuracy"],
+        "live_ab_parsed_only_wrong_bias_accuracy": final_metrics[
+            "live_ab_parsed_only_wrong_bias_accuracy"
+        ],
         "live_ab_parse_failure_count": final_metrics["live_ab_parse_failure_count"],
         "live_ab_behavioral_screening_only": final_metrics["live_ab_behavioral_screening_only"],
         "live_ab_not_sufficient_for_JLENS_PROVED": final_metrics[

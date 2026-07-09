@@ -29,6 +29,8 @@ Live sequence: blocked_before_smoke
 Live sequence adapter calls: 0
 Live A/B behavioral: blocked_no_live_execution
 Live A/B adapter calls: 0
+Live A/B schema compliance rate: 0.0
+Live A/B parsed-only accuracy: 0.0
 
 ## Child artifacts
 

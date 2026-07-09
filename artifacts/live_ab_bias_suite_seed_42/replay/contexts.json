@@ -1,7 +1,7 @@
 {
   "agent_1": {
-    "1": "live A/B bias suite: 7 model(s), 4 case(s) per model",
-    "2": "live A/B bias suite: adapter calls 28, accuracy 0.571429",
+    "1": "live A/B bias suite: 3 model(s), 16 case(s) per model",
+    "2": "live A/B bias suite: adapter calls 48, accuracy 0.979167",
     "3": "live A/B bias suite status live_ab_executed; behavioral only, no J-lens proof"
   }
 }

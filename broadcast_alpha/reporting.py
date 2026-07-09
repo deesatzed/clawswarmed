@@ -148,7 +148,10 @@ Live A/B models: {metrics['live_ab_model_count']}
 Live A/B case runs: {metrics['live_ab_total_case_runs']}
 Live A/B adapter calls: {metrics['live_ab_adapter_call_count_total']}
 Live A/B accuracy: {metrics['live_ab_accuracy']}
+Live A/B schema compliance rate: {metrics['live_ab_schema_compliance_rate']}
+Live A/B parsed-only accuracy: {metrics['live_ab_parsed_only_accuracy']}
 Live A/B wrong-bias accuracy: {metrics['live_ab_wrong_bias_accuracy']}
+Live A/B parsed-only wrong-bias accuracy: {metrics['live_ab_parsed_only_wrong_bias_accuracy']}
 Live A/B parse failures: {metrics['live_ab_parse_failure_count']}
 Live A/B behavioral only: {metrics['live_ab_behavioral_screening_only']}
 
@@ -422,15 +425,27 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
             "live_model_run_performed_count": 0,
             "valid_choice_count": 0,
             "parse_failure_count": 0,
+            "schema_compliance_rate": 0.0,
             "accuracy": 0.0,
+            "parsed_only_accuracy": 0.0,
             "wrong_bias_accuracy": 0.0,
             "neutral_accuracy": 0.0,
+            "parsed_only_wrong_bias_accuracy": 0.0,
+            "parsed_only_neutral_accuracy": 0.0,
+            "wrong_bias_harm": 0.0,
+            "parsed_only_wrong_bias_harm": 0.0,
             "behavioral_screening_only": True,
             "not_sufficient_for_JLENS_PROVED": True,
             "secret_values_recorded": False,
             "reason_codes": ["live_ab_bias_artifact_missing"],
         }
         live_ab_ledger_verified = False
+    live_ab_metrics.setdefault("schema_compliance_rate", 0.0)
+    live_ab_metrics.setdefault("parsed_only_accuracy", 0.0)
+    live_ab_metrics.setdefault("parsed_only_wrong_bias_accuracy", 0.0)
+    live_ab_metrics.setdefault("parsed_only_neutral_accuracy", 0.0)
+    live_ab_metrics.setdefault("wrong_bias_harm", 0.0)
+    live_ab_metrics.setdefault("parsed_only_wrong_bias_harm", 0.0)
 
     ledger_verified = {
         "ab_bias_suite": ab_bias_ledger_verified,
@@ -789,7 +804,12 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
                 "total_case_runs": live_ab_metrics["total_case_runs"],
                 "adapter_call_count_total": live_ab_metrics["adapter_call_count_total"],
                 "accuracy": live_ab_metrics["accuracy"],
+                "schema_compliance_rate": live_ab_metrics["schema_compliance_rate"],
+                "parsed_only_accuracy": live_ab_metrics["parsed_only_accuracy"],
                 "wrong_bias_accuracy": live_ab_metrics["wrong_bias_accuracy"],
+                "parsed_only_wrong_bias_accuracy": live_ab_metrics[
+                    "parsed_only_wrong_bias_accuracy"
+                ],
                 "behavioral_screening_only": live_ab_metrics["behavioral_screening_only"],
                 "not_sufficient_for_JLENS_PROVED": live_ab_metrics[
                     "not_sufficient_for_JLENS_PROVED"
@@ -980,9 +1000,21 @@ def build_result_report(artifact_root: Path | None = None, output_dir: Path | No
         "live_ab_model_run_performed_count": live_ab_metrics["live_model_run_performed_count"],
         "live_ab_valid_choice_count": live_ab_metrics["valid_choice_count"],
         "live_ab_parse_failure_count": live_ab_metrics["parse_failure_count"],
+        "live_ab_schema_compliance_rate": live_ab_metrics["schema_compliance_rate"],
         "live_ab_accuracy": live_ab_metrics["accuracy"],
+        "live_ab_parsed_only_accuracy": live_ab_metrics["parsed_only_accuracy"],
         "live_ab_wrong_bias_accuracy": live_ab_metrics["wrong_bias_accuracy"],
         "live_ab_neutral_accuracy": live_ab_metrics["neutral_accuracy"],
+        "live_ab_parsed_only_wrong_bias_accuracy": live_ab_metrics[
+            "parsed_only_wrong_bias_accuracy"
+        ],
+        "live_ab_parsed_only_neutral_accuracy": live_ab_metrics[
+            "parsed_only_neutral_accuracy"
+        ],
+        "live_ab_wrong_bias_harm": live_ab_metrics["wrong_bias_harm"],
+        "live_ab_parsed_only_wrong_bias_harm": live_ab_metrics[
+            "parsed_only_wrong_bias_harm"
+        ],
         "live_ab_behavioral_screening_only": live_ab_metrics["behavioral_screening_only"],
         "live_ab_not_sufficient_for_JLENS_PROVED": live_ab_metrics[
             "not_sufficient_for_JLENS_PROVED"

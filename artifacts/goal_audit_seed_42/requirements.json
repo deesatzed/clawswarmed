@@ -204,7 +204,7 @@
       "requirement": "At least one real provider-backed model call has been made and recorded before live evidence is claimed.",
       "status": "proved",
       "value": {
-        "live_ab_bias_adapter_call_count_total": 28,
+        "live_ab_bias_adapter_call_count_total": 48,
         "live_ab_bias_behavioral_screening_only": true,
         "live_ab_bias_not_sufficient_for_JLENS_PROVED": true,
         "live_model_run_performed": true,

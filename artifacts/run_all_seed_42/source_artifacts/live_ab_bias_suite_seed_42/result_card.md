@@ -12,7 +12,10 @@ Attempted models: 0
 Cases per model: 4
 Adapter calls: 0
 Accuracy: 0.0
+Schema compliance rate: 0.0
+Parsed-only accuracy: 0.0
 Wrong-bias accuracy: 0.0
+Parsed-only wrong-bias accuracy: 0.0
 Parse failures: 0
 Behavioral screening only: True
 Sufficient for J-lens proof: false

@@ -3,7 +3,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from .ab_bias_suite import BIAS_CONDITIONS, generate_ab_cases
+from .ab_bias_suite import (
+    BIAS_CONDITIONS,
+    PANEL_COMPOSITIONS,
+    TASK_FAMILIES,
+    generate_ab_cases,
+)
 from .ledger import Ledger
 from .live_gate import (
     _build_openrouter_request,
@@ -78,7 +83,19 @@ def _case_is_correct(case: dict, choice: str | None) -> bool:
 def _select_cases(seed: int, case_limit: int) -> list[dict]:
     if case_limit < 1:
         raise ValueError("case_limit must be at least 1")
-    return generate_ab_cases(seed=seed)[:case_limit]
+    panel_order = {name: index for index, name in enumerate(PANEL_COMPOSITIONS)}
+    family_order = {name: index for index, name in enumerate(TASK_FAMILIES)}
+    bias_order = {name: index for index, name in enumerate(BIAS_CONDITIONS)}
+    cases = sorted(
+        generate_ab_cases(seed=seed),
+        key=lambda case: (
+            panel_order[case["panel_composition"]],
+            family_order[case["task_family"]],
+            bias_order[case["bias_condition"]],
+            case["case_id"],
+        ),
+    )
+    return cases[:case_limit]
 
 
 def _build_case_request(api_key: str, model: str, seed: int, case: dict, case_index: int) -> dict:
@@ -129,6 +146,16 @@ def _accuracy(rows: list[dict]) -> float:
     return round(sum(1 for row in rows if row["correct"]) / len(rows), 6)
 
 
+def _rate(numerator: int, denominator: int) -> float:
+    if denominator < 1:
+        return 0.0
+    return round(numerator / denominator, 6)
+
+
+def _parsed_rows(rows: list[dict]) -> list[dict]:
+    return [row for row in rows if row.get("choice_parse_status") == "parsed"]
+
+
 def _result_card(run_id: str, metrics: dict) -> str:
     if metrics["run_status"] == "blocked_no_live_execution":
         decision = "Live A/B behavioral run blocked. No adapter calls were made."
@@ -151,7 +178,10 @@ Attempted models: {metrics['attempted_model_count']}
 Cases per model: {metrics['case_count_per_model']}
 Adapter calls: {metrics['adapter_call_count_total']}
 Accuracy: {metrics['accuracy']}
+Schema compliance rate: {metrics['schema_compliance_rate']}
+Parsed-only accuracy: {metrics['parsed_only_accuracy']}
 Wrong-bias accuracy: {metrics['wrong_bias_accuracy']}
+Parsed-only wrong-bias accuracy: {metrics['parsed_only_wrong_bias_accuracy']}
 Parse failures: {metrics['parse_failure_count']}
 Behavioral screening only: {metrics['behavioral_screening_only']}
 Sufficient for J-lens proof: false
@@ -276,23 +306,45 @@ def run_live_ab_bias_suite(
                 case_rows.append(row)
                 model_case_rows.append(row)
                 ledger.append("live_ab_bias_case_result", row)
+            parsed_model_case_rows = _parsed_rows(model_case_rows)
+            parsed_model_neutral_rows = [
+                row for row in parsed_model_case_rows if row["bias_condition"] == "neutral"
+            ]
+            parsed_model_wrong_bias_rows = [
+                row for row in parsed_model_case_rows if row["bias_condition"] == "wrong_bias"
+            ]
+            model_neutral_accuracy = _accuracy(
+                [row for row in model_case_rows if row["bias_condition"] == "neutral"]
+            )
+            model_wrong_bias_accuracy = _accuracy(
+                [row for row in model_case_rows if row["bias_condition"] == "wrong_bias"]
+            )
+            model_parsed_neutral_accuracy = _accuracy(parsed_model_neutral_rows)
+            model_parsed_wrong_bias_accuracy = _accuracy(parsed_model_wrong_bias_rows)
+            model_valid_choice_count = len(parsed_model_case_rows)
+            model_parse_failure_count = len(model_case_rows) - model_valid_choice_count
             model_rows.append(
                 {
                     "model_index": model_index,
                     "model_ref": model_ref,
                     "case_count": len(model_case_rows),
-                    "valid_choice_count": sum(
-                        1 for row in model_case_rows if row["choice_parse_status"] == "parsed"
-                    ),
-                    "parse_failure_count": sum(
-                        1 for row in model_case_rows if row["choice_parse_status"] != "parsed"
+                    "valid_choice_count": model_valid_choice_count,
+                    "parse_failure_count": model_parse_failure_count,
+                    "schema_compliance_rate": _rate(
+                        model_valid_choice_count, len(model_case_rows)
                     ),
                     "accuracy": _accuracy(model_case_rows),
-                    "wrong_bias_accuracy": _accuracy(
-                        [row for row in model_case_rows if row["bias_condition"] == "wrong_bias"]
+                    "parsed_only_accuracy": _accuracy(parsed_model_case_rows),
+                    "wrong_bias_accuracy": model_wrong_bias_accuracy,
+                    "neutral_accuracy": model_neutral_accuracy,
+                    "parsed_only_wrong_bias_accuracy": model_parsed_wrong_bias_accuracy,
+                    "parsed_only_neutral_accuracy": model_parsed_neutral_accuracy,
+                    "wrong_bias_harm": round(
+                        model_neutral_accuracy - model_wrong_bias_accuracy, 6
                     ),
-                    "neutral_accuracy": _accuracy(
-                        [row for row in model_case_rows if row["bias_condition"] == "neutral"]
+                    "parsed_only_wrong_bias_harm": round(
+                        model_parsed_neutral_accuracy - model_parsed_wrong_bias_accuracy,
+                        6,
                     ),
                     "live_model_run_performed": transport_label != "fake" and bool(model_case_rows),
                 }
@@ -313,6 +365,19 @@ def run_live_ab_bias_suite(
 
     valid_choice_count = sum(1 for row in case_rows if row.get("choice_parse_status") == "parsed")
     parse_failure_count = sum(1 for row in case_rows if row.get("choice_parse_status") != "parsed")
+    parsed_case_rows = _parsed_rows(case_rows)
+    neutral_rows = [row for row in case_rows if row.get("bias_condition") == "neutral"]
+    wrong_bias_rows = [row for row in case_rows if row.get("bias_condition") == "wrong_bias"]
+    parsed_neutral_rows = [
+        row for row in parsed_case_rows if row.get("bias_condition") == "neutral"
+    ]
+    parsed_wrong_bias_rows = [
+        row for row in parsed_case_rows if row.get("bias_condition") == "wrong_bias"
+    ]
+    neutral_accuracy = _accuracy(neutral_rows)
+    wrong_bias_accuracy = _accuracy(wrong_bias_rows)
+    parsed_neutral_accuracy = _accuracy(parsed_neutral_rows)
+    parsed_wrong_bias_accuracy = _accuracy(parsed_wrong_bias_rows)
     live_model_run_performed_count = sum(
         1 for row in model_rows if row["live_model_run_performed"]
     )
@@ -330,12 +395,16 @@ def run_live_ab_bias_suite(
         "live_model_run_performed_count": live_model_run_performed_count,
         "valid_choice_count": valid_choice_count,
         "parse_failure_count": parse_failure_count,
+        "schema_compliance_rate": _rate(valid_choice_count, len(case_rows)),
         "accuracy": _accuracy(case_rows),
-        "wrong_bias_accuracy": _accuracy(
-            [row for row in case_rows if row.get("bias_condition") == "wrong_bias"]
-        ),
-        "neutral_accuracy": _accuracy(
-            [row for row in case_rows if row.get("bias_condition") == "neutral"]
+        "parsed_only_accuracy": _accuracy(parsed_case_rows),
+        "wrong_bias_accuracy": wrong_bias_accuracy,
+        "neutral_accuracy": neutral_accuracy,
+        "parsed_only_wrong_bias_accuracy": parsed_wrong_bias_accuracy,
+        "parsed_only_neutral_accuracy": parsed_neutral_accuracy,
+        "wrong_bias_harm": round(neutral_accuracy - wrong_bias_accuracy, 6),
+        "parsed_only_wrong_bias_harm": round(
+            parsed_neutral_accuracy - parsed_wrong_bias_accuracy, 6
         ),
         "bias_conditions": BIAS_CONDITIONS,
         "budget_usd": budget_usd,

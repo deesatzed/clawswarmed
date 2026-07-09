@@ -27,6 +27,10 @@
   "not_jlens_evidence": true,
   "not_sufficient_for_JLENS_PROVED": true,
   "parse_failure_count": 0,
+  "parsed_only_accuracy": 0.0,
+  "parsed_only_neutral_accuracy": 0.0,
+  "parsed_only_wrong_bias_accuracy": 0.0,
+  "parsed_only_wrong_bias_harm": 0.0,
   "prereg_exists": true,
   "prereg_path": "prereg/PREREG_LIVE-01.md",
   "provider": "openrouter",
@@ -41,10 +45,12 @@
   "result_card_path": "artifacts/run_all_seed_42/source_artifacts/live_ab_bias_suite_seed_42/result_card.md",
   "run_id": "live_ab_bias_suite_seed_42",
   "run_status": "blocked_no_live_execution",
+  "schema_compliance_rate": 0.0,
   "secret_values_recorded": false,
   "seed": 42,
   "total_case_runs": 0,
   "transport_label": "real",
   "valid_choice_count": 0,
-  "wrong_bias_accuracy": 0.0
+  "wrong_bias_accuracy": 0.0,
+  "wrong_bias_harm": 0.0
 }

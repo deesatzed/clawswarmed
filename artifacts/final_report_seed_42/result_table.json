@@ -125,7 +125,7 @@
       "evidence_path": "artifacts/live_ab_bias_suite_seed_42/metrics.json",
       "ledger_verified": true,
       "primary_metric": "accuracy",
-      "primary_value": 0.571429,
+      "primary_value": 0.979167,
       "section": "live_ab_bias_suite"
     }
   ]

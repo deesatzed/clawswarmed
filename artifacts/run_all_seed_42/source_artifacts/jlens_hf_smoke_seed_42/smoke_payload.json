@@ -123,7 +123,7 @@
     2,
     3
   ],
-  "stderr_tail": "\nLoading weights:   0%|          | 0/64 [00:00<?, ?it/s]\nLoading weights: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 64/64 [00:00<00:00, 17122.88it/s]\n",
+  "stderr_tail": "\nLoading weights:   0%|          | 0/64 [00:00<?, ?it/s]\nLoading weights: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 64/64 [00:00<00:00, 15357.60it/s]\n",
   "tokenizer_class": "GPT2Tokenizer",
   "torch_version": "2.11.0",
   "transformers_version": "5.12.1",

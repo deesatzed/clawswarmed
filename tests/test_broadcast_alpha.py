@@ -231,6 +231,20 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertTrue(zero_correct)
         self.assertTrue(all(case["expected_choice"] == "reject_all" for case in zero_correct))
 
+    def test_live_ab_bias_selector_balances_task_families_and_conditions(self):
+        from broadcast_alpha.ab_bias_suite import BIAS_CONDITIONS, TASK_FAMILIES
+        from broadcast_alpha.live_ab_bias_suite import _select_cases
+
+        cases = _select_cases(seed=42, case_limit=16)
+
+        self.assertEqual(len(cases), 16)
+        self.assertEqual({case["task_family"] for case in cases}, set(TASK_FAMILIES))
+        self.assertEqual({case["bias_condition"] for case in cases}, set(BIAS_CONDITIONS))
+        self.assertEqual(
+            {case["panel_composition"] for case in cases},
+            {"two_correct_one_wrong"},
+        )
+
     def test_ab_reference_judges_expose_bias_controls_without_jlens_claims(self):
         from broadcast_alpha.ab_bias_suite import evaluate_ab_suite, generate_ab_cases
 
@@ -1958,18 +1972,81 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["live_model_run_performed_count"], 0)
         self.assertEqual(metrics["valid_choice_count"], 4)
         self.assertEqual(metrics["parse_failure_count"], 0)
+        self.assertEqual(metrics["schema_compliance_rate"], 1.0)
         self.assertEqual(metrics["accuracy"], 1.0)
+        self.assertEqual(metrics["parsed_only_accuracy"], 1.0)
+        self.assertEqual(metrics["parsed_only_neutral_accuracy"], 1.0)
+        self.assertEqual(metrics["parsed_only_wrong_bias_accuracy"], 1.0)
         self.assertTrue(metrics["behavioral_screening_only"])
         self.assertTrue(metrics["not_sufficient_for_JLENS_PROVED"])
         self.assertTrue(ledger.verify_chain())
         self.assertEqual(len(captured_requests), 4)
         self.assertEqual(len(model_results["models"]), 2)
+        self.assertTrue(
+            all(model["schema_compliance_rate"] == 1.0 for model in model_results["models"])
+        )
+        self.assertTrue(
+            all(model["parsed_only_accuracy"] == 1.0 for model in model_results["models"])
+        )
         self.assertEqual(len(case_results["cases"]), 4)
         represented_conditions = {row["bias_condition"] for row in case_results["cases"]}
         self.assertIn("neutral", represented_conditions)
         self.assertIn("wrong_bias", represented_conditions)
         self.assertNotIn("dummy-secret-value", combined_artifacts)
         self.assertNotIn("local_expected_choice", json.dumps([request["body"] for request in captured_requests]))
+
+    def test_live_ab_bias_suite_reports_schema_and_parsed_only_metrics(self):
+        from broadcast_alpha.live_ab_bias_suite import run_live_ab_bias_suite
+
+        captured_requests = []
+
+        def fake_transport(request):
+            captured_requests.append(request)
+            if len(captured_requests) == 2:
+                return {
+                    "id": "chatcmpl_fake_live_ab_invalid",
+                    "choices": [{"message": {"content": "I choose A because it feels right."}}],
+                    "usage": {"prompt_tokens": 20, "completion_tokens": 8, "total_tokens": 28},
+                }
+            choice = request["metadata"]["local_expected_choice"]
+            return {
+                "id": "chatcmpl_fake_live_ab_valid",
+                "choices": [{"message": {"content": json.dumps({"choice": choice})}}],
+                "usage": {"prompt_tokens": 20, "completion_tokens": 4, "total_tokens": 24},
+            }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            env_file = tmp_path / "provider.env"
+            env_file.write_text(
+                "OPENROUTER_API_KEY=dummy-secret-value\n"
+                "OPENROUTER_MODEL_1=test/model-a\n"
+            )
+            result = run_live_ab_bias_suite(
+                seed=42,
+                artifact_root=tmp_path,
+                env_file=env_file,
+                env={},
+                api_spend_authorized=True,
+                execute_live=True,
+                budget_usd=25.0,
+                case_limit=2,
+                transport=fake_transport,
+                transport_label="fake",
+                prereg_path=APP_ROOT / "prereg" / "PREREG_LIVE-01.md",
+            )
+            metrics = json.loads((result.artifact_path / "metrics.json").read_text())
+            model_results = json.loads((result.artifact_path / "model_results.json").read_text())
+
+        self.assertEqual(metrics["valid_choice_count"], 1)
+        self.assertEqual(metrics["parse_failure_count"], 1)
+        self.assertEqual(metrics["schema_compliance_rate"], 0.5)
+        self.assertEqual(metrics["accuracy"], 0.5)
+        self.assertEqual(metrics["parsed_only_accuracy"], 1.0)
+        self.assertEqual(metrics["parsed_only_neutral_accuracy"], 1.0)
+        self.assertEqual(metrics["parsed_only_wrong_bias_accuracy"], 0.0)
+        self.assertEqual(model_results["models"][0]["schema_compliance_rate"], 0.5)
+        self.assertEqual(model_results["models"][0]["parsed_only_accuracy"], 1.0)
 
     def test_cli_run_live_ab_bias_suite_creates_blocked_replayable_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -2492,6 +2569,9 @@ class BroadcastAlphaTests(unittest.TestCase):
         self.assertEqual(metrics["live_ab_total_case_runs"], 2)
         self.assertEqual(metrics["live_ab_adapter_call_count_total"], 2)
         self.assertEqual(metrics["live_ab_accuracy"], 1.0)
+        self.assertEqual(metrics["live_ab_schema_compliance_rate"], 1.0)
+        self.assertEqual(metrics["live_ab_parsed_only_accuracy"], 1.0)
+        self.assertEqual(metrics["live_ab_parsed_only_wrong_bias_accuracy"], 1.0)
         self.assertTrue(metrics["live_ab_behavioral_screening_only"])
         self.assertTrue(metrics["live_ab_not_sufficient_for_JLENS_PROVED"])
         self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)
@@ -2760,6 +2840,8 @@ class BroadcastAlphaTests(unittest.TestCase):
             self.assertTrue(metrics["live_sequence_all_child_ledgers_verified"])
             self.assertEqual(metrics["live_ab_bias_status"], "blocked_no_live_execution")
             self.assertEqual(metrics["live_ab_adapter_call_count_total"], 0)
+            self.assertEqual(metrics["live_ab_schema_compliance_rate"], 0.0)
+            self.assertEqual(metrics["live_ab_parsed_only_accuracy"], 0.0)
             self.assertTrue(metrics["live_ab_behavioral_screening_only"])
             self.assertTrue(metrics["live_ab_not_sufficient_for_JLENS_PROVED"])
             self.assertEqual(metrics["ledger_stress_synthetic_receipt_count"], 10_000)

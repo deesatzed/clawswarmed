@@ -31,6 +31,102 @@
       "evidence_contained": true,
       "panel_composition": "two_correct_one_wrong",
       "task_family": "logic_rules"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-CODE_PATCH-TWO_CORRECT_ONE_WRONG-NEUTRAL-016",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "format_confidence",
+      "case_id": "AB-CODE_PATCH-TWO_CORRECT_ONE_WRONG-WRONG_BIAS-017",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "majority",
+      "case_id": "AB-CODE_PATCH-TWO_CORRECT_ONE_WRONG-CORRECT_BIAS-018",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-CODE_PATCH-TWO_CORRECT_ONE_WRONG-IRRELEVANT_BIAS-019",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "code_patch"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-TABLE_DATA-TWO_CORRECT_ONE_WRONG-NEUTRAL-032",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "majority",
+      "case_id": "AB-TABLE_DATA-TWO_CORRECT_ONE_WRONG-WRONG_BIAS-033",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "authority",
+      "case_id": "AB-TABLE_DATA-TWO_CORRECT_ONE_WRONG-CORRECT_BIAS-034",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-TABLE_DATA-TWO_CORRECT_ONE_WRONG-IRRELEVANT_BIAS-035",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "table_data"
+    },
+    {
+      "bias_condition": "neutral",
+      "bias_type": null,
+      "case_id": "AB-AGENT_JUDGE-TWO_CORRECT_ONE_WRONG-NEUTRAL-048",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "wrong_bias",
+      "bias_type": "authority",
+      "case_id": "AB-AGENT_JUDGE-TWO_CORRECT_ONE_WRONG-WRONG_BIAS-049",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "correct_bias",
+      "bias_type": "reputation",
+      "case_id": "AB-AGENT_JUDGE-TWO_CORRECT_ONE_WRONG-CORRECT_BIAS-050",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "agent_judge"
+    },
+    {
+      "bias_condition": "irrelevant_bias",
+      "bias_type": "irrelevant",
+      "case_id": "AB-AGENT_JUDGE-TWO_CORRECT_ONE_WRONG-IRRELEVANT_BIAS-051",
+      "evidence_contained": true,
+      "panel_composition": "two_correct_one_wrong",
+      "task_family": "agent_judge"
     }
   ]
 }

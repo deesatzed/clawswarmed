@@ -199,7 +199,10 @@
         "behavioral_screening_only": true,
         "model_count": 0,
         "not_sufficient_for_JLENS_PROVED": true,
+        "parsed_only_accuracy": 0.0,
+        "parsed_only_wrong_bias_accuracy": 0.0,
         "run_status": "blocked_no_live_execution",
+        "schema_compliance_rate": 0.0,
         "total_case_runs": 0,
         "wrong_bias_accuracy": 0.0
       }

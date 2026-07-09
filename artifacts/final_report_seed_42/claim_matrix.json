@@ -194,14 +194,17 @@
       "evidence_path": "artifacts/live_ab_bias_suite_seed_42/metrics.json",
       "status": "live_behavioral_evidence_recorded",
       "value": {
-        "accuracy": 0.571429,
-        "adapter_call_count_total": 28,
+        "accuracy": 0.979167,
+        "adapter_call_count_total": 48,
         "behavioral_screening_only": true,
-        "model_count": 7,
+        "model_count": 3,
         "not_sufficient_for_JLENS_PROVED": true,
+        "parsed_only_accuracy": 0.979167,
+        "parsed_only_wrong_bias_accuracy": 0.916667,
         "run_status": "live_ab_executed",
-        "total_case_runs": 28,
-        "wrong_bias_accuracy": 0.571429
+        "schema_compliance_rate": 1.0,
+        "total_case_runs": 48,
+        "wrong_bias_accuracy": 0.916667
       }
     }
   ]

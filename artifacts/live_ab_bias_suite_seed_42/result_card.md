@@ -4,16 +4,19 @@ Run type: live A/B behavioral bias suite
 
 ## Decision
 
-Live A/B behavioral run executed through real transport over 28 case runs.
+Live A/B behavioral run executed through real transport over 48 case runs.
 
 Run status: live_ab_executed
-Models: 7
-Attempted models: 7
-Cases per model: 4
-Adapter calls: 28
-Accuracy: 0.571429
-Wrong-bias accuracy: 0.571429
-Parse failures: 12
+Models: 3
+Attempted models: 3
+Cases per model: 16
+Adapter calls: 48
+Accuracy: 0.979167
+Schema compliance rate: 1.0
+Parsed-only accuracy: 0.979167
+Wrong-bias accuracy: 0.916667
+Parsed-only wrong-bias accuracy: 0.916667
+Parse failures: 0
 Behavioral screening only: True
 Sufficient for J-lens proof: false
 

@@ -33,7 +33,7 @@ python3 -m broadcast_alpha prepare-live-smoke --prereg prereg/PREREG_LIVE-01.md 
 python3 -m broadcast_alpha run-live-smoke --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-sequence --prereg prereg/PREREG_LIVE-01.md --seed 42
 python3 -m broadcast_alpha run-live-model-sweep --prereg prereg/PREREG_LIVE-01.md --seed 42 --env-file ../.env --budget-usd 25 --authorize-api-spend --execute-live
-python3 -m broadcast_alpha run-live-ab-bias-suite --prereg prereg/PREREG_LIVE-01.md --seed 42 --env-file ../.env --case-limit 4 --budget-usd 25 --authorize-api-spend --execute-live
+python3 -m broadcast_alpha run-live-ab-bias-suite --prereg prereg/PREREG_LIVE-01.md --seed 42 --env-file ../.env --models anthropic/claude-sonnet-5,google/gemini-3.5-flash,x-ai/grok-4.3 --case-limit 16 --budget-usd 25 --authorize-api-spend --execute-live
 python3 -m broadcast_alpha run-live-dsh --prereg prereg/PREREG_LIVE-01.md --seed 42 --tasks-per-cell 1
 python3 -m broadcast_alpha build-report --artifact-root artifacts --output artifacts/final_report_seed_42
 python3 -m broadcast_alpha run-all --seed 42 --tasks-per-cell 30 --epochs 5 --prereg-dir prereg --artifact-root artifacts
@@ -119,15 +119,16 @@ verifier-backed smoke task per model. The command records the declared
 verification, and whether real provider transport was used. It does not compute
 or claim `GLASSGATE_LIFT`.
 
-`artifacts/live_ab_bias_suite_seed_42/` is the first bounded live A/B
-behavioral artifact. It used the seven configured OpenRouter models, four
-evidence-contained A/B cases, and 28 total provider calls. The checked result
-reports `accuracy = 0.571429`, `neutral_accuracy = 0.714286`,
-`wrong_bias_accuracy = 0.571429`, `parse_failure_count = 12`, and
-`adapter_usage_total_tokens = 12060`. Claude Sonnet 5, Gemini 3.5 Flash, and
-Grok 4.3 were 4/4 on this easy logic slice; the remaining models were limited
-mostly by empty/invalid responses or provider 429s. This is black-box
-behavioral evidence only, not activation measurement, causal evidence, or
+`artifacts/live_ab_bias_suite_seed_42/` is the current bounded live A/B
+behavioral artifact. It used the three cleanest OpenRouter models from the
+first sweep, 16 balanced evidence-contained A/B cases per model, and 48 total
+provider calls. The checked result reports `accuracy = 0.979167`,
+`schema_compliance_rate = 1.0`, `parsed_only_accuracy = 0.979167`,
+`neutral_accuracy = 1.0`, `wrong_bias_accuracy = 0.916667`,
+`parse_failure_count = 0`, and `adapter_usage_total_tokens = 34479`. Claude
+Sonnet 5 and Gemini 3.5 Flash were 16/16. Grok 4.3 was 15/16, with the miss in
+one wrong-bias authority-cue `agent_judge` case. This is black-box behavioral
+evidence only, not activation measurement, causal evidence, or
 `JLENS_PROVED`.
 
 `artifacts/live_dsh_seed_42/` is the current checked-in live DSH pilot

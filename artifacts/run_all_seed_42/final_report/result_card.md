@@ -111,7 +111,10 @@ Live A/B models: 0
 Live A/B case runs: 0
 Live A/B adapter calls: 0
 Live A/B accuracy: 0.0
+Live A/B schema compliance rate: 0.0
+Live A/B parsed-only accuracy: 0.0
 Live A/B wrong-bias accuracy: 0.0
+Live A/B parsed-only wrong-bias accuracy: 0.0
 Live A/B parse failures: 0
 Live A/B behavioral only: True
 
