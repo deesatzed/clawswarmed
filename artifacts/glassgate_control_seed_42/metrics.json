@@ -1,0 +1,8 @@
+{
+  "CONTROL_LIFT": "PASS",
+  "HARM_LIMIT": "PASS",
+  "best_protect_accuracy_wrong_bias": 1.0,
+  "best_protect_controller": "C3_scarce_protect",
+  "control_lift_value": 1.0,
+  "equal_accuracy_wrong_bias": 0.0
+}

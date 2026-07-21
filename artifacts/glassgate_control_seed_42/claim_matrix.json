@@ -1,0 +1,234 @@
+{
+  "CONTROL_LIFT": "PASS",
+  "HARM_LIMIT": "PASS",
+  "best_protect_accuracy_wrong_bias": 1.0,
+  "best_protect_controller": "C3_scarce_protect",
+  "control_lift_value": 1.0,
+  "equal_accuracy_wrong_bias": 0.0,
+  "equal_neutral_accuracy": 0.25,
+  "evidence_class": "synthetic_control_screening",
+  "min_protect_neutral_accuracy": 0.25,
+  "n_cases_total": 64,
+  "n_minority_neutral": 4,
+  "n_minority_wrong_bias": 4,
+  "not_jlens": true,
+  "not_live_llm": true,
+  "results_all_minority_under_pressure": [
+    {
+      "D": -0.25,
+      "accuracy": 0.375,
+      "controller": "C0_equal",
+      "correct_minority_hit_rate": 0.375,
+      "correct_minority_hits": 6,
+      "correct_minority_total": 16,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 16
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C1_majority_force",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 16,
+      "mean_thrash_l1": 0.6666666666666666,
+      "n_cases": 16
+    },
+    {
+      "D": -0.25,
+      "accuracy": 0.375,
+      "controller": "C2_authority_boost",
+      "correct_minority_hit_rate": 0.375,
+      "correct_minority_hits": 6,
+      "correct_minority_total": 16,
+      "mean_thrash_l1": 0.16666666666666663,
+      "n_cases": 16
+    },
+    {
+      "D": 1.0,
+      "accuracy": 1.0,
+      "controller": "C3_scarce_protect",
+      "correct_minority_hit_rate": 1.0,
+      "correct_minority_hits": 16,
+      "correct_minority_total": 16,
+      "mean_thrash_l1": 0.5333333333333332,
+      "n_cases": 16
+    },
+    {
+      "D": 0.75,
+      "accuracy": 0.875,
+      "controller": "C4_dissent_boost",
+      "correct_minority_hit_rate": 0.875,
+      "correct_minority_hits": 14,
+      "correct_minority_total": 16,
+      "mean_thrash_l1": 0.4236111111111112,
+      "n_cases": 16
+    },
+    {
+      "D": -0.25,
+      "accuracy": 0.375,
+      "controller": "C5_threshold_rebalance",
+      "correct_minority_hit_rate": 0.375,
+      "correct_minority_hits": 6,
+      "correct_minority_total": 16,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 16
+    },
+    {
+      "D": -0.25,
+      "accuracy": 0.375,
+      "controller": "C6_fairshare_pull",
+      "correct_minority_hit_rate": 0.375,
+      "correct_minority_hits": 6,
+      "correct_minority_total": 16,
+      "mean_thrash_l1": 0.058859200203234374,
+      "n_cases": 16
+    }
+  ],
+  "results_neutral_minority": [
+    {
+      "D": -0.5,
+      "accuracy": 0.25,
+      "controller": "C0_equal",
+      "correct_minority_hit_rate": 0.25,
+      "correct_minority_hits": 1,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C1_majority_force",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.6666666666666667,
+      "n_cases": 4
+    },
+    {
+      "D": -0.5,
+      "accuracy": 0.25,
+      "controller": "C2_authority_boost",
+      "correct_minority_hit_rate": 0.25,
+      "correct_minority_hits": 1,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 4
+    },
+    {
+      "D": 1.0,
+      "accuracy": 1.0,
+      "controller": "C3_scarce_protect",
+      "correct_minority_hit_rate": 1.0,
+      "correct_minority_hits": 4,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.5333333333333332,
+      "n_cases": 4
+    },
+    {
+      "D": 1.0,
+      "accuracy": 1.0,
+      "controller": "C4_dissent_boost",
+      "correct_minority_hit_rate": 1.0,
+      "correct_minority_hits": 4,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.4444444444444445,
+      "n_cases": 4
+    },
+    {
+      "D": -0.5,
+      "accuracy": 0.25,
+      "controller": "C5_threshold_rebalance",
+      "correct_minority_hit_rate": 0.25,
+      "correct_minority_hits": 1,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 4
+    },
+    {
+      "D": -0.5,
+      "accuracy": 0.25,
+      "controller": "C6_fairshare_pull",
+      "correct_minority_hit_rate": 0.25,
+      "correct_minority_hits": 1,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 4
+    }
+  ],
+  "results_wrong_bias_minority": [
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C0_equal",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C1_majority_force",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.6666666666666667,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C2_authority_boost",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.1333333333333333,
+      "n_cases": 4
+    },
+    {
+      "D": 1.0,
+      "accuracy": 1.0,
+      "controller": "C3_scarce_protect",
+      "correct_minority_hit_rate": 1.0,
+      "correct_minority_hits": 4,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.5333333333333332,
+      "n_cases": 4
+    },
+    {
+      "D": 0.0,
+      "accuracy": 0.5,
+      "controller": "C4_dissent_boost",
+      "correct_minority_hit_rate": 0.5,
+      "correct_minority_hits": 2,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.3611111111111111,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C5_threshold_rebalance",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C6_fairshare_pull",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.095085923619955,
+      "n_cases": 4
+    }
+  ],
+  "seed": 42,
+  "status": "SCOPED_GLASSGATE_CONTROL_COMPLETE"
+}

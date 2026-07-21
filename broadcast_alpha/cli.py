@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .ab_bias_suite import run_ab_bias_suite
 from .experiments import run_dsh, run_rqgm, run_synthetic
+from .glassgate_control import run_glassgate_control
 from .goal_audit import audit_goal
 from .jlens import run_jlens_gate
 from .jlens_hf_smoke import run_jlens_hf_smoke
@@ -46,6 +47,13 @@ def build_parser() -> argparse.ArgumentParser:
     ab = sub.add_parser("run-ab-bias-suite", help="Run the no-network A/B behavioral bias challenge suite")
     ab.add_argument("--seed", type=int, default=42)
     ab.add_argument("--artifact-root", default="artifacts")
+
+    ggc = sub.add_parser(
+        "run-glassgate-control",
+        help="Run sealed Glass Gate attention-control battery (synthetic, no live LLM)",
+    )
+    ggc.add_argument("--seed", type=int, default=42)
+    ggc.add_argument("--artifact-root", default="artifacts")
 
     dsh = sub.add_parser("run-dsh", help="Run the preregistered DSH macro grid")
     dsh.add_argument("--prereg", default="prereg/PREREG_DSH-01.md")
@@ -226,6 +234,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "run-synthetic":
         result = run_synthetic(seed=args.seed, artifact_root=Path(args.artifact_root))
+        _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-glassgate-control":
+        result = run_glassgate_control(seed=args.seed, artifact_root=args.artifact_root)
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
         return 0
 

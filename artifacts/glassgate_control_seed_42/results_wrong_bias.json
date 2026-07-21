@@ -1,0 +1,74 @@
+{
+  "rows": [
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C0_equal",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C1_majority_force",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.6666666666666667,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C2_authority_boost",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.1333333333333333,
+      "n_cases": 4
+    },
+    {
+      "D": 1.0,
+      "accuracy": 1.0,
+      "controller": "C3_scarce_protect",
+      "correct_minority_hit_rate": 1.0,
+      "correct_minority_hits": 4,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.5333333333333332,
+      "n_cases": 4
+    },
+    {
+      "D": 0.0,
+      "accuracy": 0.5,
+      "controller": "C4_dissent_boost",
+      "correct_minority_hit_rate": 0.5,
+      "correct_minority_hits": 2,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.3611111111111111,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C5_threshold_rebalance",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.0,
+      "n_cases": 4
+    },
+    {
+      "D": -1.0,
+      "accuracy": 0.0,
+      "controller": "C6_fairshare_pull",
+      "correct_minority_hit_rate": 0.0,
+      "correct_minority_hits": 0,
+      "correct_minority_total": 4,
+      "mean_thrash_l1": 0.095085923619955,
+      "n_cases": 4
+    }
+  ]
+}
