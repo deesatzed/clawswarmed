@@ -1,0 +1,8 @@
+{
+  "DEPLOYABLE_LIFT": "PASS",
+  "HARM_LIMIT": "PASS",
+  "MULTI_SEED_ROBUST": "PASS",
+  "best_deployable_protect": "deployable_anti_cue",
+  "deployable_lift_value": 0.93625,
+  "oracle_ceiling_mean": 1.0
+}

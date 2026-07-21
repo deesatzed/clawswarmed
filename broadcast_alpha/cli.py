@@ -5,6 +5,7 @@ from pathlib import Path
 from .ab_bias_suite import run_ab_bias_suite
 from .experiments import run_dsh, run_rqgm, run_synthetic
 from .glassgate_control import run_glassgate_control
+from .glassgate_control_v2 import run_glassgate_control_v2
 from .goal_audit import audit_goal
 from .jlens import run_jlens_gate
 from .jlens_hf_smoke import run_jlens_hf_smoke
@@ -54,6 +55,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ggc.add_argument("--seed", type=int, default=42)
     ggc.add_argument("--artifact-root", default="artifacts")
+
+    ggc2 = sub.add_parser(
+        "run-glassgate-control-v2",
+        help="Label-free Glass Gate control battery + multi-seed (no live LLM)",
+    )
+    ggc2.add_argument("--seed", type=int, default=42)
+    ggc2.add_argument("--n-seeds", type=int, default=20)
+    ggc2.add_argument("--expand-repeats", type=int, default=5)
+    ggc2.add_argument("--artifact-root", default="artifacts")
 
     dsh = sub.add_parser("run-dsh", help="Run the preregistered DSH macro grid")
     dsh.add_argument("--prereg", default="prereg/PREREG_DSH-01.md")
@@ -240,6 +250,28 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "run-glassgate-control":
         result = run_glassgate_control(seed=args.seed, artifact_root=args.artifact_root)
         _emit({"run_id": result.run_id, "artifact_path": str(result.artifact_path)})
+        return 0
+
+    if args.command == "run-glassgate-control-v2":
+        result = run_glassgate_control_v2(
+            seed=args.seed,
+            n_seeds=args.n_seeds,
+            artifact_root=args.artifact_root,
+            expand_repeats=args.expand_repeats,
+        )
+        claim_path = Path(result.artifact_path) / "claim_matrix.json"
+        claim = json.loads(claim_path.read_text()) if claim_path.exists() else {}
+        _emit(
+            {
+                "run_id": result.run_id,
+                "artifact_path": str(result.artifact_path),
+                "DEPLOYABLE_LIFT": claim.get("DEPLOYABLE_LIFT"),
+                "MULTI_SEED_ROBUST": claim.get("MULTI_SEED_ROBUST"),
+                "HARM_LIMIT": claim.get("HARM_LIMIT"),
+                "deployable_lift_value": claim.get("deployable_lift_value"),
+                "best_deployable_protect": claim.get("best_deployable_protect"),
+            }
+        )
         return 0
 
     if args.command == "run-ab-bias-suite":

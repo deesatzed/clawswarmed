@@ -1,0 +1,96 @@
+{
+  "neutral": {
+    "deployable_anti_cue": {
+      "ci90_high": 1.0,
+      "ci90_low": 1.0,
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "deployable_authority_boost": {
+      "ci90_high": 0.375,
+      "ci90_low": 0.275,
+      "mean": 0.33125,
+      "std": 0.042481613669916055
+    },
+    "deployable_dissent_boost": {
+      "ci90_high": 1.0,
+      "ci90_low": 1.0,
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "deployable_equal": {
+      "ci90_high": 0.375,
+      "ci90_low": 0.275,
+      "mean": 0.33125,
+      "std": 0.042481613669916055
+    },
+    "deployable_evidence_dissent": {
+      "ci90_high": 1.0,
+      "ci90_low": 1.0,
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "deployable_evidence_overlap": {
+      "ci90_high": 1.0,
+      "ci90_low": 1.0,
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "deployable_majority_claim": {
+      "ci90_high": 0.0,
+      "ci90_low": 0.0,
+      "mean": 0.0,
+      "std": 0.0
+    }
+  },
+  "oracle": {
+    "ci90_high": 1.0,
+    "ci90_low": 1.0,
+    "mean": 1.0,
+    "std": 0.0
+  },
+  "wrong_bias": {
+    "deployable_anti_cue": {
+      "ci90_high": 1.0,
+      "ci90_low": 1.0,
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "deployable_authority_boost": {
+      "ci90_high": 0.1,
+      "ci90_low": 0.025,
+      "mean": 0.06375,
+      "std": 0.027922884879610848
+    },
+    "deployable_dissent_boost": {
+      "ci90_high": 0.525,
+      "ci90_low": 0.325,
+      "mean": 0.46,
+      "std": 0.056124860801609125
+    },
+    "deployable_equal": {
+      "ci90_high": 0.1,
+      "ci90_low": 0.025,
+      "mean": 0.06375,
+      "std": 0.027922884879610848
+    },
+    "deployable_evidence_dissent": {
+      "ci90_high": 0.925,
+      "ci90_low": 0.775,
+      "mean": 0.86625,
+      "std": 0.04954480295651604
+    },
+    "deployable_evidence_overlap": {
+      "ci90_high": 0.925,
+      "ci90_low": 0.8,
+      "mean": 0.8500000000000001,
+      "std": 0.06123724356957945
+    },
+    "deployable_majority_claim": {
+      "ci90_high": 0.325,
+      "ci90_low": 0.2,
+      "mean": 0.2725,
+      "std": 0.043229041164476456
+    }
+  }
+}
